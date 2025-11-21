@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="EMPTY_MODULE" version="4">
+  <component name="FacetManager">
+    <facet type="Python" name="Python facet">
+      <configuration sdkName="Python 3.13 (RustRover)" />
+    </facet>
+  </component>
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/blockotitos/contracts/fungible-allowlist/src" isTestSource="false" />
@@ -8,9 +13,11 @@
       <sourceFolder url="file://$MODULE_DIR$/blockotitos/contracts/spot-event/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/blockotitos/contracts/spot-factory/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/blockotitos/contracts/poap/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/.venv" />
       <excludeFolder url="file://$MODULE_DIR$/blockotitos/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Python 3.13 (RustRover) interpreter library" level="application" />
   </component>
 </module>
