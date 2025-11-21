@@ -108,6 +108,8 @@ async function sendContractInvocation({
   tx = await server.prepareTransaction(tx);
   tx.sign(signerKeypair);
 
+  const envelopeXdr = tx.toEnvelope().toXDR("base64");
+
   const sendResult = await server.sendTransaction(tx);
   if (sendResult.errorResult) {
     throw new Error(`sendTransaction error: ${JSON.stringify(sendResult.errorResult)}`);
@@ -118,7 +120,7 @@ async function sendContractInvocation({
   }
 
   const txHash = await pollForCompletion(server, sendResult.hash);
-  return { txHash, rpcResponse: sendResult };
+  return { txHash, rpcResponse: sendResult, envelopeXdr };
 }
 
 async function simulateContractCall({

@@ -5,12 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch ./src/server.js",
-    "start": "node ./src/server.js"
+    "start": "node ./src/server.js",
+    "test": "npm run test:unit",
+    "test:unit": "cross-env NODE_ENV=test MOCK_MODE=true LOG_FILE=./logs/backend.test.log node --test",
+    "test:integration": "cross-env NODE_ENV=test RUN_INTEGRATION_TESTS=true LOG_FILE=./logs/backend.integration.log node --test \"./test/integration/*.test.js\""
   },
   "dependencies": {
     "@stellar/stellar-sdk": "^12.1.1",
     "dotenv": "^16.4.5",
     "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "supertest": "^6.3.4"
   }
 }
 

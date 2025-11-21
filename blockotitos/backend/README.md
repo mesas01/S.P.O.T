@@ -51,6 +51,36 @@ El backend expone:
 - `POST /events/create`
 
 Los resultados de cada transacción (éxito/error) se registran en consola y en `backend/logs/backend.log`.
+Las respuestas de éxito también incluyen `signedEnvelope` (XDR base64) para que puedas inspeccionar la firma en Stellar Expert → Tools → XDR Viewer.
+
+## Tests
+
+- **Unitarios (mock):**
+
+  ```bash
+  npm run test:unit
+  ```
+
+  Ejecutan la misma lógica que `scripts/create_event.py`, pero con `MOCK_MODE=true` y escribiendo en `logs/backend.test.log`.
+
+- **Integración (red real):**
+
+  Requieren todas las variables del `.env` +:
+
+  - `INTEGRATION_CREATOR_SECRET`: clave secreta del organizador aprobado.
+  - `INTEGRATION_CREATOR_ADDRESS`: cuenta pública correspondiente.
+  - (Opcional) `INTEGRATION_METADATA_URI` e `INTEGRATION_IMAGE_URL`.
+
+  ```bash
+  RUN_INTEGRATION_TESTS=true \
+  INTEGRATION_CREATOR_SECRET=S... \
+  INTEGRATION_CREATOR_ADDRESS=G... \
+  npm run test:integration
+  ```
+
+  Este comando levanta el backend con tus credenciales, envía un `POST /events/create`
+  real (misma carga útil que el script Python) y espera a que Soroban confirme la transacción.
+  Los resultados se guardan en `logs/backend.integration.log`.
 
 ## Probar con Postman / curl
 

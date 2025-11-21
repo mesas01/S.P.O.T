@@ -18,6 +18,7 @@ const {
   LOG_FILE,
 } = process.env;
 
+const isTestEnv = process.env.NODE_ENV === "test";
 const isMock = MOCK_MODE.toLowerCase() === "true";
 const CONTRACT_ID = SPOT_CONTRACT_ID;
 const __filename = fileURLToPath(import.meta.url);
@@ -85,8 +86,15 @@ app.post("/creators/approve", async (req, res) => {
 
   if (isMock) {
     const txHash = `MOCK-APPROVE-${Date.now()}`;
-    await logTx({ action: "approve_creator", status: "success", txHash, payload });
-    return res.json({ txHash: `MOCK-APPROVE-${Date.now()}` });
+    const signedEnvelope = Buffer.from(`MOCK-APPROVE-ENVELOPE-${Date.now()}`).toString("base64");
+    await logTx({
+      action: "approve_creator",
+      status: "success",
+      txHash,
+      payload,
+      signedEnvelope,
+    });
+    return res.json({ txHash, signedEnvelope, rpcResponse: { status: "MOCK" } });
   }
 
   try {
@@ -104,8 +112,13 @@ app.post("/creators/approve", async (req, res) => {
       txHash: result.txHash,
       payload,
       rpcResponse: result.rpcResponse,
+      signedEnvelope: result.envelopeXdr,
     });
-    res.json({ txHash: result.txHash, rpcResponse: result.rpcResponse });
+    res.json({
+      txHash: result.txHash,
+      rpcResponse: result.rpcResponse,
+      signedEnvelope: result.envelopeXdr,
+    });
   } catch (error) {
     await logTx({
       action: "approve_creator",
@@ -126,8 +139,15 @@ app.post("/creators/revoke", async (req, res) => {
 
   if (isMock) {
     const txHash = `MOCK-REVOKE-${Date.now()}`;
-    await logTx({ action: "revoke_creator", status: "success", txHash, payload });
-    return res.json({ txHash });
+    const signedEnvelope = Buffer.from(`MOCK-REVOKE-ENVELOPE-${Date.now()}`).toString("base64");
+    await logTx({
+      action: "revoke_creator",
+      status: "success",
+      txHash,
+      payload,
+      signedEnvelope,
+    });
+    return res.json({ txHash, signedEnvelope, rpcResponse: { status: "MOCK" } });
   }
 
   try {
@@ -144,8 +164,13 @@ app.post("/creators/revoke", async (req, res) => {
       txHash: result.txHash,
       payload,
       rpcResponse: result.rpcResponse,
+      signedEnvelope: result.envelopeXdr,
     });
-    res.json({ txHash: result.txHash, rpcResponse: result.rpcResponse });
+    res.json({
+      txHash: result.txHash,
+      rpcResponse: result.rpcResponse,
+      signedEnvelope: result.envelopeXdr,
+    });
   } catch (error) {
     await logTx({
       action: "revoke_creator",
@@ -210,8 +235,15 @@ app.post("/events/create", async (req, res) => {
 
   if (isMock) {
     const txHash = `MOCK-EVENT-${Date.now()}`;
-    await logTx({ action: "create_event", status: "success", txHash, payload });
-    return res.json({ txHash });
+    const signedEnvelope = Buffer.from(`MOCK-EVENT-ENVELOPE-${Date.now()}`).toString("base64");
+    await logTx({
+      action: "create_event",
+      status: "success",
+      txHash,
+      payload,
+      signedEnvelope,
+    });
+    return res.json({ txHash, signedEnvelope, rpcResponse: { status: "MOCK" } });
   }
 
   try {
@@ -237,8 +269,13 @@ app.post("/events/create", async (req, res) => {
       txHash: result.txHash,
       payload,
       rpcResponse: result.rpcResponse,
+      signedEnvelope: result.envelopeXdr,
     });
-    res.json({ txHash: result.txHash, rpcResponse: result.rpcResponse });
+    res.json({
+      txHash: result.txHash,
+      rpcResponse: result.rpcResponse,
+      signedEnvelope: result.envelopeXdr,
+    });
   } catch (error) {
     await logTx({
       action: "create_event",
@@ -274,7 +311,27 @@ app.get("/contract/admin", async (_req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`SPOT admin backend listening on http://localhost:${PORT}`);
-});
+function normalizePort(value) {
+  const portNumber = Number(value);
+  if (Number.isNaN(portNumber)) {
+    return 4000;
+  }
+  return portNumber;
+}
+
+export function startServer(customPort) {
+  const port = normalizePort(
+    typeof customPort !== "undefined" ? customPort : PORT
+  );
+  const server = app.listen(port, () => {
+    console.log(`SPOT admin backend listening on http://localhost:${server.address().port}`);
+  });
+  return server;
+}
+
+if (!isTestEnv) {
+  startServer();
+}
+
+export { app };
 
