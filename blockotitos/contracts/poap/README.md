@@ -74,3 +74,7 @@ Las nuevas pruebas cubren:
 Este diseño mantiene la UX simple para el hackathon, documenta claramente el
 enlace entre pagos off-chain y permisos on-chain, y permite auditar quién autorizó
 cada organizador.
+
+> **Backend de referencia:** en `backend/` encontrarás un servidor Express listo
+> para correr (`npm install && npm run dev`). Consulta `backend/README.md` para
+> pasos detallados y cómo probar los endpoints con Postman/curl.

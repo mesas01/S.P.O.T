@@ -7,6 +7,7 @@
       <sourceFolder url="file://$MODULE_DIR$/blockotitos/contracts/nft-enumerable/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/blockotitos/contracts/spot-event/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/blockotitos/contracts/spot-factory/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/blockotitos/contracts/poap/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/blockotitos/target" />
     </content>
     <orderEntry type="inheritedJdk" />
