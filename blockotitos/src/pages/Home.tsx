@@ -7,19 +7,21 @@ import { SpotData } from "../components/spot/SpotCard";
 import { groupSpotsByMonth, getTotalSpots } from "../utils/spotGrouping";
 
 // Mock SPOT data for visual purposes - TODO: Obtener del contrato
+// Para usar imágenes: colócalas en /public/images/events/ y usa "/images/events/nombre-archivo.png"
+// También puedes usar emojis o URLs completas
 const mockSpots: SpotData[] = [
   {
     id: 1,
     name: "Stellar Community Meetup",
     date: "2025-11-15",
-    image: "🌟",
+    image: "/images/events/stellar-meetup.png", // Ejemplo: usar imagen
     color: "from-stellar-lilac/30 to-stellar-lilac/50",
   },
   {
     id: 2,
     name: "Blockchain Developer Workshop",
     date: "2025-11-20",
-    image: "💻",
+    image: "💻", // O usar emoji
     color: "from-stellar-lilac/30 to-stellar-lilac/50",
   },
   {

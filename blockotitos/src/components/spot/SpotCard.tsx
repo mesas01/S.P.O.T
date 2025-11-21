@@ -5,7 +5,7 @@ export interface SpotData {
   id: number;
   name: string;
   date: string;
-  image: string;
+  image: string; // Puede ser emoji, URL de imagen, o ruta relativa a /images/events/
   color?: string;
   eventId?: string;
 }
@@ -36,8 +36,27 @@ const SpotCard: React.FC<SpotCardProps> = ({ spot, onClick }) => {
     >
       {/* Badge Circle */}
       <div className={`bg-gradient-to-br ${colorClass} p-8 flex items-center justify-center`}>
-        <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center border-4 border-white/50 shadow-inner">
-          <span className="text-5xl md:text-6xl">{spot.image || "🎯"}</span>
+        <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center border-4 border-white/50 shadow-inner overflow-hidden">
+          {spot.image.startsWith('http') || spot.image.startsWith('/images/') ? (
+            <img 
+              src={spot.image.startsWith('/') ? spot.image : spot.image} 
+              alt={spot.name}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                // Si falla la imagen, mostrar emoji por defecto
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                if (target.parentElement) {
+                  const fallback = document.createElement('span');
+                  fallback.className = 'text-5xl md:text-6xl';
+                  fallback.textContent = '🎯';
+                  target.parentElement.appendChild(fallback);
+                }
+              }}
+            />
+          ) : (
+            <span className="text-5xl md:text-6xl">{spot.image || "🎯"}</span>
+          )}
         </div>
       </div>
 
