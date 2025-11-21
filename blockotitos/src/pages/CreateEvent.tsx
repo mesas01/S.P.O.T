@@ -1,11 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Layout, Text, Button, Input } from "@stellar/design-system";
 import { useWallet } from "../hooks/useWallet";
 import { useNavigate } from "react-router-dom";
+import { useNotification } from "../hooks/useNotification";
+import { saveLocalEvent } from "../utils/localEvents";
 
 const CreateEvent: React.FC = () => {
-  const { address, isConnected } = useWallet();
+  const { address } = useWallet();
   const navigate = useNavigate();
+  const isConnected = !!address;
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
     eventName: "",
@@ -16,6 +20,8 @@ const CreateEvent: React.FC = () => {
     claimStart: "",
     claimEnd: "",
     imageUrl: "",
+    imageFile: null as File | null,
+    imagePreview: "",
     metadataUri: "",
   });
 
@@ -28,6 +34,7 @@ const CreateEvent: React.FC = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { showNotification } = useNotification();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -35,6 +42,46 @@ const CreateEvent: React.FC = () => {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      alert("Por favor, selecciona un archivo de imagen válido");
+      return;
+    }
+
+    // Validar tamaño (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("La imagen no puede ser mayor a 5MB");
+      return;
+    }
+
+    // Crear preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData(prev => ({
+        ...prev,
+        imageFile: file,
+        imagePreview: reader.result as string,
+        imageUrl: "", // Limpiar URL si hay archivo
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = () => {
+    setFormData(prev => ({
+      ...prev,
+      imageFile: null,
+      imagePreview: "",
+    }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleMethodToggle = (method: keyof typeof distributionMethods) => {
@@ -48,38 +95,126 @@ const CreateEvent: React.FC = () => {
     e.preventDefault();
     
     if (!isConnected) {
-      alert("Por favor, conecta tu wallet primero");
+      showNotification({
+        type: "error",
+        title: "Wallet no conectada",
+        message: "Por favor, conecta tu wallet primero",
+      });
       return;
     }
 
-    setIsSubmitting(true);
+    if (!formData.eventName || !formData.eventDate || !formData.location || !formData.description || !formData.maxSpots || !formData.claimStart || !formData.claimEnd) {
+      showNotification({
+        type: "error",
+        title: "Campos requeridos",
+        message: "Por favor, completa todos los campos requeridos",
+      });
+      return;
+    }
 
     try {
-      // TODO: Integrar con el contrato smart contract
-      // Por ahora, simulamos la creación
-      console.log("Creando evento:", {
-        ...formData,
-        distributionMethods,
-        creator: address,
-      });
+      // Procesar imagen si hay archivo
+      let finalImageUrl = formData.imageUrl;
+      if (formData.imageFile) {
+        // En producción, aquí subirías la imagen a IPFS, Firebase Storage, etc.
+        // Por ahora, usamos el preview como base64 temporalmente
+        // TODO: Subir a almacenamiento permanente y obtener URL
+        finalImageUrl = formData.imagePreview || formData.imageUrl || "https://via.placeholder.com/300";
+      } else if (!formData.imageUrl) {
+        finalImageUrl = "https://via.placeholder.com/300";
+      }
 
-      // Simular delay de transacción
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Convertir fechas a timestamps Unix (segundos)
+      const eventDate = Math.floor(new Date(formData.eventDate).getTime() / 1000);
+      const claimStart = Math.floor(new Date(formData.claimStart).getTime() / 1000);
+      const claimEnd = Math.floor(new Date(formData.claimEnd).getTime() / 1000);
 
-      alert("¡Evento creado exitosamente!");
-      navigate("/");
-    } catch (error) {
+      // Metadata URI - por ahora usar un placeholder
+      const metadataUri = formData.metadataUri || `https://spot.example.com/metadata/${Date.now()}`;
+
+      // Guardar evento localmente (temporal hasta que el contrato esté configurado)
+      setIsSubmitting(true);
+      
+      try {
+        const newEvent = saveLocalEvent({
+          name: formData.eventName,
+          date: formData.eventDate,
+          location: formData.location,
+          description: formData.description,
+          maxSpots: parseInt(formData.maxSpots),
+          claimStart: formData.claimStart,
+          claimEnd: formData.claimEnd,
+          imageUrl: finalImageUrl,
+          metadataUri,
+          creator: address!,
+          distributionMethods,
+        });
+
+        console.log("Evento creado exitosamente (local):", newEvent);
+        
+        // Disparar evento personalizado para actualizar otras pestañas/páginas
+        window.dispatchEvent(new Event('localStorageUpdated'));
+        
+        showNotification({
+          type: "success",
+          title: "Evento creado",
+          message: "Tu evento SPOT ha sido creado exitosamente",
+        });
+        
+        // Limpiar formulario
+        setFormData({
+          eventName: "",
+          eventDate: "",
+          location: "",
+          description: "",
+          maxSpots: "",
+          claimStart: "",
+          claimEnd: "",
+          imageUrl: "",
+          imageFile: null,
+          imagePreview: "",
+          metadataUri: "",
+        });
+        setDistributionMethods({
+          qr: true,
+          link: true,
+          geolocation: false,
+          code: false,
+          nfc: false,
+        });
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        
+        // Navegar a mis eventos después de un pequeño delay
+        setTimeout(() => {
+          navigate("/my-events");
+        }, 500);
+      } catch (error: any) {
+        console.error("Error al crear evento:", error);
+        showNotification({
+          type: "error",
+          title: "Error",
+          message: error?.message || "Error al crear evento. Por favor, intenta nuevamente.",
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
+    } catch (error: any) {
       console.error("Error al crear evento:", error);
-      alert("Error al crear evento. Por favor, intenta nuevamente.");
-    } finally {
-      setIsSubmitting(false);
+      showNotification({
+        type: "error",
+        title: "Error",
+        message: error?.message || "Error al crear evento. Por favor, intenta nuevamente.",
+      });
     }
   };
 
   if (!isConnected) {
     return (
-      <Layout.Content className="min-h-screen bg-stellar-white">
-        <Layout.Inset className="py-12">
+      <Layout.Content>
+        <Layout.Inset>
+          <div className="min-h-screen bg-stellar-white py-12">
           <div className="max-w-2xl mx-auto text-center">
             <div className="text-6xl mb-6">🔐</div>
               <Text as="h2" size="lg" className="text-2xl font-headline text-stellar-black mb-4">
@@ -97,21 +232,19 @@ const CreateEvent: React.FC = () => {
               Ir a Home
             </Button>
           </div>
+          </div>
         </Layout.Inset>
       </Layout.Content>
     );
   }
 
   return (
-    <Layout.Content className="min-h-screen bg-stellar-white">
-      <Layout.Inset className="py-6 md:py-12">
+    <Layout.Content>
+      <Layout.Inset>
+        <div className="min-h-screen bg-stellar-white py-6 md:py-12">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            {/* TL;DR - Stellar Brand Manual */}
-            <Text as="div" size="sm" className="text-stellar-teal mb-2 font-medium uppercase tracking-wider">
-              TL;DR
-            </Text>
             <Button
               variant="tertiary"
               size="sm"
@@ -126,12 +259,6 @@ const CreateEvent: React.FC = () => {
             <Text as="p" size="md" className="text-stellar-black font-subhead italic">
               Completa el formulario para crear tu evento SPOT
             </Text>
-            <div className="bg-stellar-warm-grey/30 rounded-lg p-3 mt-4">
-              <Text as="p" size="sm" className="text-stellar-black font-body">
-                <span className="font-semibold">TL;DR:</span> Llena el formulario, elige métodos de distribución y crea tu evento. 
-                Los asistentes podrán reclamar SPOTs durante el período de claim configurado.
-              </Text>
-            </div>
           </div>
 
           {/* Form */}
@@ -143,6 +270,7 @@ const CreateEvent: React.FC = () => {
               </label>
               <Input
                 id="eventName"
+                fieldSize="md"
                 name="eventName"
                 type="text"
                 value={formData.eventName}
@@ -253,29 +381,90 @@ const CreateEvent: React.FC = () => {
               </div>
             </div>
 
-            {/* Image URL */}
+            {/* Image Upload */}
             <div>
-              <label htmlFor="imageUrl" className="block text-sm font-medium text-black mb-2">
-                URL de la Imagen
+              <label className="block text-sm font-medium text-stellar-black mb-2 font-body uppercase tracking-wide">
+                Imagen del Evento *
               </label>
+              
+              {/* Preview de imagen */}
+              {formData.imagePreview && (
+                <div className="mb-4 relative">
+                  <img
+                    src={formData.imagePreview}
+                    alt="Preview"
+                    className="w-full max-w-md h-48 object-cover rounded-lg border-2 border-stellar-lilac/20"
+                  />
+                  <Button
+                    type="button"
+                    variant="tertiary"
+                    size="sm"
+                    onClick={handleRemoveImage}
+                    className="absolute top-2 right-2 bg-red-500/80 text-white hover:bg-red-600 rounded-full px-4 py-1.5 shadow-md"
+                  >
+                    ✕ Remover
+                  </Button>
+                </div>
+              )}
+
+              {/* Input de archivo */}
+              <div className="flex items-center gap-4">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                  id="imageFile"
+                />
+                <Button
+                  type="button"
+                  variant="tertiary"
+                  size="md"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="bg-stellar-lilac/20 text-stellar-black hover:bg-stellar-lilac/30 font-body"
+                >
+                  📷 {formData.imageFile ? "Cambiar Imagen" : "Subir Imagen"}
+                </Button>
+                {formData.imageFile && (
+                  <Text as="p" size="sm" className="text-stellar-black/70 font-body">
+                    {formData.imageFile.name} ({(formData.imageFile.size / 1024 / 1024).toFixed(2)} MB)
+                  </Text>
+                )}
+              </div>
+
+              {/* Opción alternativa: URL */}
+              <div className="mt-4">
+                <Text as="p" size="sm" className="text-stellar-black/70 mb-2 font-body">
+                  O ingresa una URL de imagen:
+                </Text>
               <Input
                 id="imageUrl"
+                fieldSize="md"
                 name="imageUrl"
                 type="url"
                 value={formData.imageUrl}
                 onChange={handleInputChange}
-                placeholder="https://example.com/image.png"
+                placeholder="https://example.com/image.png o /images/events/mi-evento.jpg"
+                disabled={!!formData.imageFile}
                 className="w-full"
               />
+              </div>
+
+              {/* Nota sobre almacenamiento */}
+              <Text as="p" size="xs" className="text-stellar-black/50 mt-2 font-body italic">
+                Nota: Por ahora, las imágenes se almacenarán temporalmente. Para producción, se implementará almacenamiento permanente (IPFS, Firebase, etc.)
+              </Text>
             </div>
 
             {/* Metadata URI */}
             <div>
-              <label htmlFor="metadataUri" className="block text-sm font-medium text-black mb-2">
-                URI de Metadata
+              <label htmlFor="metadataUri" className="block text-sm font-medium text-stellar-black mb-2 font-body uppercase tracking-wide">
+                URI de Metadata (Opcional)
               </label>
               <Input
                 id="metadataUri"
+                fieldSize="md"
                 name="metadataUri"
                 type="url"
                 value={formData.metadataUri}
@@ -287,7 +476,7 @@ const CreateEvent: React.FC = () => {
 
             {/* Distribution Methods */}
             <div>
-              <label className="block text-sm font-medium text-black mb-4">
+              <label className="block text-sm font-medium text-stellar-black mb-4 font-body uppercase tracking-wide">
                 Métodos de Distribución
               </label>
               <div className="space-y-3">
@@ -307,7 +496,7 @@ const CreateEvent: React.FC = () => {
                     onChange={() => handleMethodToggle("link")}
                     className="w-5 h-5 text-stellar-lilac border-stellar-black/20 rounded focus:ring-stellar-lilac"
                   />
-                  <span className="text-black">🔗 Unique Link</span>
+                  <span className="text-stellar-black font-body">🔗 Unique Link</span>
                 </label>
                 <label className="flex items-center space-x-3 cursor-pointer">
                   <input
@@ -316,7 +505,7 @@ const CreateEvent: React.FC = () => {
                     onChange={() => handleMethodToggle("code")}
                     className="w-5 h-5 text-stellar-lilac border-stellar-black/20 rounded focus:ring-stellar-lilac"
                   />
-                  <span className="text-black">🔢 Código Compartido</span>
+                  <span className="text-stellar-black font-body">🔢 Código Compartido</span>
                 </label>
                 <label className="flex items-center space-x-3 cursor-pointer">
                   <input
@@ -325,7 +514,7 @@ const CreateEvent: React.FC = () => {
                     onChange={() => handleMethodToggle("geolocation")}
                     className="w-5 h-5 text-stellar-lilac border-stellar-black/20 rounded focus:ring-stellar-lilac"
                   />
-                  <span className="text-black">📍 Geolocalización</span>
+                  <span className="text-stellar-black font-body">📍 Geolocalización</span>
                 </label>
                 <label className="flex items-center space-x-3 cursor-pointer">
                   <input
@@ -334,7 +523,7 @@ const CreateEvent: React.FC = () => {
                     onChange={() => handleMethodToggle("nfc")}
                     className="w-5 h-5 text-stellar-lilac border-stellar-black/20 rounded focus:ring-stellar-lilac"
                   />
-                  <span className="text-black">💳 NFC</span>
+                  <span className="text-stellar-black font-body">💳 NFC</span>
                 </label>
               </div>
             </div>
@@ -346,12 +535,13 @@ const CreateEvent: React.FC = () => {
                 variant="primary"
                 size="lg"
                 disabled={isSubmitting}
-                className="w-full bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold"
+                className="w-full bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3 shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? "Creando evento..." : "Crear Evento"}
               </Button>
             </div>
           </form>
+        </div>
         </div>
       </Layout.Inset>
     </Layout.Content>

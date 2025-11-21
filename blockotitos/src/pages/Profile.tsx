@@ -119,7 +119,7 @@ const Profile: React.FC = () => {
                     variant="primary"
                     size="lg"
                     onClick={() => navigate("/")}
-                    className="w-full bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold"
+                    className="w-full bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3 shadow-md hover:shadow-lg transition-all"
                   >
                     Ver Mis SPOTs
                   </Button>
@@ -127,7 +127,7 @@ const Profile: React.FC = () => {
                     variant="secondary"
                     size="lg"
                     onClick={() => navigate("/create-event")}
-                    className="w-full bg-stellar-lilac text-stellar-black hover:bg-lilac-600 font-semibold"
+                    className="w-full bg-stellar-lilac text-stellar-black hover:bg-stellar-lilac/80 font-semibold rounded-full py-3 shadow-md hover:shadow-lg transition-all"
                   >
                     Crear Evento
                   </Button>
@@ -135,7 +135,7 @@ const Profile: React.FC = () => {
                     variant="tertiary"
                     size="lg"
                     onClick={() => navigate("/mint")}
-                    className="w-full border-2 border-stellar-teal/30 text-stellar-teal hover:bg-stellar-teal/10 font-semibold"
+                    className="w-full bg-stellar-white border-2 border-stellar-teal/30 text-stellar-teal hover:bg-stellar-teal/10 font-semibold rounded-full py-3 shadow-sm hover:shadow-md transition-all"
                   >
                     Reclamar SPOT
                   </Button>

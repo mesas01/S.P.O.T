@@ -7,36 +7,42 @@ import { SpotData } from "../components/spot/SpotCard";
 import { groupSpotsByMonth, getTotalSpots } from "../utils/spotGrouping";
 
 // Mock SPOT data for visual purposes - TODO: Obtener del contrato
-// Para usar imágenes: colócalas en /public/images/events/ y usa "/images/events/nombre-archivo.png"
-// También puedes usar emojis o URLs completas
+// Imágenes reales desde /public/images/events/
 const mockSpots: SpotData[] = [
   {
     id: 1,
-    name: "Stellar Community Meetup",
+    name: "Stellar Palooza",
     date: "2025-11-15",
-    image: "/images/events/stellar-meetup.png", // Ejemplo: usar imagen
+    image: "/images/events/stellarpalooza.jpg",
     color: "from-stellar-lilac/30 to-stellar-lilac/50",
   },
   {
     id: 2,
-    name: "Blockchain Developer Workshop",
+    name: "Hackathon Stellar 2024",
     date: "2025-11-20",
-    image: "💻", // O usar emoji
-    color: "from-stellar-lilac/30 to-stellar-lilac/50",
+    image: "/images/events/hack+.jpg",
+    color: "from-stellar-gold/30 to-stellar-lilac/50",
   },
   {
     id: 3,
-    name: "DeFi Summit",
+    name: "Hackathon Stellar 2024 - Segundo día",
     date: "2025-10-10",
-    image: "🚀",
-    color: "from-stellar-lilac/30 to-stellar-lilac/50",
+    image: "/images/events/hack+2.jpg",
+    color: "from-stellar-teal/30 to-stellar-lilac/50",
   },
   {
     id: 4,
-    name: "NFT Art Gallery Opening",
+    name: "Summer Fridays",
     date: "2025-10-05",
-    image: "🎨",
-    color: "from-stellar-lilac/30 to-stellar-lilac/50",
+    image: "/images/events/summer_fridays.jpg",
+    color: "from-stellar-gold/30 to-stellar-teal/50",
+  },
+  {
+    id: 5,
+    name: "Autumn Fridays",
+    date: "2025-09-28",
+    image: "/images/events/autumfridays.jpg",
+    color: "from-stellar-lilac/30 to-stellar-gold/50",
   },
 ];
 
@@ -60,35 +66,24 @@ const Home: React.FC = () => {
           {/* Hero Section - Landing Page */}
           <div className="text-center mb-12 md:mb-16">
             <div className="text-6xl md:text-7xl mb-6">🎯</div>
-            {/* TL;DR - Stellar Brand Manual: Start with conclusion */}
-            <Text as="div" size="sm" className="text-stellar-teal mb-4 font-medium uppercase tracking-wider">
-              TL;DR
-            </Text>
             <Text as="h1" size="xl" className="text-4xl md:text-5xl lg:text-6xl font-headline text-stellar-black mb-4 tracking-tight uppercase">
               SPOT
             </Text>
             <Text as="p" size="lg" className="text-xl md:text-2xl text-stellar-black mb-2 font-subhead italic">
               Stellar Proof of Togetherness
             </Text>
-            <Text as="p" size="md" className="text-base md:text-lg text-stellar-black max-w-3xl mx-auto mb-4 font-body">
+            <Text as="p" size="md" className="text-base md:text-lg text-stellar-black max-w-3xl mx-auto mb-8 font-body">
               Crea y reclama NFTs de asistencia a eventos en la blockchain de Stellar. 
               Prueba de que estuviste ahí, para siempre en la blockchain.
             </Text>
-            {/* TL;DR Summary */}
-            <div className="bg-stellar-warm-grey/30 rounded-lg p-4 max-w-2xl mx-auto mb-8">
-              <Text as="p" size="sm" className="text-stellar-black font-body">
-                <span className="font-semibold">TL;DR:</span> Conecta tu wallet, crea eventos o reclama SPOTs de eventos a los que asistas. 
-                Todo está en la blockchain de Stellar, inmutable y verificable.
-              </Text>
-            </div>
 
-            {/* CTA Buttons - Stellar Gold for primary action */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            {/* CTA Buttons - Modern pill-shaped buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
               <Button
                 onClick={() => navigate("/mint")}
                 variant="primary"
                 size="lg"
-                className="bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold px-8 py-3 border-2 border-stellar-black/10"
+                className="bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full px-8 py-3 shadow-md hover:shadow-lg transition-all"
               >
                 ⚡ Reclamar SPOT
               </Button>
@@ -96,7 +91,7 @@ const Home: React.FC = () => {
                 onClick={() => navigate("/create-event")}
                 variant="secondary"
                 size="lg"
-                className="bg-stellar-lilac text-stellar-black hover:bg-lilac-600 font-semibold px-8 py-3"
+                className="bg-stellar-lilac text-stellar-black hover:bg-stellar-lilac/80 font-semibold rounded-full px-8 py-3 shadow-md hover:shadow-lg transition-all"
               >
                 ➕ Crear Evento
               </Button>
@@ -105,7 +100,7 @@ const Home: React.FC = () => {
                   onClick={() => navigate("/profile")}
                   variant="tertiary"
                   size="lg"
-                  className="border-2 border-stellar-teal/30 text-stellar-teal hover:bg-stellar-teal/10 font-semibold px-8 py-3"
+                  className="bg-stellar-white border-2 border-stellar-black/10 text-stellar-black hover:bg-stellar-black/5 font-medium rounded-full px-8 py-3 shadow-sm hover:shadow-md transition-all"
                 >
                   👤 Mis SPOTs
                 </Button>
@@ -218,7 +213,7 @@ const Home: React.FC = () => {
                 onClick={() => navigate("/mint")}
                 variant="primary"
                 size="lg"
-                className="bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold"
+                className="bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full px-8 py-3 shadow-md hover:shadow-lg transition-all"
               >
                 Reclamar mi Primer SPOT
               </Button>
@@ -239,7 +234,7 @@ const Home: React.FC = () => {
                 onClick={() => navigate("/profile")}
                 variant="primary"
                 size="lg"
-                className="bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold"
+                className="bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full px-8 py-3 shadow-md hover:shadow-lg transition-all"
               >
                 Conectar Wallet
               </Button>

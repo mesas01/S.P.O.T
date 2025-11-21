@@ -23,12 +23,6 @@ export const WalletButton = () => {
         opacity: isPending ? 0.6 : 1,
       }}
     >
-      {/* Balance - hidden on mobile, shown on tablet+ */}
-      <Text as="div" size="sm" className="hidden sm:block whitespace-nowrap">
-        <span className="hidden md:inline">Wallet Balance: </span>
-        {balances?.xlm?.balance ?? "-"} XLM
-      </Text>
-
       <div id="modalContainer">
         <Modal
           visible={showDisconnectModal}

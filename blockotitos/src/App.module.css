@@ -1,0 +1,14 @@
+/* Ensure header doesn't overlap mobile menu */
+[data-stellar-header] {
+  position: relative;
+  z-index: 30;
+}
+
+/* Mobile menu should be above everything */
+.mobile-menu-overlay {
+  z-index: 90;
+}
+
+.mobile-menu-sidebar {
+  z-index: 100;
+}

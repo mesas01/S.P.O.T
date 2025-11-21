@@ -44,14 +44,14 @@ const MobileMenu: React.FC = () => {
       {/* Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-[90] lg:hidden"
           onClick={closeMenu}
         />
       )}
 
       {/* Sidebar Menu */}
       <div
-        className={`fixed top-0 right-0 h-full w-80 bg-stellar-white/95 backdrop-blur-md shadow-2xl z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${
+        className={`fixed top-0 right-0 h-full w-80 bg-stellar-white/95 backdrop-blur-md shadow-2xl z-[100] transform transition-transform duration-300 ease-in-out lg:hidden ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -99,14 +99,34 @@ const MobileMenu: React.FC = () => {
             >
               {({ isActive }) => (
                 <div
-                  className={`flex items-center gap-3 p-4 rounded-xl transition-all duration-200 ${
+                  className={`flex items-center gap-3 p-4 rounded-full transition-all duration-200 ${
                     isActive
-                      ? "bg-stellar-gold text-stellar-black"
+                      ? "bg-stellar-gold text-stellar-black shadow-md"
                       : "bg-stellar-warm-grey/30 hover:bg-stellar-gold/20 text-stellar-black"
                   }`}
                 >
                   ⚡
-                  <span className="font-medium">Reclamar SPOT</span>
+                  <span className="font-semibold">Reclamar SPOT</span>
+                </div>
+              )}
+            </NavLink>
+
+            {/* My Events Link */}
+            <NavLink
+              to="/my-events"
+              className="no-underline"
+              onClick={closeMenu}
+            >
+              {({ isActive }) => (
+                <div
+                  className={`flex items-center gap-3 p-4 rounded-full transition-all duration-200 ${
+                    isActive
+                      ? "bg-stellar-lilac/30 text-stellar-black shadow-md"
+                      : "bg-stellar-warm-grey/30 hover:bg-stellar-lilac/10 text-stellar-black"
+                  }`}
+                >
+                  📅
+                  <span className="font-semibold">Mis Eventos</span>
                 </div>
               )}
             </NavLink>
@@ -119,14 +139,14 @@ const MobileMenu: React.FC = () => {
             >
               {({ isActive }) => (
                 <div
-                  className={`flex items-center gap-3 p-4 rounded-xl transition-all duration-200 ${
+                  className={`flex items-center gap-3 p-4 rounded-full transition-all duration-200 ${
                     isActive
-                      ? "bg-stellar-lilac/30 text-stellar-black"
+                      ? "bg-stellar-lilac/30 text-stellar-black shadow-md"
                       : "bg-stellar-warm-grey/30 hover:bg-stellar-lilac/10 text-stellar-black"
                   }`}
                 >
                   ➕
-                  <span className="font-medium">Crear Evento</span>
+                  <span className="font-semibold">Crear Evento</span>
                 </div>
               )}
             </NavLink>
@@ -139,14 +159,14 @@ const MobileMenu: React.FC = () => {
             >
               {({ isActive }) => (
                 <div
-                  className={`flex items-center gap-3 p-4 rounded-xl transition-all duration-200 ${
+                  className={`flex items-center gap-3 p-4 rounded-full transition-all duration-200 ${
                     isActive
-                      ? "bg-stellar-lilac/30 text-stellar-black"
+                      ? "bg-stellar-lilac/30 text-stellar-black shadow-md"
                       : "bg-stellar-warm-grey/30 hover:bg-stellar-lilac/10 text-stellar-black"
                   }`}
                 >
                   👤
-                  <span className="font-medium">Mi Perfil</span>
+                  <span className="font-semibold">Mi Perfil</span>
                 </div>
               )}
             </NavLink>

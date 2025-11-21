@@ -138,10 +138,6 @@ const Mint: React.FC = () => {
         <div className="max-w-md mx-auto">
           {/* Header */}
           <div className="mb-8 text-center">
-            {/* TL;DR - Stellar Brand Manual */}
-            <Text as="div" size="sm" className="text-stellar-teal mb-2 font-medium uppercase tracking-wider">
-              TL;DR
-            </Text>
             <Button
               variant="tertiary"
               size="sm"
@@ -156,12 +152,6 @@ const Mint: React.FC = () => {
             <Text as="p" size="md" className="text-stellar-black font-subhead italic">
               Elige un método para reclamar tu SPOT
             </Text>
-            <div className="bg-stellar-warm-grey/30 rounded-lg p-3 mt-4">
-              <Text as="p" size="sm" className="text-stellar-black font-body">
-                <span className="font-semibold">TL;DR:</span> Selecciona cómo quieres reclamar tu SPOT (QR, Link, Código, etc.) 
-                y sigue las instrucciones en pantalla.
-              </Text>
-            </div>
           </div>
 
           {/* Methods Grid */}
@@ -296,7 +286,7 @@ const Mint: React.FC = () => {
                     variant="primary"
                     size="lg"
                     disabled={isProcessing}
-                    className="w-full bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold"
+                    className="w-full bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3 shadow-md hover:shadow-lg transition-all"
                   >
                     {isProcessing ? "Procesando..." : "Abrir Cámara"}
                   </Button>
@@ -322,7 +312,7 @@ const Mint: React.FC = () => {
                     variant="primary"
                     size="lg"
                     disabled={isProcessing || !linkValue.trim()}
-                    className="w-full bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold"
+                    className="w-full bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3 shadow-md hover:shadow-lg transition-all"
                   >
                     {isProcessing ? "Procesando..." : "Reclamar SPOT"}
                   </Button>
@@ -348,7 +338,7 @@ const Mint: React.FC = () => {
                     variant="primary"
                     size="lg"
                     disabled={isProcessing || !codeValue.trim()}
-                    className="w-full bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold"
+                    className="w-full bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3 shadow-md hover:shadow-lg transition-all"
                   >
                     {isProcessing ? "Procesando..." : "Reclamar SPOT"}
                   </Button>
@@ -365,7 +355,7 @@ const Mint: React.FC = () => {
                     variant="primary"
                     size="lg"
                     disabled={isProcessing}
-                    className="w-full bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold"
+                    className="w-full bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3 shadow-md hover:shadow-lg transition-all"
                   >
                     {isProcessing ? "Procesando..." : "Verificar Ubicación"}
                   </Button>
