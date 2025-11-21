@@ -941,6 +941,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "poap"
+version = "0.0.1"
+dependencies = [
+ "soroban-sdk",
+ "stellar-access",
+ "stellar-macros",
+ "stellar-tokens",
+]
+
+[[package]]
 name = "powerfmt"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
