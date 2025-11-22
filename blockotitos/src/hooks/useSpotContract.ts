@@ -1,7 +1,5 @@
 import { useMemo } from "react";
 import { Client } from "@stellar/stellar-sdk/contract";
-import { Server } from "@stellar/stellar-sdk/rpc";
-import { network } from "../contracts/util";
 
 const DEFAULT_SPOT_CONTRACT_ID =
   "CC3XATHZKTV7WGEBR337JAH3UTAMQTK7VPPSDSAKHA4KGVOCJPF6P3VF";
@@ -30,17 +28,10 @@ export const useSpotContract = (contractId?: string) => {
     }
 
     try {
-      const server = new Server(network.rpcUrl, {
-        allowHttp: new URL(network.rpcUrl).hostname === "localhost",
-      });
-      const client = new Client({
-        contractId: id,
-        networkPassphrase: network.passphrase,
-        rpcUrl: network.rpcUrl,
-        allowHttp: new URL(network.rpcUrl).hostname === "localhost",
-      }, server);
-      
-      return client;
+      // Note: Client requires a Spec which is generated from compiled contracts
+      // For generic contract access, return null and use backend API instead
+      // This hook is kept for compatibility but should use backend endpoints
+      return null;
     } catch (error) {
       console.error("Error creating SPOT contract client:", error);
       return null;
@@ -61,17 +52,9 @@ export const useFactoryContract = (contractId?: string) => {
     }
 
     try {
-      const server = new Server(network.rpcUrl, {
-        allowHttp: new URL(network.rpcUrl).hostname === "localhost",
-      });
-      const client = new Client({
-        contractId: id,
-        networkPassphrase: network.passphrase,
-        rpcUrl: network.rpcUrl,
-        allowHttp: new URL(network.rpcUrl).hostname === "localhost",
-      }, server);
-      
-      return client;
+      // Note: Client requires a Spec which is generated from compiled contracts
+      // For generic contract access, return null and use backend API instead
+      return null;
     } catch (error) {
       console.error("Error creating Factory contract client:", error);
       return null;
@@ -89,16 +72,9 @@ export const useEventContract = (contractId: string) => {
     }
 
     try {
-      const server = new Server(network.rpcUrl, {
-        allowHttp: new URL(network.rpcUrl).hostname === "localhost",
-      });
-      const client = new Client({
-        contractId: contractId,
-        networkPassphrase: network.passphrase,
-        rpcUrl: network.rpcUrl,
-      }, server);
-      
-      return client;
+      // Note: Client requires a Spec which is generated from compiled contracts
+      // For generic contract access, return null and use backend API instead
+      return null;
     } catch (error) {
       console.error("Error creating Event contract client:", error);
       return null;
@@ -115,14 +91,9 @@ export const createContractClient = (contractId: string): Client | null => {
   }
 
   try {
-    const server = new Server(network.rpcUrl, {
-      allowHttp: new URL(network.rpcUrl).hostname === "localhost",
-    });
-    return new Client({
-      contractId: contractId,
-      networkPassphrase: network.passphrase,
-      rpcUrl: network.rpcUrl,
-    }, server);
+    // Note: Client requires a Spec which is generated from compiled contracts
+    // For generic contract access, return null and use backend API instead
+    return null;
   } catch (error) {
     console.error("Error creating contract client:", error);
     return null;
