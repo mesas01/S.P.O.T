@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { Client } from "@stellar/stellar-sdk/contract";
+import { Server } from "@stellar/stellar-sdk/rpc";
 import { network } from "../contracts/util";
 
 const DEFAULT_SPOT_CONTRACT_ID =
@@ -29,12 +30,15 @@ export const useSpotContract = (contractId?: string) => {
     }
 
     try {
+      const server = new Server(network.rpcUrl, {
+        allowHttp: new URL(network.rpcUrl).hostname === "localhost",
+      });
       const client = new Client({
         contractId: id,
         networkPassphrase: network.passphrase,
         rpcUrl: network.rpcUrl,
         allowHttp: new URL(network.rpcUrl).hostname === "localhost",
-      });
+      }, server);
       
       return client;
     } catch (error) {
@@ -57,12 +61,15 @@ export const useFactoryContract = (contractId?: string) => {
     }
 
     try {
+      const server = new Server(network.rpcUrl, {
+        allowHttp: new URL(network.rpcUrl).hostname === "localhost",
+      });
       const client = new Client({
         contractId: id,
         networkPassphrase: network.passphrase,
         rpcUrl: network.rpcUrl,
         allowHttp: new URL(network.rpcUrl).hostname === "localhost",
-      });
+      }, server);
       
       return client;
     } catch (error) {
@@ -82,11 +89,14 @@ export const useEventContract = (contractId: string) => {
     }
 
     try {
+      const server = new Server(network.rpcUrl, {
+        allowHttp: new URL(network.rpcUrl).hostname === "localhost",
+      });
       const client = new Client({
         contractId: contractId,
         networkPassphrase: network.passphrase,
         rpcUrl: network.rpcUrl,
-      });
+      }, server);
       
       return client;
     } catch (error) {
@@ -105,11 +115,14 @@ export const createContractClient = (contractId: string): Client | null => {
   }
 
   try {
+    const server = new Server(network.rpcUrl, {
+      allowHttp: new URL(network.rpcUrl).hostname === "localhost",
+    });
     return new Client({
       contractId: contractId,
       networkPassphrase: network.passphrase,
       rpcUrl: network.rpcUrl,
-    });
+    }, server);
   } catch (error) {
     console.error("Error creating contract client:", error);
     return null;

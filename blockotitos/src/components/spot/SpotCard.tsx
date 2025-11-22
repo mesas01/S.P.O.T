@@ -2,7 +2,7 @@ import React from "react";
 import { Text } from "@stellar/design-system";
 
 export interface SpotData {
-  id: number;
+  id: string | number;
   name: string;
   date: string;
   image: string;
