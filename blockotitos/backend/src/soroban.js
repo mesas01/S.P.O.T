@@ -296,6 +296,51 @@ export async function claimPoap({
   });
 }
 
+export async function hasClaimedEvent({
+  rpcUrl,
+  networkPassphrase,
+  contractId,
+  adminSecret,
+  claimer,
+  eventId,
+}) {
+  const result = await simulateContractCall({
+    rpcUrl,
+    networkPassphrase,
+    signerSecret: adminSecret,
+    contractId,
+    method: "has_claimed",
+    args: [
+      nativeToScVal(eventId, { type: "u32" }),
+      Address.fromString(claimer).toScVal(),
+    ],
+  });
+  return Boolean(result);
+}
+
+export async function getUserPoapTokenId({
+  rpcUrl,
+  networkPassphrase,
+  contractId,
+  adminSecret,
+  claimer,
+  eventId,
+}) {
+  const tokenId = await simulateContractCall({
+    rpcUrl,
+    networkPassphrase,
+    signerSecret: adminSecret,
+    contractId,
+    method: "get_user_poap_for_event",
+    args: [
+      nativeToScVal(eventId, { type: "u32" }),
+      Address.fromString(claimer).toScVal(),
+    ],
+  });
+  const numericTokenId = Number(tokenId);
+  return Number.isFinite(numericTokenId) ? numericTokenId : undefined;
+}
+
 export async function getAdminAddress({
   rpcUrl,
   networkPassphrase,

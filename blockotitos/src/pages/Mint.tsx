@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Layout, Text, Button, Input } from "@stellar/design-system";
 import { useWallet } from "../hooks/useWallet";
 import { useNavigate } from "react-router-dom";
@@ -21,32 +21,47 @@ const Mint: React.FC = () => {
   const [linkValue, setLinkValue] = useState("");
   const [codeValue, setCodeValue] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const claimPersistControllerRef = useRef<AbortController | null>(null);
 
   const handleMethodSelect = (method: string) => {
     setActiveMethod(method);
   };
 
+  useEffect(() => {
+    return () => {
+      claimPersistControllerRef.current?.abort();
+    };
+  }, []);
+
   const persistClaimedSpotLocally = async (eventId: number) => {
     if (!address) return;
 
+    claimPersistControllerRef.current?.abort();
+    const controller = new AbortController();
+    claimPersistControllerRef.current = controller;
+
     try {
-      const events = await fetchOnchainEvents();
+      const events = await fetchOnchainEvents({ signal: controller.signal });
       const match = events.find((event) => event.eventId === eventId);
       if (match) {
         upsertClaimedSpot(address, mapEventToClaimedSpot(match));
         return;
       }
     } catch (error) {
+      if (
+        error instanceof Error &&
+        (error.name === "AbortError" || /aborted/i.test(error.message))
+      ) {
+        console.info("Persistencia del claim cancelada (abortada).");
+        return;
+      }
       console.warn("No se pudo obtener metadata del evento:", error);
+      return;
+    } finally {
+      if (claimPersistControllerRef.current === controller) {
+        claimPersistControllerRef.current = null;
+      }
     }
-
-    upsertClaimedSpot(address, {
-      eventId,
-      name: `SPOT #${eventId}`,
-      date: new Date().toISOString(),
-      image: "🎯",
-      color: "from-stellar-teal/20 to-stellar-teal/40",
-    });
   };
 
   const extractEventIdFromLink = (link: string): number | null => {

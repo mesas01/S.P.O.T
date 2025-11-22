@@ -115,12 +115,20 @@ const MyEvents: React.FC = () => {
   const {
     data: onchainEvents = [],
     isLoading: isLoadingOnchainEvents,
+    isFetching: isFetchingOnchainEvents,
     error: onchainError,
     refetch: refetchOnchainEvents,
   } = useQuery({
     queryKey: ["onchain-events", address],
-    queryFn: () => fetchOnchainEvents(address || ""),
+    queryFn: ({ signal }) =>
+      fetchOnchainEvents(
+        address
+          ? { creator: address, signal }
+          : { signal },
+      ),
     enabled: !!address,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * attempt, 4000),
     refetchInterval: 15000,
     staleTime: 15000,
   });
@@ -179,13 +187,39 @@ const MyEvents: React.FC = () => {
   }, [sortedContractEvents, sortedLocalEvents]);
   const isLoadingEvents =
     isLoadingLocalEvents || (isConnected && isLoadingOnchainEvents);
-  const eventsError = onchainError ? (onchainError as Error) : null;
+  const eventsError = useMemo(() => {
+    if (!onchainError) {
+      return null;
+    }
+    const error = onchainError as Error;
+    if (
+      error.name === "AbortError" ||
+      /aborted/i.test(error.message || "")
+    ) {
+      return null;
+    }
+    return error;
+  }, [onchainError]);
+  const eventsErrorMessage = useMemo(() => {
+    if (!eventsError) {
+      return "";
+    }
+    if (/Failed to fetch|NetworkError/i.test(eventsError.message || "")) {
+      return "No pudimos conectar con el backend. Verifica que esté encendido e inténtalo nuevamente.";
+    }
+    if (/timeout/i.test(eventsError.message || "")) {
+      return "El backend tardó demasiado en responder. Reintenta en unos segundos.";
+    }
+    return eventsError.message || "Ocurrió un error inesperado.";
+  }, [eventsError]);
   const totalEvents = eventsToDisplay.length;
   const eventsSummaryLabel = isLoadingEvents
     ? "Cargando..."
     : totalEvents === 0
     ? "0 eventos creados"
     : `${totalEvents} ${totalEvents === 1 ? "evento creado" : "eventos creados"}`;
+  const isSyncingOnchain =
+    !isLoadingOnchainEvents && isFetchingOnchainEvents;
 
   const handleRetry = () => {
     loadLocalEvents();
@@ -454,8 +488,13 @@ const MyEvents: React.FC = () => {
                       <Text as="h1" size="xl" className="text-3xl md:text-4xl font-headline text-stellar-black mb-2">
                         Mis Eventos
                       </Text>
-                      <Text as="p" size="md" className="text-stellar-black/70 font-body">
-                        {eventsSummaryLabel}
+                      <Text as="p" size="md" className="text-stellar-black/70 font-body flex items-center gap-2">
+                        <span>{eventsSummaryLabel}</span>
+                        {isSyncingOnchain && (
+                          <span className="text-xs text-stellar-black/50 animate-pulse">
+                            Sincronizando...
+                          </span>
+                        )}
                       </Text>
                     </div>
                     <Button
@@ -509,7 +548,7 @@ const MyEvents: React.FC = () => {
                   No pudimos cargar tus eventos
                 </Text>
                 <Text as="p" size="md" className="text-stellar-black/70 mb-8 font-body max-w-xl mx-auto">
-                  {eventsError instanceof Error ? eventsError.message : "Intenta nuevamente en unos segundos."}
+                  {eventsErrorMessage || "Intenta nuevamente en unos segundos."}
                 </Text>
                 <Button
                   variant="primary"

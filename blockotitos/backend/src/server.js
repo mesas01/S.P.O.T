@@ -16,6 +16,8 @@ import {
   getAllEventIds,
   getEventDetails,
   getMintedCount,
+  hasClaimedEvent,
+  getUserPoapTokenId,
 } from "./soroban.js";
 
 dotenv.config({ path: process.env.ENV_PATH || undefined });
@@ -628,6 +630,107 @@ app.get("/events/onchain", async (req, res) => {
     res.json({ events });
   } catch (error) {
     console.error("Error fetching on-chain events:", error);
+    res.status(500).json({ error: error.message || String(error) });
+  }
+});
+
+app.get("/claimers/:claimer/events", async (req, res) => {
+  const claimer = (req.params.claimer || "").toString().trim();
+
+  if (!claimer) {
+    return res.status(400).json({ error: "claimer is required" });
+  }
+
+  if (isMock) {
+    return res.json({ events: [] });
+  }
+
+  if (!ADMIN_SECRET) {
+    return res.status(500).json({ error: "Admin credentials not configured" });
+  }
+
+  try {
+    const eventIds = await getAllEventIds({
+      rpcUrl: RPC_URL,
+      networkPassphrase: NETWORK_PASSPHRASE,
+      contractId: CONTRACT_ID,
+      adminSecret: ADMIN_SECRET,
+    });
+
+    const claimedEvents = [];
+
+    for (const eventId of eventIds) {
+      try {
+        const hasClaimed = await hasClaimedEvent({
+          rpcUrl: RPC_URL,
+          networkPassphrase: NETWORK_PASSPHRASE,
+          contractId: CONTRACT_ID,
+          adminSecret: ADMIN_SECRET,
+          claimer,
+          eventId,
+        });
+
+        if (!hasClaimed) {
+          continue;
+        }
+
+        const [details, mintedCount, tokenId] = await Promise.all([
+          getEventDetails({
+            rpcUrl: RPC_URL,
+            networkPassphrase: NETWORK_PASSPHRASE,
+            contractId: CONTRACT_ID,
+            adminSecret: ADMIN_SECRET,
+            eventId,
+          }),
+          getMintedCount({
+            rpcUrl: RPC_URL,
+            networkPassphrase: NETWORK_PASSPHRASE,
+            contractId: CONTRACT_ID,
+            adminSecret: ADMIN_SECRET,
+            eventId,
+          }),
+          getUserPoapTokenId({
+            rpcUrl: RPC_URL,
+            networkPassphrase: NETWORK_PASSPHRASE,
+            contractId: CONTRACT_ID,
+            adminSecret: ADMIN_SECRET,
+            claimer,
+            eventId,
+          }).catch((tokenError) => {
+            console.warn(
+              `Unable to fetch tokenId for event ${eventId} and claimer ${claimer}:`,
+              tokenError.message || tokenError,
+            );
+            return undefined;
+          }),
+        ]);
+
+        claimedEvents.push({
+          eventId: details.eventId,
+          name: details.eventName,
+          date: details.eventDate,
+          location: details.location,
+          description: details.description,
+          maxSpots: details.maxPoaps,
+          claimStart: details.claimStart,
+          claimEnd: details.claimEnd,
+          metadataUri: details.metadataUri,
+          imageUrl: details.imageUrl,
+          creator: details.creator,
+          mintedCount,
+          tokenId,
+        });
+      } catch (eventError) {
+        console.error(
+          `Failed to resolve claimed event ${eventId} for claimer ${claimer}:`,
+          eventError,
+        );
+      }
+    }
+
+    res.json({ events: claimedEvents });
+  } catch (error) {
+    console.error("Error fetching claimed events:", error);
     res.status(500).json({ error: error.message || String(error) });
   }
 });

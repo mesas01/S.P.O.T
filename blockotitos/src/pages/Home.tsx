@@ -9,8 +9,11 @@ import TldrCard from "../components/layout/TldrCard";
 import ConnectAccount from "../components/ConnectAccount";
 import {
   getClaimedSpots,
+  mapEventToClaimedSpot,
   mapStoredSpotToSpotData,
+  upsertClaimedSpot,
 } from "../utils/claimedSpots";
+import { fetchClaimedEventsByClaimer } from "../util/backend";
 
 const mockSpots: SpotData[] = [
   {
@@ -65,21 +68,58 @@ const Home: React.FC = () => {
       return;
     }
 
-    const loadClaimedSpots = () => {
+    let disposed = false;
+    const controller = new AbortController();
+
+    const loadClaimedSpotsFromStorage = () => {
       const stored = getClaimedSpots(address).map(mapStoredSpotToSpotData);
       const sorted = [...stored].sort(
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
       );
-      setClaimedSpots(sorted);
+      if (!disposed) {
+        setClaimedSpots(sorted);
+      }
     };
 
-    loadClaimedSpots();
+    const syncSpotsFromBackend = async () => {
+      try {
+        const claimedEvents = await fetchClaimedEventsByClaimer(
+          address,
+          controller.signal,
+        );
+        if (!claimedEvents?.length) {
+          return;
+        }
 
-    const handleUpdate = () => loadClaimedSpots();
+        const existing = getClaimedSpots(address);
+        const claimedAtByEventId = new Map(
+          existing.map((spot) => [spot.eventId, spot.claimedAt]),
+        );
+
+        claimedEvents.forEach((event) => {
+          const claimedAt = claimedAtByEventId.get(event.eventId);
+          upsertClaimedSpot(address, {
+            ...mapEventToClaimedSpot(event),
+            claimedAt,
+          });
+        });
+      } catch (error) {
+        if (!disposed) {
+          console.warn("No se pudieron sincronizar tus SPOTs on-chain:", error);
+        }
+      }
+    };
+
+    loadClaimedSpotsFromStorage();
+    void syncSpotsFromBackend();
+
+    const handleUpdate = () => loadClaimedSpotsFromStorage();
     window.addEventListener("storage", handleUpdate);
     window.addEventListener("claimedSpotsUpdated", handleUpdate);
 
     return () => {
+      disposed = true;
+      controller.abort();
       window.removeEventListener("storage", handleUpdate);
       window.removeEventListener("claimedSpotsUpdated", handleUpdate);
     };
