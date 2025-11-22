@@ -2,7 +2,7 @@
 
 Servicio Express que actúa como **operador administrador** del contrato `spot`.
 Su objetivo es exponer endpoints REST para aprobar o revocar organizadores una vez
-que hayan pagado off-chain.
+que hayan pagado off-chain...
 
 ## Requisitos
 
