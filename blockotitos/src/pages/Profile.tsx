@@ -18,6 +18,36 @@ const Profile: React.FC = () => {
   // Obtener balance de XLM
   const xlmBalance = balances?.xlm?.balance || '0';
 
+  // Formatear balance sin redondear - preservar todos los decimales significativos
+  const formatBalance = (balance: string): string => {
+    if (!balance || balance === '0') return '0';
+    
+    // Remover separadores de miles si existen (ej: "1,000.5" -> "1000.5")
+    const cleanBalance = balance.replace(/,/g, '').trim();
+    
+    // Si ya tiene formato decimal, preservarlo tal cual (hasta 7 decimales)
+    const decimalIndex = cleanBalance.indexOf('.');
+    if (decimalIndex !== -1) {
+      // Tiene decimales - preservar todos los que tenga (hasta 7)
+      const integerPart = cleanBalance.substring(0, decimalIndex);
+      const decimalPart = cleanBalance.substring(decimalIndex + 1);
+      // Limitar a 7 decimales (máximo en Stellar) pero no truncar si tiene menos
+      const preservedDecimals = decimalPart.length > 7 
+        ? decimalPart.substring(0, 7) 
+        : decimalPart;
+      return `${integerPart}.${preservedDecimals}`;
+    }
+    
+    // Si no tiene decimales, verificar si es un número válido y mostrarlo
+    const numBalance = parseFloat(cleanBalance);
+    if (isNaN(numBalance)) return balance;
+    
+    // Si es un entero, mostrarlo sin decimales
+    return numBalance.toString();
+  };
+
+  const formattedBalance = formatBalance(xlmBalance);
+
   return (
     <Layout.Content>
       <Layout.Inset>
@@ -108,7 +138,7 @@ const Profile: React.FC = () => {
                         XLM
                       </Text>
                       <Text as="p" size="lg" className="text-stellar-black font-headline text-2xl">
-                        {parseFloat(xlmBalance).toFixed(2)} XLM
+                        {formattedBalance} XLM
                       </Text>
                     </div>
                   </div>

@@ -2,87 +2,97 @@ import React from "react";
 import { Text } from "@stellar/design-system";
 
 export interface SpotData {
-  id: number | string;
+  id: number;
   name: string;
   date: string;
-  image: string; // Puede ser emoji, URL de imagen, o ruta relativa a /images/events/
-  color?: string;
-  eventId?: number | string;
+  image: string;
+  color: string;
   isPlaceholder?: boolean;
 }
 
 interface SpotCardProps {
   spot: SpotData;
-  onClick?: () => void;
+  onClick?: (spot: SpotData) => void;
 }
 
 const SpotCard: React.FC<SpotCardProps> = ({ spot, onClick }) => {
-  const formattedDate = new Date(spot.date).toLocaleDateString('es-ES', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  const handleClick = () => {
+    if (onClick) {
+      onClick(spot);
+    }
+  };
 
-  const colorClass = spot.color || "from-stellar-lilac/20 to-stellar-lilac/40";
-  const displayId = (spot.eventId ?? spot.id)?.toString();
-  const badgeId = displayId ? displayId.padStart(4, '0') : '----';
+  // Format date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("es-ES", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
 
   return (
     <div
-      onClick={onClick}
-      className={`
-        bg-stellar-white rounded-2xl shadow-lg overflow-hidden border-2
-        border-stellar-lilac/20 hover:border-stellar-gold
-        transition-all duration-300 hover:scale-105 hover:shadow-2xl
-        cursor-pointer
-      `}
+      onClick={handleClick}
+      className="group relative rounded-2xl overflow-hidden border-2 border-stellar-lilac/20 bg-stellar-white shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer hover:-translate-y-2"
     >
-      {/* Badge Circle */}
-      <div className={`bg-gradient-to-br ${colorClass} p-8 flex items-center justify-center`}>
-        <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center border-4 border-white/50 shadow-inner overflow-hidden">
-          {spot.image.startsWith('http') || spot.image.startsWith('/images/') ? (
-            <img 
-              src={spot.image.startsWith('/') ? spot.image : spot.image} 
-              alt={spot.name}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                // Si falla la imagen, mostrar emoji por defecto
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                if (target.parentElement) {
-                  const fallback = document.createElement('span');
-                  fallback.className = 'text-5xl md:text-6xl';
-                  fallback.textContent = '🎯';
-                  target.parentElement.appendChild(fallback);
-                }
-              }}
-            />
-          ) : (
-            <span className="text-5xl md:text-6xl">{spot.image || "🎯"}</span>
-          )}
+      {/* Decorative glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-stellar-gold/0 via-transparent to-stellar-lilac/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+      {/* Image Section - Más pequeña */}
+      <div className="relative h-32 overflow-hidden bg-gradient-to-br from-stellar-lilac/10 to-stellar-gold/10">
+        {/* Background glow */}
+        <div className={`absolute inset-0 bg-gradient-to-br ${spot.color} opacity-20 group-hover:opacity-30 transition-opacity duration-300`} />
+        
+        <img
+          src={spot.image}
+          alt={spot.name}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          onError={(e) => {
+            e.currentTarget.src = "https://via.placeholder.com/400x300?text=SPOT";
+          }}
+        />
+
+        {/* Placeholder badge */}
+        {spot.isPlaceholder && (
+          <div className="absolute top-2 right-2 px-2 py-1 bg-stellar-gold/90 backdrop-blur-sm rounded-full">
+            <Text as="span" size="xs" className="text-xs font-bold text-stellar-black uppercase">
+              Preview
+            </Text>
+          </div>
+        )}
+
+        {/* Hover overlay */}
+        <div className="absolute inset-0 bg-stellar-black/0 group-hover:bg-stellar-black/10 transition-colors duration-300" />
+      </div>
+
+      {/* Content Section - Compacta */}
+      <div className="p-4 relative z-10">
+        <Text
+          as="h3"
+          size="sm"
+          className="text-base font-bold text-stellar-black mb-2 line-clamp-2 group-hover:text-stellar-gold transition-colors duration-300 uppercase"
+        >
+          {spot.name}
+        </Text>
+
+        <div className="flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-stellar-teal" />
+          <Text
+            as="p"
+            size="xs"
+            className="text-xs text-stellar-black/60 font-medium"
+          >
+            {formatDate(spot.date)}
+          </Text>
         </div>
       </div>
 
-      {/* Info */}
-      <div className="p-4 md:p-6">
-        <Text as="h3" size="md" className="text-lg md:text-xl font-subhead text-stellar-black mb-2 line-clamp-2">
-          {spot.name}
-        </Text>
-        <div className="flex items-center text-stellar-black/70 mb-4">
-          <span className="text-sm font-body">📅 {formattedDate}</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-stellar-lilac bg-stellar-lilac/10 px-3 py-1 rounded-full font-body">
-            Verified
-          </span>
-          <span className="text-xs text-stellar-black/50 font-body">
-            #{badgeId}
-          </span>
-        </div>
-      </div>
+      {/* Bottom accent line */}
+      <div className="h-1 bg-gradient-to-r from-stellar-gold via-stellar-lilac to-stellar-teal transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
     </div>
   );
 };
 
 export default SpotCard;
-

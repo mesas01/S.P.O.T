@@ -1,6 +1,6 @@
 import React from "react";
 
-// Define gap values (you may need to adjust these based on your design system)
+// Define gap values
 const gapValues = {
   xs: "0.25rem", // 4px
   sm: "0.5rem", // 8px
@@ -47,6 +47,7 @@ export const Box = ({
     alignItems: align,
     gap: gap === "custom" ? customValue : gapValues[gap],
     ...(wrap ? { flexWrap: wrap } : {}),
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
     ...style,
   };
 

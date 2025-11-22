@@ -10,112 +10,171 @@ import Profile from "./pages/Profile";
 import MyEvents from "./pages/MyEvents";
 
 const AppLayout: React.FC = () => (
-  <main className="min-h-screen flex flex-col bg-stellar-white">
-    <div className="bg-stellar-white/95 backdrop-blur-sm shadow-md border-b-2 border-stellar-lilac/20 relative z-30">
-      <Layout.Header
-        projectId="SPOT"
-        projectTitle="SPOT"
-        contentRight={
-        <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 flex-nowrap justify-end w-full lg:w-auto">
-          {/* Desktop Navigation - Show from md breakpoint (768px) */}
-          <nav className="hidden md:flex items-center gap-3 flex-shrink-0">
-            <NavLink to="/" className="no-underline">
-              {({ isActive }) => (
-                <Button
-                  variant="tertiary"
-                  size="md"
-                  className={`rounded-full px-5 py-2 font-medium transition-all ${isActive ? "bg-stellar-black/5 text-stellar-black font-semibold" : "text-stellar-black/70 hover:text-stellar-black hover:bg-stellar-black/5"}`}
-                >
-                  Mis SPOTs
-                </Button>
-              )}
-            </NavLink>
-            <NavLink to="/my-events" className="no-underline">
-              {({ isActive }) => (
-                <Button
-                  variant="tertiary"
-                  size="md"
-                  className={`rounded-full px-5 py-2 font-medium transition-all ${isActive ? "bg-stellar-black/5 text-stellar-black font-semibold" : "text-stellar-black/70 hover:text-stellar-black hover:bg-stellar-black/5"}`}
-                >
-                  Mis Eventos
-                </Button>
-              )}
-            </NavLink>
-            <NavLink to="/create-event" className="no-underline">
-              {({ isActive }) => (
-                <Button
-                  variant="secondary"
-                  size="md"
-                  className={`bg-stellar-lilac text-stellar-black hover:bg-stellar-lilac/80 rounded-full px-5 py-2 font-semibold shadow-sm hover:shadow-md transition-all ${isActive ? "opacity-75" : ""}`}
-                >
-                  Crear Evento
-                </Button>
-              )}
-            </NavLink>
-            <NavLink to="/mint" className="no-underline">
-              {({ isActive }) => (
-                <Button
-                  variant="primary"
-                  size="md"
-                  className={`bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full px-5 py-2 shadow-sm hover:shadow-md transition-all ${isActive ? "opacity-75" : ""}`}
-                >
-                  ⚡ Reclamar
-                </Button>
-              )}
-            </NavLink>
-          </nav>
-          
-          {/* Mobile/Tablet buttons - Show until md */}
-          <div className="md:hidden flex items-center gap-2">
-            <NavLink to="/mint" className="no-underline">
-              {({ isActive }) => (
-                <Button
-                  variant="primary"
-                  size="md"
-                  className={`bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full px-4 py-2 shadow-sm hover:shadow-md transition-all ${isActive ? "opacity-75" : ""}`}
-                >
-                  ⚡
-                </Button>
-              )}
-            </NavLink>
+  <main className="min-h-screen flex flex-col bg-stellar-white relative overflow-hidden">
+    {/* Background decorative elements - Global */}
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-stellar-lilac/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-stellar-gold/5 rounded-full blur-3xl" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-stellar-teal/5 rounded-full blur-3xl" />
+    </div>
+
+    {/* Header - Navbar ultra compacta y minimalista */}
+    <div className="relative z-30 bg-stellar-white/98 backdrop-blur-md shadow-sm border-b border-stellar-lilac/10">
+      {/* Decorative line at top - más delgada */}
+      <div className="h-px bg-gradient-to-r from-stellar-gold via-stellar-lilac to-stellar-teal opacity-60" />
+      
+      <div className="px-4 lg:px-6">
+        <div className="flex items-center justify-between h-14">
+          {/* Logo/Brand */}
+          <div className="flex items-center gap-2">
+            <img 
+              src="src\images\image.png"
+              alt="Soto"
+              className="w-6 h-6 object-contain"
+            />
+            <span className="text-lg font-bold text-stellar-black uppercase">SPOT</span>
           </div>
-          
-          {/* Profile Link - Always visible */}
-          <div className="flex-shrink-0">
-            <NavLink to="/profile" className="no-underline">
-              {({ isActive }) => (
-                <Button
-                  variant="tertiary"
-                  size="md"
-                  className={`rounded-full px-4 py-2 transition-all ${isActive ? "bg-stellar-black/5 text-stellar-black" : "text-stellar-black/70 hover:text-stellar-black hover:bg-stellar-black/5"}`}
-                >
-                  <span className="hidden sm:inline">👤 Perfil</span>
-                  <span className="sm:hidden">👤</span>
-                </Button>
-              )}
-            </NavLink>
-          </div>
-          {/* Desktop Wallet - Show from lg breakpoint (1024px) */}
-          <div className="hidden lg:block flex-shrink-0">
-            <ConnectAccount />
-          </div>
-          {/* Mobile Menu - Hide from lg breakpoint */}
-          <div className="md:hidden flex-shrink-0">
-            <MobileMenu />
+
+          {/* Navigation */}
+          <div className="flex items-center gap-1 sm:gap-2 lg:gap-6">
+            {/* Desktop Navigation - Solo texto con animaciones */}
+            <nav className="hidden md:flex items-center gap-6">
+              <NavLink to="/" className="no-underline group">
+                {({ isActive }) => (
+                  <span className={`relative text-sm font-semibold transition-colors duration-200 ${
+                    isActive ? "text-stellar-black" : "text-stellar-black/60 hover:text-stellar-black"
+                  }`}>
+                    Mis SPOTs
+                    {/* Underline animation */}
+                    <span className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-gold transition-all duration-300 ${
+                      isActive ? "w-full" : "w-0 group-hover:w-full"
+                    }`} />
+                  </span>
+                )}
+              </NavLink>
+              
+              <NavLink to="/my-events" className="no-underline group">
+                {({ isActive }) => (
+                  <span className={`relative text-sm font-semibold transition-colors duration-200 ${
+                    isActive ? "text-stellar-black" : "text-stellar-black/60 hover:text-stellar-black"
+                  }`}>
+                    Mis Eventos
+                    <span className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-lilac transition-all duration-300 ${
+                      isActive ? "w-full" : "w-0 group-hover:w-full"
+                    }`} />
+                  </span>
+                )}
+              </NavLink>
+              
+              <NavLink to="/create-event" className="no-underline group">
+                {({ isActive }) => (
+                  <span className={`relative text-sm font-bold transition-all duration-200 ${
+                    isActive 
+                      ? "text-stellar-lilac scale-105" 
+                      : "text-stellar-black/70 hover:text-stellar-lilac hover:scale-105"
+                  }`}>
+                    ➕ Crear Evento
+                    <span className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-lilac transition-all duration-300 ${
+                      isActive ? "w-full" : "w-0 group-hover:w-full"
+                    }`} />
+                  </span>
+                )}
+              </NavLink>
+              
+              <NavLink to="/mint" className="no-underline group">
+                {({ isActive }) => (
+                  <span className={`relative text-sm font-bold transition-all duration-200 ${
+                    isActive 
+                      ? "text-stellar-gold scale-110" 
+                      : "text-stellar-black/70 hover:text-stellar-gold hover:scale-110"
+                  }`}>
+                    <span className="inline-flex items-center gap-1">
+                      <span className="text-base">⚡</span> 
+                      <span>Reclamar</span>
+                    </span>
+                    {/* Glow effect on hover */}
+                    <span className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-gold transition-all duration-300 ${
+                      isActive ? "w-full shadow-[0_0_8px_rgba(255,200,69,0.8)]" : "w-0 group-hover:w-full group-hover:shadow-[0_0_8px_rgba(255,200,69,0.8)]"
+                    }`} />
+                  </span>
+                )}
+              </NavLink>
+            </nav>
+            
+            {/* Mobile Reclamar button */}
+            <div className="md:hidden">
+              <NavLink to="/mint" className="no-underline">
+                {({ isActive }) => (
+                  <span className={`text-xl transition-all duration-200 ${
+                    isActive 
+                      ? "opacity-100 scale-125 drop-shadow-[0_0_8px_rgba(255,200,69,0.8)]" 
+                      : "opacity-70 hover:opacity-100 hover:scale-125 hover:drop-shadow-[0_0_8px_rgba(255,200,69,0.8)]"
+                  }`}>
+                    ⚡
+                  </span>
+                )}
+              </NavLink>
+            </div>
+            
+            {/* Profile Link */}
+            <div className="hidden sm:block">
+              <NavLink to="/profile" className="no-underline group">
+                {({ isActive }) => (
+                  <span className={`relative text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
+                    isActive ? "text-stellar-black" : "text-stellar-black/60 hover:text-stellar-black"
+                  }`}>
+                    <span>👤</span>
+                    <span className="hidden lg:inline">Perfil</span>
+                    <span className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-teal transition-all duration-300 ${
+                      isActive ? "w-full" : "w-0 group-hover:w-full"
+                    }`} />
+                  </span>
+                )}
+              </NavLink>
+            </div>
+            
+            {/* Desktop Wallet */}
+            <div className="hidden lg:block">
+              <ConnectAccount />
+            </div>
+            
+            {/* Mobile Menu */}
+            <div className="md:hidden">
+              <MobileMenu />
+            </div>
           </div>
         </div>
-      }
-      />
+      </div>
     </div>
-    <div className="flex-1">
+
+    {/* Main Content */}
+    <div className="flex-1 relative z-10">
       <Outlet />
     </div>
-    <div className="bg-stellar-white/95 backdrop-blur-sm border-t-2 border-stellar-lilac/20 mt-auto py-4">
-      <Layout.Footer>
-        <span className="text-gray-600">
-          © {new Date().getFullYear()} SPOT. Stellar Proof of Togetherness.
+
+    {/* Footer - Compacto */}
+    <div className="relative z-30 bg-stellar-white/98 backdrop-blur-md border-t border-stellar-lilac/10 mt-auto">
+      {/* Decorative line at bottom */}
+      <div className="h-px bg-gradient-to-r from-stellar-teal via-stellar-lilac to-stellar-gold opacity-60" />
+      
+      <div className="py-3 text-center">
+        <div className="flex justify-center items-center gap-2 mb-1">
+          <img 
+            src="src\images\image.png"
+            alt="Soto"
+            className="w-5 h-5 object-contain"
+          />
+          <span className="text-stellar-black font-bold text-sm">SPOT</span>
+        </div>
+        <span className="text-stellar-black/50 text-xs">
+          © {new Date().getFullYear()} SPOT · Stellar Proof of Togetherness
         </span>
-      </Layout.Footer>
+        <div className="mt-1 flex justify-center gap-2 text-xs text-stellar-black/40">
+          <span>Powered by Stellar</span>
+          <span>•</span>
+          <span>Built with ❤️</span>
+        </div>
+      </div>
     </div>
   </main>
 );
