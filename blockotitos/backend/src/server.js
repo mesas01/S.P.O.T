@@ -4,6 +4,7 @@ import { Keypair } from "@stellar/stellar-sdk";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import cors from "cors";
 import {
   approveCreator,
   revokeCreatorApproval,
@@ -77,6 +78,11 @@ if (!isMock) {
 
 const app = express();
 app.use(express.json());
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || "*",
+  }),
+);
 
 app.use((err, _req, res, next) => {
   if (err instanceof SyntaxError && "body" in err) {

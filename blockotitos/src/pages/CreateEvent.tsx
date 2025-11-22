@@ -4,6 +4,7 @@ import { useWallet } from "../hooks/useWallet";
 import { useNavigate } from "react-router-dom";
 import { useNotification } from "../hooks/useNotification";
 import { saveLocalEvent } from "../utils/localEvents";
+import { createEventRequest } from "../util/backend";
 import TldrCard from "../components/layout/TldrCard";
 
 const CreateEvent: React.FC = () => {
@@ -35,6 +36,7 @@ const CreateEvent: React.FC = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [creatorSecret, setCreatorSecret] = useState("");
   const { showNotification } = useNotification();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -104,11 +106,28 @@ const CreateEvent: React.FC = () => {
       return;
     }
 
-    if (!formData.eventName || !formData.eventDate || !formData.location || !formData.description || !formData.maxSpots || !formData.claimStart || !formData.claimEnd) {
+    if (
+      !formData.eventName ||
+      !formData.eventDate ||
+      !formData.location ||
+      !formData.description ||
+      !formData.maxSpots ||
+      !formData.claimStart ||
+      !formData.claimEnd
+    ) {
       showNotification({
         type: "error",
         title: "Campos requeridos",
         message: "Por favor, completa todos los campos requeridos",
+      });
+      return;
+    }
+
+    if (!creatorSecret.trim()) {
+      showNotification({
+        type: "warning",
+        title: "Secreto requerido",
+        message: "Ingresa tu clave secreta para firmar el evento en el backend",
       });
       return;
     }
@@ -137,6 +156,22 @@ const CreateEvent: React.FC = () => {
       setIsSubmitting(true);
       
       try {
+        const backendPayload = {
+          creatorSecret: creatorSecret.trim(),
+          creator: address!,
+          eventName: formData.eventName,
+          eventDate,
+          location: formData.location,
+          description: formData.description,
+          maxPoaps: parseInt(formData.maxSpots),
+          claimStart,
+          claimEnd,
+          metadataUri,
+          imageUrl: finalImageUrl,
+        };
+
+        const backendResponse = await createEventRequest(backendPayload);
+
         const newEvent = saveLocalEvent({
           name: formData.eventName,
           date: formData.eventDate,
@@ -159,7 +194,7 @@ const CreateEvent: React.FC = () => {
         showNotification({
           type: "success",
           title: "Evento creado",
-          message: "Tu evento SPOT ha sido creado exitosamente",
+          message: `Tu evento SPOT ha sido creado exitosamente. Tx: ${backendResponse.txHash}`,
         });
         
         // Limpiar formulario
@@ -183,6 +218,7 @@ const CreateEvent: React.FC = () => {
           code: false,
           nfc: false,
         });
+        setCreatorSecret("");
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
@@ -245,25 +281,23 @@ const CreateEvent: React.FC = () => {
         <div className="min-h-screen bg-stellar-white py-6 md:py-12">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
-          <div className="mb-8">
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-24 items-start">
-              <div className="col-span-full lg:col-span-16">
-                <Button
-                  variant="tertiary"
-                  size="sm"
-                  onClick={() => navigate("/")}
-                  className="mb-4"
-                >
-                  ← Volver
-                </Button>
-                <Text as="h1" size="xl" className="text-3xl md:text-4xl font-headline text-stellar-black mb-2">
-                  Crear Evento
-                </Text>
-                <Text as="p" size="md" className="text-stellar-black font-subhead italic">
-                  Completa el formulario para crear tu evento SPOT
-                </Text>
-              </div>
-              <div className="col-span-full lg:col-span-8">
+          <div className="mb-10 space-y-6">
+            <div>
+              <Button
+                variant="tertiary"
+                size="sm"
+                onClick={() => navigate("/")}
+                className="mb-4"
+              >
+                ← Volver
+              </Button>
+              <Text as="h1" size="xl" className="text-3xl md:text-4xl font-headline text-stellar-black mb-2">
+                Crear Evento
+              </Text>
+              <Text as="p" size="md" className="text-stellar-black font-subhead italic">
+                Completa el formulario para crear tu evento SPOT
+              </Text>
+            </div>
                 <TldrCard
                   summary="Antes de completar el formulario, asegúrate de tener arte, fechas y métodos de entrega listos."
                   bullets={[
@@ -271,14 +305,30 @@ const CreateEvent: React.FC = () => {
                     { label: "Tiempo", detail: "Define claim window claro (inicio/fin)." },
                     { label: "Métodos", detail: "Activa QR, link, código, geo o NFC según tu audiencia." },
                   ]}
-                  footer="Recuerda: Helpful design es humilde, no invisible."
                 />
-              </div>
-            </div>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label htmlFor="creatorSecret" className="block text-sm font-medium text-stellar-black mb-2 font-body uppercase tracking-wide">
+                Clave secreta del organizador *
+              </label>
+              <Input
+                id="creatorSecret"
+                fieldSize="md"
+                name="creatorSecret"
+                type="password"
+                value={creatorSecret}
+                onChange={(e) => setCreatorSecret(e.target.value)}
+                placeholder="SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                required
+                className="w-full"
+              />
+              <Text as="p" size="xs" className="text-stellar-black/60 mt-1 font-body">
+                Usada temporalmente para firmar la transacción en el backend. No se almacena en tu navegador.
+              </Text>
+            </div>
             {/* Event Name */}
             <div>
               <label htmlFor="eventName" className="block text-sm font-medium text-stellar-black mb-2 font-body uppercase tracking-wide">
@@ -304,6 +354,7 @@ const CreateEvent: React.FC = () => {
               </label>
               <Input
                 id="eventDate"
+                fieldSize="md"
                 name="eventDate"
                 type="datetime-local"
                 value={formData.eventDate}
@@ -320,6 +371,7 @@ const CreateEvent: React.FC = () => {
               </label>
               <Input
                 id="location"
+                fieldSize="md"
                 name="location"
                 type="text"
                 value={formData.location}
@@ -354,6 +406,7 @@ const CreateEvent: React.FC = () => {
               </label>
               <Input
                 id="maxSpots"
+                fieldSize="md"
                 name="maxSpots"
                 type="number"
                 value={formData.maxSpots}
@@ -373,6 +426,7 @@ const CreateEvent: React.FC = () => {
                 </label>
                 <Input
                   id="claimStart"
+                fieldSize="md"
                   name="claimStart"
                   type="datetime-local"
                   value={formData.claimStart}
@@ -387,6 +441,7 @@ const CreateEvent: React.FC = () => {
                 </label>
                 <Input
                   id="claimEnd"
+                fieldSize="md"
                   name="claimEnd"
                   type="datetime-local"
                   value={formData.claimEnd}

@@ -154,7 +154,6 @@ const Home: React.FC = () => {
                         "Cada comprobante vive en Stellar: útil para reportes, patrocinios y transparencia con tu comunidad.",
                     },
                   ]}
-                  footer="¿Primera vez con SPOT? Sigue este resumen. ¿Ya lo dominas? Ve directo a Reclamar o Crear."
                 />
               </div>
             </div>

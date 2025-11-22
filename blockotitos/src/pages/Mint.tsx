@@ -2,12 +2,15 @@ import React, { useState } from "react";
 import { Layout, Text, Button, Input } from "@stellar/design-system";
 import { useWallet } from "../hooks/useWallet";
 import { useNavigate } from "react-router-dom";
+import { useNotification } from "../hooks/useNotification";
+import { claimEventRequest } from "../util/backend";
 import TldrCard from "../components/layout/TldrCard";
 
 const Mint: React.FC = () => {
   const { address } = useWallet();
   const isConnected = !!address;
   const navigate = useNavigate();
+  const { showNotification } = useNotification();
 
   const [activeMethod, setActiveMethod] = useState<string | null>(null);
   const [linkValue, setLinkValue] = useState("");
@@ -18,21 +21,76 @@ const Mint: React.FC = () => {
     setActiveMethod(method);
   };
 
-  const handleQRScan = async () => {
-    // TODO: Implementar escáner QR
-    // Por ahora, simulamos
+  const extractEventIdFromLink = (link: string): number | null => {
+    try {
+      const maybeUrl = new URL(link);
+      const queryEvent = maybeUrl.searchParams.get("event");
+      if (queryEvent) {
+        const parsed = Number(queryEvent);
+        if (!Number.isNaN(parsed)) {
+          return parsed;
+        }
+      }
+    } catch {
+      // not a valid URL, continue
+    }
+
+    const match = link.match(/(\d+)/g);
+    if (match) {
+      const parsed = Number(match[match.length - 1]);
+      if (!Number.isNaN(parsed)) {
+        return parsed;
+      }
+    }
+
+    return null;
+  };
+
+  const extractEventIdFromCode = (code: string): number | null => {
+    const digits = code.match(/(\d+)/);
+    if (!digits) return null;
+    const parsed = Number(digits[0]);
+    return Number.isNaN(parsed) ? null : parsed;
+  };
+
+  const executeClaim = async (eventId: number) => {
+    if (!address) {
+      showNotification({
+        type: "error",
+        title: "Wallet requerida",
+        message: "Conecta tu wallet antes de reclamar el coleccionable",
+      });
+      return;
+    }
+
     setIsProcessing(true);
     try {
-      // Simular escaneo y claim
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      alert("¡SPOT reclamado exitosamente!");
+      const response = await claimEventRequest({ claimer: address, eventId });
+      showNotification({
+        type: "success",
+        title: "Reclamo enviado",
+        message: `Tx enviada: ${response.txHash}`,
+      });
       navigate("/");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al reclamar SPOT:", error);
-      alert("Error al reclamar SPOT. Por favor, intenta nuevamente.");
+      showNotification({
+        type: "error",
+        title: "Error al reclamar",
+        message: error?.message || "No se pudo completar la solicitud",
+      });
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleQRScan = async () => {
+    // TODO: Implementar escáner QR con eventId real
+    showNotification({
+      type: "info",
+      title: "Próximamente",
+      message: "El escaneo QR enviará el reclamo automático al backend.",
+    });
   };
 
   const handleLinkClaim = async () => {
@@ -43,13 +101,23 @@ const Mint: React.FC = () => {
 
     setIsProcessing(true);
     try {
-      // TODO: Validar link y ejecutar claim
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      alert("¡SPOT reclamado exitosamente!");
-      navigate("/");
+      const eventId = extractEventIdFromLink(linkValue.trim());
+      if (eventId === null) {
+        showNotification({
+          type: "error",
+          title: "Link no válido",
+          message: "No pudimos encontrar un ID de evento en el link",
+        });
+        return;
+      }
+      await executeClaim(eventId);
     } catch (error) {
       console.error("Error al reclamar SPOT:", error);
-      alert("Error al reclamar SPOT. Por favor, intenta nuevamente.");
+      showNotification({
+        type: "error",
+        title: "Error al reclamar",
+        message: error instanceof Error ? error.message : "Intenta nuevamente",
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -63,13 +131,23 @@ const Mint: React.FC = () => {
 
     setIsProcessing(true);
     try {
-      // TODO: Validar código y ejecutar claim
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      alert("¡SPOT reclamado exitosamente!");
-      navigate("/");
+      const eventId = extractEventIdFromCode(codeValue.trim());
+      if (eventId === null) {
+        showNotification({
+          type: "error",
+          title: "Código inválido",
+          message: "Incluye el ID numérico del evento en el código compartido",
+        });
+        return;
+      }
+      await executeClaim(eventId);
     } catch (error) {
       console.error("Error al reclamar SPOT:", error);
-      alert("Error al reclamar SPOT. Por favor, intenta nuevamente.");
+      showNotification({
+        type: "error",
+        title: "Error al reclamar",
+        message: error instanceof Error ? error.message : "Intenta nuevamente",
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -78,27 +156,41 @@ const Mint: React.FC = () => {
   const handleGeolocation = async () => {
     setIsProcessing(true);
     try {
-      // TODO: Solicitar permisos de geolocalización y validar
+      // TODO: Solicitar permisos de geolocalización y extraer eventId
       if (!navigator.geolocation) {
-        alert("Tu navegador no soporta geolocalización");
+        showNotification({
+          type: "error",
+          title: "Sin geolocalización",
+          message: "Tu navegador no soporta geolocalización",
+        });
         return;
       }
 
       navigator.geolocation.getCurrentPosition(
         async () => {
           // TODO: Validar proximidad y ejecutar claim
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          alert("¡SPOT reclamado exitosamente!");
-          navigate("/");
+          showNotification({
+            type: "info",
+            title: "Validación pendiente",
+            message: "La validación por geolocalización aún no está implementada.",
+          });
         },
         (error) => {
           console.error("Error de geolocalización:", error);
-          alert("Error al obtener tu ubicación. Por favor, intenta nuevamente.");
+          showNotification({
+            type: "error",
+            title: "Error de ubicación",
+            message: "No pudimos obtener tu posición",
+          });
         }
       );
     } catch (error) {
       console.error("Error:", error);
-      alert("Error al reclamar SPOT. Por favor, intenta nuevamente.");
+      showNotification({
+        type: "error",
+        title: "Error al reclamar",
+        message: "No pudimos completar la validación por geolocalización.",
+      });
     } finally {
       setIsProcessing(false);
     }

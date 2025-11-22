@@ -22,7 +22,16 @@ const TldrCard: React.FC<TldrCardProps> = ({
   children,
   className,
 }) => {
-  const containerClassName = ["brand-tldr", className].filter(Boolean).join(" ");
+  const containerClassName = [
+    "brand-tldr",
+    "w-full",
+    "max-w-xl",
+    "sm:max-w-2xl",
+    "md:max-w-3xl",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <aside className={containerClassName}>

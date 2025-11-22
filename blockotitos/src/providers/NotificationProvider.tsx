@@ -13,16 +13,22 @@ type NotificationType =
   | "secondary"
   | "success"
   | "error"
-  | "warning";
-interface Notification {
+  | "warning"
+  | "info";
+interface NotificationMessage {
   id: string;
-  message: string;
+  title: string;
+  message?: string;
   type: NotificationType;
   isVisible: boolean;
 }
 
 interface NotificationContextType {
-  addNotification: (message: string, type: NotificationType) => void;
+  showNotification: (params: {
+    title: string;
+    message?: string;
+    type: NotificationType;
+  }) => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(
@@ -32,12 +38,21 @@ const NotificationContext = createContext<NotificationContextType | undefined>(
 export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<NotificationMessage[]>([]);
 
-  const addNotification = useCallback(
-    (message: string, type: NotificationType) => {
-      const newNotification = {
+  const showNotification = useCallback(
+    ({
+      title,
+      message,
+      type,
+    }: {
+      title: string;
+      message?: string;
+      type: NotificationType;
+    }) => {
+      const newNotification: NotificationMessage = {
         id: `${type}-${Date.now().toString()}`,
+        title,
         message,
         type,
         isVisible: true,
@@ -46,16 +61,16 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
 
       setTimeout(() => {
         setNotifications(markRead(newNotification.id));
-      }, 2500); // Start transition out after 2.5 seconds
+      }, 2500);
 
       setTimeout(() => {
         setNotifications(filterOut(newNotification.id));
-      }, 5000); // Remove after 5 seconds
+      }, 5000);
     },
     [],
   );
 
-  const contextValue = useMemo(() => ({ addNotification }), [addNotification]);
+  const contextValue = useMemo(() => ({ showNotification }), [showNotification]);
 
   return (
     <NotificationContext value={contextValue}>
@@ -66,10 +81,17 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
             key={notification.id}
             className={`notification ${notification.isVisible ? "slide-in" : "slide-out"}`}
           >
-            <StellarNotification
-              title={notification.message}
-              variant={notification.type}
-            />
+            <div>
+              <StellarNotification
+                title={notification.title}
+                variant={
+                  notification.type === "info" ? "secondary" : notification.type
+                }
+              />
+              {notification.message && (
+                <p className="text-xs text-stellar-black/70 mt-1">{notification.message}</p>
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -78,8 +100,8 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
 };
 
 function markRead(
-  id: Notification["id"],
-): React.SetStateAction<Notification[]> {
+  id: NotificationMessage["id"],
+): React.SetStateAction<NotificationMessage[]> {
   return (prev) =>
     prev.map((notification) =>
       notification.id === id
@@ -89,8 +111,8 @@ function markRead(
 }
 
 function filterOut(
-  id: Notification["id"],
-): React.SetStateAction<Notification[]> {
+  id: NotificationMessage["id"],
+): React.SetStateAction<NotificationMessage[]> {
   return (prev) => prev.filter((notification) => notification.id !== id);
 }
 
