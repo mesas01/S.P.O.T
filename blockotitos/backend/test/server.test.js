@@ -17,7 +17,6 @@ process.env.PORT = process.env.PORT || "0";
 const { app } = await import("../src/server.js");
 
 const validPayload = {
-  creatorSecret: "SBK5VSQDTBWV6DFIL4RQFQIEIKV4EIBPNPARZ5FGJP6VWQHUQI4RER7W",
   creator: "GBDZQGS2ERUGP2Z4DCXUDNBTT73AH7JQ5XEF5AU4HPVY6IC4Q7VSW3B2",
   eventName: "SuperDuper Test",
   eventDate: 1735689600,

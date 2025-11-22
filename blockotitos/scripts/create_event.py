@@ -3,7 +3,6 @@ import requests
 BASE_URL = "http://localhost:4000"
 
 payload = {
-    "creatorSecret": "SBK5VSQDTBWV6DFIL4RQFQIEIKV4EIBPNPARZ5FGJP6VWQHUQI4RER7W",
     "creator": "GBDZQGS2ERUGP2Z4DCXUDNBTT73AH7JQ5XEF5AU4HPVY6IC4Q7VSW3B2",
     "eventName": "Taco Festival Pro",
     "eventDate": 1735689600,

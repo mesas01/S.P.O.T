@@ -235,7 +235,7 @@ export async function createEvent({
   rpcUrl,
   networkPassphrase,
   contractId,
-  creatorSecret,
+  signerSecret,
   creator,
   eventName,
   eventDate,
@@ -266,7 +266,7 @@ export async function createEvent({
   return sendContractInvocation({
     rpcUrl,
     networkPassphrase,
-    signerSecret: creatorSecret,
+    signerSecret,
     contractId,
     method: "create_event",
     args,

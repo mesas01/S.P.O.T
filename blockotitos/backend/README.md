@@ -77,16 +77,12 @@ despliegue su propio backend con su clave).
 
   Requieren todas las variables del `.env` +:
 
-  - `INTEGRATION_CREATOR_SECRET`: clave secreta del organizador aprobado.
-  - `INTEGRATION_CREATOR_ADDRESS`: cuenta pública correspondiente.
   - `INTEGRATION_CLAIMER_ADDRESS`: cuenta pública que recibirá el coleccionable de asistencia.
   - Opcional: `INTEGRATION_CLAIM_PAYER_SECRET` (si no se usa `CLAIM_PAYER_SECRET`/`ADMIN_SECRET`).
   - (Opcional) `INTEGRATION_METADATA_URI` e `INTEGRATION_IMAGE_URL`.
 
   ```bash
   RUN_INTEGRATION_TESTS=true \
-  INTEGRATION_CREATOR_SECRET=S... \
-  INTEGRATION_CREATOR_ADDRESS=G... \
   INTEGRATION_CLAIMER_ADDRESS=G... \
   CLAIM_PAYER_SECRET=S... \
   npm run test:integration
@@ -124,13 +120,12 @@ curl -X POST http://localhost:4000/creators/revoke \
   -d '{ "creator": "GCF...CREATOR" }'
 ```
 
-### Crear evento (firma el organizador)
+### Crear evento (firma el backend con ADMIN_SECRET)
 
 ```bash
 curl -X POST http://localhost:4000/events/create \
   -H "Content-Type: application/json" \
   -d '{
-    "creatorSecret": "S...",
     "creator": "GCF...CREATOR",
     "eventName": "Hackathon",
     "eventDate": 1735689600,
@@ -154,6 +149,7 @@ curl http://localhost:4000/contract/admin
 
 1. El servidor cobra off-chain y registra la referencia del pago.
 2. Invoca `POST /creators/approve` con la cuenta del organizador y la referencia.
-3. El organizador llama `create_event` desde el frontend usando su propia clave.
+3. (Temporal) El backend firma `create_event` con `ADMIN_SECRET` por ti. Cuando se restaure la
+   verificación on-chain del creador, este paso volverá al frontend.
 4. Si hay reembolso o fraude, `POST /creators/revoke` para bloquear nuevos eventos.
 

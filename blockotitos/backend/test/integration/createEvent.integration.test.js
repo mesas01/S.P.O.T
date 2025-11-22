@@ -21,11 +21,7 @@ if (!skipReason) {
   }
 }
 
-const REQUIRED_INTEGRATION_ENV = [
-  "INTEGRATION_CREATOR_SECRET",
-  "INTEGRATION_CREATOR_ADDRESS",
-  "INTEGRATION_CLAIMER_ADDRESS",
-];
+const REQUIRED_INTEGRATION_ENV = ["INTEGRATION_CLAIMER_ADDRESS"];
 
 if (!skipReason) {
   const missing = REQUIRED_INTEGRATION_ENV.filter((key) => !process.env[key]);
@@ -113,8 +109,7 @@ test(
     const eventCountBefore = await fetchEventCount();
 
     const payload = {
-      creatorSecret: process.env.INTEGRATION_CREATOR_SECRET,
-      creator: process.env.INTEGRATION_CREATOR_ADDRESS,
+      creator: process.env.INTEGRATION_CREATOR_ADDRESS || expectedAdminAddress,
       eventName: `Integration Event ${new Date().toISOString()}`,
       eventDate,
       location: "Bogotá",

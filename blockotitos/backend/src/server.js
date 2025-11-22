@@ -34,6 +34,7 @@ const isTestEnv = process.env.NODE_ENV === "test";
 const isMock = MOCK_MODE.toLowerCase() === "true";
 const CONTRACT_ID = SPOT_CONTRACT_ID;
 const CLAIM_SIGNER_SECRET = CLAIM_PAYER_SECRET || ADMIN_SECRET;
+let ADMIN_PUBLIC_KEY;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const LOG_PATH = LOG_FILE || path.resolve(__dirname, "../logs/backend.log");
@@ -65,7 +66,7 @@ if (!isMock) {
   }
 
   try {
-    Keypair.fromSecret(ADMIN_SECRET);
+    ADMIN_PUBLIC_KEY = Keypair.fromSecret(ADMIN_SECRET).publicKey();
   } catch (error) {
     throw new Error(`Invalid ADMIN_SECRET provided: ${error.message}`);
   }
@@ -208,7 +209,6 @@ app.post("/creators/revoke", async (req, res) => {
 
 app.post("/events/create", async (req, res) => {
   const {
-    creatorSecret,
     creator,
     eventName,
     eventDate,
@@ -239,10 +239,10 @@ app.post("/events/create", async (req, res) => {
     claimEnd: numericFields.claimEnd,
     metadataUri,
     imageUrl,
+    operator: isMock ? "mock-admin" : ADMIN_PUBLIC_KEY,
   };
 
   if (
-    !creatorSecret ||
     !creator ||
     !eventName ||
     Number.isNaN(numericFields.eventDate) ||
@@ -271,12 +271,16 @@ app.post("/events/create", async (req, res) => {
   }
 
   try {
+    if (!ADMIN_SECRET || !ADMIN_PUBLIC_KEY) {
+      return res.status(500).json({ error: "Admin credentials not configured" });
+    }
+
     const result = await createEvent({
       rpcUrl: RPC_URL,
       networkPassphrase: NETWORK_PASSPHRASE,
       contractId: CONTRACT_ID,
-      creatorSecret,
-      creator,
+      signerSecret: ADMIN_SECRET,
+      creator: ADMIN_PUBLIC_KEY,
       eventName,
       eventDate: numericFields.eventDate,
       location,
