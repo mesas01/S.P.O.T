@@ -45,13 +45,18 @@ export const getLocalEvents = (): LocalEventData[] => {
 /**
  * Guardar un nuevo evento localmente
  */
-export const saveLocalEvent = (event: Omit<LocalEventData, 'id' | 'createdAt' | 'claimedSpots'>): LocalEventData => {
+export const saveLocalEvent = (
+  event: Omit<LocalEventData, 'id' | 'createdAt' | 'claimedSpots'>,
+  options?: { id?: string; claimedSpots?: number },
+): LocalEventData => {
   const events = getLocalEvents();
   const newEvent: LocalEventData = {
     ...event,
-    id: `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id:
+      options?.id ||
+      `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     createdAt: new Date().toISOString(),
-    claimedSpots: 0,
+    claimedSpots: options?.claimedSpots ?? 0,
   };
   
   events.push(newEvent);

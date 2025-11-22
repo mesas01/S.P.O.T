@@ -49,8 +49,12 @@ export interface BackendTxResponse {
   rpcResponse?: Record<string, unknown>;
 }
 
+export interface CreateEventResponse extends BackendTxResponse {
+  eventId?: number;
+}
+
 export function createEventRequest(payload: CreateEventPayload) {
-  return request<BackendTxResponse>("/events/create", {
+  return request<CreateEventResponse>("/events/create", {
     method: "POST",
     body: JSON.stringify(payload),
   });

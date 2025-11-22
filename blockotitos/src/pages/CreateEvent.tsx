@@ -171,20 +171,31 @@ const CreateEvent: React.FC = () => {
         };
 
         const backendResponse = await createEventRequest(backendPayload);
+        const newEventId = backendResponse.eventId;
+        if (!newEventId) {
+          console.warn(
+            "El backend no devolvió eventId; los links podrían no coincidir hasta sincronizar on-chain.",
+          );
+        }
 
-        const newEvent = saveLocalEvent({
-          name: formData.eventName,
-          date: formData.eventDate,
-          location: formData.location,
-          description: formData.description,
-          maxSpots: parseInt(formData.maxSpots),
-          claimStart: formData.claimStart,
-          claimEnd: formData.claimEnd,
-          imageUrl: finalImageUrl,
-          metadataUri,
-          creator: address!,
-          distributionMethods,
-        });
+        const newEvent = saveLocalEvent(
+          {
+            name: formData.eventName,
+            date: formData.eventDate,
+            location: formData.location,
+            description: formData.description,
+            maxSpots: parseInt(formData.maxSpots),
+            claimStart: formData.claimStart,
+            claimEnd: formData.claimEnd,
+            imageUrl: finalImageUrl,
+            metadataUri,
+            creator: address!,
+            distributionMethods,
+          },
+          {
+            id: newEventId ? newEventId.toString() : undefined,
+          },
+        );
 
         console.log("Evento creado exitosamente (local):", newEvent);
         

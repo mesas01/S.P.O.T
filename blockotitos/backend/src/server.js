@@ -287,11 +287,22 @@ app.post("/events/create", async (req, res) => {
       metadataUri,
       imageUrl,
     });
+    let eventId;
+    try {
+      eventId = await getEventCount({
+        rpcUrl: RPC_URL,
+        networkPassphrase: NETWORK_PASSPHRASE,
+        contractId: CONTRACT_ID,
+        adminSecret: ADMIN_SECRET,
+      });
+    } catch (countError) {
+      console.warn("Unable to fetch event count after creation:", countError);
+    }
     await logTx({
       action: "create_event",
       status: "success",
       txHash: result.txHash,
-      payload,
+      payload: { ...payload, eventId },
       rpcResponse: result.rpcResponse,
       signedEnvelope: result.envelopeXdr,
     });
@@ -299,6 +310,7 @@ app.post("/events/create", async (req, res) => {
       txHash: result.txHash,
       rpcResponse: result.rpcResponse,
       signedEnvelope: result.envelopeXdr,
+      eventId,
     });
   } catch (error) {
     await logTx({
