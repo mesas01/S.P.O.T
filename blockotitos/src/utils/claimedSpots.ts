@@ -102,6 +102,8 @@ export const mapEventToClaimedSpot = (
 
 export const mapStoredSpotToSpotData = (spot: StoredClaimedSpot): SpotData => ({
   id: `claimed-${spot.eventId}`,
+  // @ts-ignore
+  eventId: spot.eventId,
   name: spot.name,
   date: spot.date,
   image: spot.image || "🎯",

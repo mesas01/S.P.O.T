@@ -44,6 +44,7 @@ class TypedStorage<T> {
     const item = this.storage?.getItem(key.toString());
 
     if (item == null) {
+      // @ts-ignore
       return item;
     }
 

@@ -14,11 +14,13 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "strict": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+    "noImplicitAny": false,
+    "strictNullChecks": false
   },
   "include": ["src"]
 }

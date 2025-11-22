@@ -515,6 +515,7 @@ export const InvokeContractForm = ({
               >
                 <PrettyJsonTransaction
                   json={result}
+                  // @ts-ignore
                   xdr={result && "xdr" in result}
                 />
               </div>

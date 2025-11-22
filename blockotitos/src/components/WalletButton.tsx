@@ -5,7 +5,7 @@ import { connectWallet } from "../util/wallet";
 
 export const WalletButton = () => {
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
-  const { address, isPending, disconnect } = useWallet();
+  const { address, isPending, balances, disconnect } = useWallet();
   const buttonLabel = isPending ? "Loading..." : "Connect";
 
   if (!address) {
