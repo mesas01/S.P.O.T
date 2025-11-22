@@ -4,9 +4,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useWallet } from "../hooks/useWallet";
 import { useNavigate } from "react-router-dom";
 import { generateLinkQRCode } from "../utils/qrCode";
-import { getLocalEventsByCreator } from "../utils/localEvents";
+import { getLocalEventsByCreator, updateLocalEvent } from "../utils/localEvents";
 import TldrCard from "../components/layout/TldrCard";
-import { fetchOnchainEvents } from "../util/backend";
+import { fetchMintedCount, fetchOnchainEvents } from "../util/backend";
+import { useNotification } from "../hooks/useNotification";
+import { buildErrorDetail } from "../utils/notificationHelpers";
 
 interface EventData {
   id: string;
@@ -104,6 +106,8 @@ const MyEvents: React.FC = () => {
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
   const [qrCodes, setQrCodes] = useState<Record<string, string>>({});
   const [loadingQR, setLoadingQR] = useState<Record<string, boolean>>({});
+  const [isRefreshingOnchain, setIsRefreshingOnchain] = useState(false);
+  const { showNotification } = useNotification();
 
   // Obtener eventos locales (temporal hasta que el contrato esté configurado)
   const [localEvents, setLocalEvents] = useState<EventData[]>([]);
@@ -187,6 +191,67 @@ const MyEvents: React.FC = () => {
     loadLocalEvents();
     if (address) {
       void refetchOnchainEvents();
+    }
+  };
+
+  const refreshMintedCounts = async () => {
+    if (isRefreshingOnchain) return;
+    setIsRefreshingOnchain(true);
+    let hadErrors = false;
+
+    try {
+      for (const event of localEvents) {
+        const eventIdNumber =
+          event.contractEventId ?? Number.parseInt(event.id, 10);
+        if (!eventIdNumber || Number.isNaN(eventIdNumber)) {
+          continue;
+        }
+
+        try {
+          const { mintedCount } = await fetchMintedCount(eventIdNumber);
+          setLocalEvents((prev) =>
+            prev.map((item) =>
+              item.id === event.id
+                ? { ...item, claimedSpots: mintedCount }
+                : item,
+            ),
+          );
+          updateLocalEvent(event.id, { claimedSpots: mintedCount });
+        } catch (error) {
+          hadErrors = true;
+          console.error(
+            `Error refreshing minted count for event ${eventIdNumber}:`,
+            error,
+          );
+        }
+      }
+
+      await refetchOnchainEvents();
+
+      showNotification({
+        type: hadErrors ? "warning" : "success",
+        title: hadErrors
+          ? "Actualización parcial"
+          : "Datos on-chain sincronizados",
+        message: hadErrors
+          ? "Algunos eventos no pudieron sincronizarse. Intenta nuevamente."
+          : "Métricas de reclamos actualizadas.",
+        copyText: hadErrors
+          ? buildErrorDetail(
+              new Error("No se pudieron sincronizar todos los eventos."),
+            )
+          : undefined,
+      });
+    } catch (error) {
+      console.error("Error refreshing on-chain stats:", error);
+      showNotification({
+        type: "error",
+        title: "Error al actualizar",
+        message: "No pudimos sincronizar los reclamos. Intenta nuevamente.",
+        copyText: buildErrorDetail(error),
+      });
+    } finally {
+      setIsRefreshingOnchain(false);
     }
   };
 
@@ -366,6 +431,15 @@ const MyEvents: React.FC = () => {
                       className="bg-stellar-gold text-stellar-black hover:bg-yellow-400 rounded-full px-6 py-2.5 font-semibold shadow-md"
                     >
                       ➕ Crear Evento
+                    </Button>
+                    <Button
+                      variant="tertiary"
+                      size="md"
+                      onClick={refreshMintedCounts}
+                      disabled={isRefreshingOnchain}
+                      className="border-2 border-stellar-black/10 text-stellar-black hover:bg-stellar-black/5 rounded-full px-6 py-2.5 font-semibold"
+                    >
+                      {isRefreshingOnchain ? "Actualizando..." : "Actualizar on-chain"}
                     </Button>
                   </div>
                 </div>

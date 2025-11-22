@@ -327,6 +327,36 @@ app.post("/events/create", async (req, res) => {
   }
 });
 
+app.get("/events/:eventId/minted-count", async (req, res) => {
+  const eventId = Number(req.params.eventId);
+
+  if (Number.isNaN(eventId)) {
+    return res.status(400).json({ error: "Invalid eventId" });
+  }
+
+  if (isMock) {
+    return res.json({ mintedCount: 0 });
+  }
+
+  if (!ADMIN_SECRET) {
+    return res.status(500).json({ error: "Admin credentials not configured" });
+  }
+
+  try {
+    const mintedCount = await getMintedCount({
+      rpcUrl: RPC_URL,
+      networkPassphrase: NETWORK_PASSPHRASE,
+      contractId: CONTRACT_ID,
+      adminSecret: ADMIN_SECRET,
+      eventId,
+    });
+    res.json({ mintedCount });
+  } catch (error) {
+    console.error("Error fetching minted count:", error);
+    res.status(500).json({ error: error.message || String(error) });
+  }
+});
+
 app.post("/events/claim", async (req, res) => {
   const { claimer, eventId, payerSecret: overridePayerSecret } = req.body || {};
   const numericEventId = Number(eventId);

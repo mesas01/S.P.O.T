@@ -70,6 +70,10 @@ export function getBackendBaseUrl() {
   return backendBaseUrl;
 }
 
+export async function fetchMintedCount(eventId: number) {
+  return request<{ mintedCount: number }>(`/events/${eventId}/minted-count`);
+}
+
 export interface OnchainEventSummary {
   eventId: number;
   name: string;
