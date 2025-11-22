@@ -80,7 +80,7 @@
 ## 💬 Tone of Voice - Aplicado
 
 ### TL;DR (Too Long; Didn't Read)
-Siguiendo el Brand Manual de Stellar, agregamos **TL;DR** al inicio de las páginas principales:
+Siguiendo el Brand Manual de Stellar, agregamos **TL;DR** al inicio de las páginas principales con el componente `TldrCard` (`src/components/layout/TldrCard.tsx`):
 
 ```tsx
 <Text as="div" size="sm" className="text-stellar-teal mb-2 font-medium uppercase tracking-wider">
@@ -94,9 +94,11 @@ Siguiendo el Brand Manual de Stellar, agregamos **TL;DR** al inicio de las pági
 ```
 
 **Aplicado en:**
-- ✅ Home page
+- ✅ Home page (Hero + Find your way)
 - ✅ CreateEvent page
 - ✅ Mint page
+- ✅ Profile page
+- ✅ MyEvents page
 
 ### Principios de Escritura
 1. **Conclusión al inicio**: TL;DR primero
@@ -124,6 +126,8 @@ Siguiendo el Brand Manual de Stellar, agregamos **TL;DR** al inicio de las pági
 - ✅ Subheads con `font-subhead` italic
 - ✅ Body text con `font-body`
 - ✅ Colores Stellar aplicados
+- ✅ Sección “Find your way” diferenciando builders vs banca
+- ✅ Uso de las superficies `brand-surface` y highlights texturizados
 
 ### CreateEvent Page (`/create-event`)
 - ✅ TL;DR agregado
@@ -140,11 +144,19 @@ Siguiendo el Brand Manual de Stellar, agregamos **TL;DR** al inicio de las pági
 - ✅ Headlines uppercase
 - ✅ Balance destacado con Generous Gold
 - ✅ Colores Stellar en toda la página
+- ✅ Tarjeta TL;DR con acciones prioritarias
+
+### MyEvents Page (`/my-events`)
+- ✅ TL;DR con foco en distribución
+- ✅ Cards con highlights y métricas claras
+- ✅ Acciones visibles para crear eventos y compartir links
 
 ### Componentes
 - ✅ `SpotCard`: Colores y tipografías Stellar
 - ✅ `MonthSection`: Headlines uppercase
 - ✅ `App.tsx`: Background y borders Stellar
+- ✅ `TldrCard`: Resumen reutilizable con highlights
+- ✅ Clases `brand-surface`, `brand-tldr`, `brand-highlight-text` en `index.css`
 
 ---
 
@@ -189,13 +201,14 @@ fontFamily: {
 - [x] Headlines en uppercase
 - [x] Subheads en italic
 - [x] Body text con Inter
+- [x] Grid de 24 columnas y superficies `brand-surface`
 
 ---
 
 ## 📋 Próximos Pasos (Opcional)
 
 - [ ] Agregar highlights personalizados (SVG según Brand Manual)
-- [ ] Implementar grid de 24 columnas para layouts complejos
+- [ ] Llevar el grid de 24 columnas a Debugger y vistas secundarias
 - [ ] Agregar ilustraciones estilo Street Art (cuando sea necesario)
 - [ ] Motion graphics siguiendo guías de Stellar
 - [ ] Fotografías siguiendo las 10 reglas de Stellar

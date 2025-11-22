@@ -30,6 +30,12 @@ const validPayload = {
   imageUrl: "https://example.com/image.png",
 };
 
+const claimPayload = {
+  claimer: "GBDZQGS2ERUGP2Z4DCXUDNBTT73AH7JQ5XEF5AU4HPVY6IC4Q7VSW3B2",
+  eventId: 1,
+  payerSecret: "SBK5VSQDTBWV6DFIL4RQFQIEIKV4EIBPNPARZ5FGJP6VWQHUQI4RER7W",
+};
+
 async function readLogEntries() {
   try {
     const contents = await fs.readFile(LOG_FILE, "utf8");
@@ -94,5 +100,38 @@ test("POST /events/create rejects invalid JSON", async () => {
 
   const entries = await readLogEntries();
   assert.equal(entries.length, 0);
+});
+
+test("POST /events/claim succeeds with valid payload (mock mode)", async () => {
+  const response = await request(app).post("/events/claim").send(claimPayload);
+
+  assert.equal(response.statusCode, 200);
+  assert.match(response.body.txHash, /^MOCK-CLAIM-/);
+  assert.match(response.body.signedEnvelope, /^[A-Za-z0-9+/=]+$/);
+
+  const entries = await readLogEntries();
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].action, "claim_poap");
+  assert.equal(entries[0].payload.eventId, claimPayload.eventId);
+});
+
+test("POST /events/claim validates missing fields", async () => {
+  const { claimer, ...partial } = claimPayload;
+  const response = await request(app).post("/events/claim").send(partial);
+
+  assert.equal(response.statusCode, 400);
+  assert.deepEqual(response.body, {
+    error: "claimer and eventId are required",
+  });
+
+  const entries = await readLogEntries();
+  assert.equal(entries.length, 0);
+});
+
+test("GET /contract/event-count returns mock value", async () => {
+  const response = await request(app).get("/contract/event-count");
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.body, { eventCount: 0 });
 });
 

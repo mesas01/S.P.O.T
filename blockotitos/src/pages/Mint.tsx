@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Layout, Text, Button, Input } from "@stellar/design-system";
 import { useWallet } from "../hooks/useWallet";
 import { useNavigate } from "react-router-dom";
+import TldrCard from "../components/layout/TldrCard";
 
 const Mint: React.FC = () => {
   const { address } = useWallet();
@@ -137,21 +138,35 @@ const Mint: React.FC = () => {
         <div className="min-h-screen bg-stellar-white py-6 md:py-12">
         <div className="max-w-md mx-auto">
           {/* Header */}
-          <div className="mb-8 text-center">
-            <Button
-              variant="tertiary"
-              size="sm"
-              onClick={() => navigate("/")}
-              className="mb-4"
-            >
-              ← Volver
-            </Button>
-            <Text as="h1" size="xl" className="text-3xl md:text-4xl font-headline text-stellar-black mb-2">
-              Reclamar SPOT
-            </Text>
-            <Text as="p" size="md" className="text-stellar-black font-subhead italic">
-              Elige un método para reclamar tu SPOT
-            </Text>
+          <div className="mb-8">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-24 items-start">
+              <div className="col-span-full lg:col-span-16 text-center">
+                <Button
+                  variant="tertiary"
+                  size="sm"
+                  onClick={() => navigate("/")}
+                  className="mb-4"
+                >
+                  ← Volver
+                </Button>
+                <Text as="h1" size="xl" className="text-3xl md:text-4xl font-headline text-stellar-black mb-2">
+                  Reclamar SPOT
+                </Text>
+                <Text as="p" size="md" className="text-stellar-black font-subhead italic">
+                  Elige un método para reclamar tu SPOT
+                </Text>
+              </div>
+              <div className="col-span-full lg:col-span-8">
+                <TldrCard
+                  summary="El Brand Manual pide decisiones rápidas. Las resumimos en un card accesible."
+                  bullets={[
+                    { label: "QR primero", detail: "Experiencia más rápida en eventos físicos." },
+                    { label: "Link único", detail: "Ideal para claims remotos con copy pragmático." },
+                    { label: "Geo & NFC", detail: "Visibilidad de métodos futuros con transparencia." },
+                  ]}
+                />
+              </div>
+            </div>
           </div>
 
           {/* Methods Grid */}

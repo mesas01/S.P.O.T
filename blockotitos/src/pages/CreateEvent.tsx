@@ -4,6 +4,7 @@ import { useWallet } from "../hooks/useWallet";
 import { useNavigate } from "react-router-dom";
 import { useNotification } from "../hooks/useNotification";
 import { saveLocalEvent } from "../utils/localEvents";
+import TldrCard from "../components/layout/TldrCard";
 
 const CreateEvent: React.FC = () => {
   const { address } = useWallet();
@@ -245,20 +246,35 @@ const CreateEvent: React.FC = () => {
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <Button
-              variant="tertiary"
-              size="sm"
-              onClick={() => navigate("/")}
-              className="mb-4"
-            >
-              ← Volver
-            </Button>
-            <Text as="h1" size="xl" className="text-3xl md:text-4xl font-headline text-stellar-black mb-2">
-              Crear Evento
-            </Text>
-            <Text as="p" size="md" className="text-stellar-black font-subhead italic">
-              Completa el formulario para crear tu evento SPOT
-            </Text>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-24 items-start">
+              <div className="col-span-full lg:col-span-16">
+                <Button
+                  variant="tertiary"
+                  size="sm"
+                  onClick={() => navigate("/")}
+                  className="mb-4"
+                >
+                  ← Volver
+                </Button>
+                <Text as="h1" size="xl" className="text-3xl md:text-4xl font-headline text-stellar-black mb-2">
+                  Crear Evento
+                </Text>
+                <Text as="p" size="md" className="text-stellar-black font-subhead italic">
+                  Completa el formulario para crear tu evento SPOT
+                </Text>
+              </div>
+              <div className="col-span-full lg:col-span-8">
+                <TldrCard
+                  summary="La guía de Stellar indica que demos el contexto primero."
+                  bullets={[
+                    { label: "Visual", detail: "Usa imágenes humanas y resalta highlights." },
+                    { label: "Tiempo", detail: "Define claim window claro (inicio/fin)." },
+                    { label: "Métodos", detail: "Activa QR, link, código, geo o NFC según tu audiencia." },
+                  ]}
+                  footer="Recuerda: Helpful design es humilde, no invisible."
+                />
+              </div>
+            </div>
           </div>
 
           {/* Form */}

@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import MonthSection from "../components/spot/MonthSection";
 import { SpotData } from "../components/spot/SpotCard";
 import { groupSpotsByMonth, getTotalSpots } from "../utils/spotGrouping";
+import TldrCard from "../components/layout/TldrCard";
 
 // Mock SPOT data for visual purposes - TODO: Obtener del contrato
 // Imágenes reales desde /public/images/events/
@@ -63,50 +64,119 @@ const Home: React.FC = () => {
       <Layout.Inset>
         <div className="min-h-screen bg-stellar-white py-6 md:py-12">
         <div className="max-w-7xl mx-auto">
-          {/* Hero Section - Landing Page */}
-          <div className="text-center mb-12 md:mb-16">
-            <div className="text-6xl md:text-7xl mb-6">🎯</div>
-            <Text as="h1" size="xl" className="text-4xl md:text-5xl lg:text-6xl font-headline text-stellar-black mb-4 tracking-tight uppercase">
-              SPOT
-            </Text>
-            <Text as="p" size="lg" className="text-xl md:text-2xl text-stellar-black mb-2 font-subhead italic">
-              Stellar Proof of Togetherness
-            </Text>
-            <Text as="p" size="md" className="text-base md:text-lg text-stellar-black max-w-3xl mx-auto mb-8 font-body">
-              Crea y reclama NFTs de asistencia a eventos en la blockchain de Stellar. 
-              Prueba de que estuviste ahí, para siempre en la blockchain.
-            </Text>
-
-            {/* CTA Buttons - Modern pill-shaped buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-              <Button
-                onClick={() => navigate("/mint")}
-                variant="primary"
-                size="lg"
-                className="bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full px-8 py-3 shadow-md hover:shadow-lg transition-all"
-              >
-                ⚡ Reclamar SPOT
-              </Button>
-              <Button
-                onClick={() => navigate("/create-event")}
-                variant="secondary"
-                size="lg"
-                className="bg-stellar-lilac text-stellar-black hover:bg-stellar-lilac/80 font-semibold rounded-full px-8 py-3 shadow-md hover:shadow-lg transition-all"
-              >
-                ➕ Crear Evento
-              </Button>
-              {isConnected && (
-                <Button
-                  onClick={() => navigate("/profile")}
-                  variant="tertiary"
-                  size="lg"
-                  className="bg-stellar-white border-2 border-stellar-black/10 text-stellar-black hover:bg-stellar-black/5 font-medium rounded-full px-8 py-3 shadow-sm hover:shadow-md transition-all"
+          {/* Hero Section - Brand Manual */}
+          <section className="mb-12 md:mb-16">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-24">
+              <div className="col-span-full lg:col-span-17 brand-surface p-6 md:p-10 text-center lg:text-left">
+                <div className="brand-eyebrow text-stellar-navy/70 mb-3">
+                  Design Ethos · Helpful design is humble, not invisible
+                </div>
+                <div className="text-6xl md:text-7xl mb-6">🎯</div>
+                <Text
+                  as="h1"
+                  size="xl"
+                  className="text-4xl md:text-5xl lg:text-6xl font-headline text-stellar-black mb-4 tracking-tight uppercase"
                 >
-                  👤 Mis SPOTs
-                </Button>
-              )}
+                  SPOT · Stellar Proof of Togetherness
+                </Text>
+                <Text
+                  as="p"
+                  size="lg"
+                  className="text-lg md:text-2xl text-stellar-black mb-4 font-subhead italic"
+                >
+                  <span className="brand-highlight-text">
+                    Sabemos a quién hablamos: bancos, policymakers y builders.
+                  </span>
+                </Text>
+                <Text
+                  as="p"
+                  size="md"
+                  className="text-base md:text-lg text-stellar-black/90 max-w-3xl mx-auto lg:mx-0 mb-8 font-body"
+                >
+                  SPOT aplica el Brand Manual 2023 de Stellar para que cada reclamo y
+                  cada evento refleje nuestra identidad: oro generoso, tipografías enérgicas,
+                  highlights hechos a mano y una voz que guía sin perder la humildad.
+                </Text>
+
+                {/* CTA Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start items-center">
+                  <Button
+                    onClick={() => navigate("/mint")}
+                    variant="primary"
+                    size="lg"
+                    className="bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full px-8 py-3 shadow-md hover:shadow-lg transition-all"
+                  >
+                    ⚡ Reclamar SPOT
+                  </Button>
+                  <Button
+                    onClick={() => navigate("/create-event")}
+                    variant="secondary"
+                    size="lg"
+                    className="bg-stellar-lilac text-stellar-black hover:bg-stellar-lilac/80 font-semibold rounded-full px-8 py-3 shadow-md hover:shadow-lg transition-all"
+                  >
+                    ➕ Crear Evento
+                  </Button>
+                  {isConnected && (
+                    <Button
+                      onClick={() => navigate("/profile")}
+                      variant="tertiary"
+                      size="lg"
+                      className="bg-stellar-white border-2 border-stellar-black/10 text-stellar-black hover:bg-stellar-black/5 font-medium rounded-full px-8 py-3 shadow-sm hover:shadow-md transition-all"
+                    >
+                      👤 Mis SPOTs
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              <div className="col-span-full lg:col-span-7">
+                <TldrCard
+                  summary="Aplicamos la guía de Stellar para rediseñar SPOT con una jerarquía clara, tonos humanos y mobile-first."
+                  bullets={[
+                    { label: "Crea", detail: "Eventos con grid de 24 columnas, tipografías Anton/Lora e imagen hero." },
+                    { label: "Reclama", detail: "Métodos QR, link, código, geo y NFC con botones oro y lilas." },
+                    { label: "Confía", detail: "Todo vive en la Stellar network con mensajes directos y TL;DR visible." },
+                  ]}
+                  footer="Si eres nuevo, lee el resumen y actúa. Si ya sabes, ve directo al CTA."
+                />
+              </div>
             </div>
-          </div>
+          </section>
+
+          {/* Find your way Section */}
+          <section className="brand-surface p-6 md:p-8 mb-12 md:mb-16">
+            <div className="brand-eyebrow text-stellar-navy/70 mb-6">
+              Find your way · Guía visual
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="rounded-2xl border border-stellar-black/10 bg-stellar-gold/10 p-6 shadow-brand-soft">
+                <Text as="h3" size="md" className="font-headline text-2xl text-stellar-black mb-2 uppercase">
+                  Innovadores & Builders
+                </Text>
+                <Text as="p" size="sm" className="text-stellar-black/80 font-body mb-4">
+                  Ve a la izquierda: experimenta rápido, conecta APIs, reclama SPOTs desde móvil.
+                </Text>
+                <ul className="space-y-2 text-sm font-body text-stellar-black/80">
+                  <li>• Código abierto con contrato Soroban.</li>
+                  <li>• Highlight hechos a mano para cada release.</li>
+                  <li>• Acceso directo al Debugger.</li>
+                </ul>
+              </div>
+              <div className="rounded-2xl border border-stellar-black/10 bg-stellar-lilac/10 p-6 shadow-brand-soft">
+                <Text as="h3" size="md" className="font-headline text-2xl text-stellar-black mb-2 uppercase">
+                  Banca & Policy Makers
+                </Text>
+                <Text as="p" size="sm" className="text-stellar-black/80 font-body mb-4">
+                  Ve a la derecha: mensajes claros, copy pragmático y confianza institucional.
+                </Text>
+                <ul className="space-y-2 text-sm font-body text-stellar-black/80">
+                  <li>• Métricas visibles, lenguaje directo.</li>
+                  <li>• Tipografía serif para narrativas extensas.</li>
+                  <li>• Colores navy y warm grey para reportes.</li>
+                </ul>
+              </div>
+            </div>
+          </section>
 
           {/* Features Section - Stellar Brand Colors */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 md:mb-16">

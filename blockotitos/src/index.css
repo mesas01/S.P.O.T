@@ -11,6 +11,12 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --brand-highlight-start: rgba(253, 218, 36, 0.4);
+  --brand-highlight-mid: rgba(183, 172, 232, 0.35);
+  --brand-highlight-end: rgba(0, 167, 181, 0.25);
+}
+
 /* Stellar Brand Base Styles */
 @layer base {
   body {
@@ -21,6 +27,62 @@
     @apply font-headline;
     text-transform: uppercase;
     letter-spacing: 0.02em;
+  }
+}
+
+@layer components {
+  .brand-surface {
+    @apply relative overflow-hidden rounded-3xl border border-stellar-black/10 bg-stellar-white shadow-brand-card;
+  }
+
+  .brand-surface::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(253, 218, 36, 0.25), transparent 55%),
+      radial-gradient(circle at 80% 0%, rgba(183, 172, 232, 0.3), transparent 50%),
+      radial-gradient(circle at 50% 80%, rgba(0, 167, 181, 0.25), transparent 55%);
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  .brand-surface > * {
+    @apply relative;
+  }
+
+  .brand-tldr {
+    @apply relative overflow-hidden rounded-2xl border border-stellar-black/10 bg-stellar-warm-grey/50 p-6 shadow-brand-soft;
+  }
+
+  .brand-tldr::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(140deg, rgba(253, 218, 36, 0.3), rgba(183, 172, 232, 0.25));
+    opacity: 0.7;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+  }
+
+  .brand-tldr > * {
+    @apply relative;
+  }
+
+  .brand-eyebrow {
+    @apply text-xs font-semibold tracking-[0.35em] uppercase text-stellar-black/60;
+  }
+
+  .brand-highlight-text {
+    background: linear-gradient(
+      120deg,
+      var(--brand-highlight-start),
+      var(--brand-highlight-mid),
+      var(--brand-highlight-end)
+    );
+    padding: 0.1rem 0.35rem;
+    border-radius: 0.35rem;
+    box-decoration-break: clone;
   }
 }
 

@@ -32,6 +32,16 @@ export default {
         'body': ['Inter', 'sans-serif'],        // Body copy (digital)
         'body-print': ['Lora', 'serif'],        // Body copy (print)
       },
+      gridTemplateColumns: {
+        24: 'repeat(24, minmax(0, 1fr))',       // Brand manual 24-column grid
+      },
+      boxShadow: {
+        'brand-card': '0 35px 80px rgba(15, 15, 15, 0.1)',
+        'brand-soft': '0 20px 45px rgba(0, 0, 0, 0.08)',
+      },
+      backgroundImage: {
+        'stellar-highlight': 'linear-gradient(120deg, rgba(253, 218, 36, 0.25) 0%, rgba(183, 172, 232, 0.25) 50%, rgba(0, 167, 181, 0.25) 100%)',
+      },
       screens: {
         'xs': '475px',
         'sm': '640px',

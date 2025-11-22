@@ -3,6 +3,7 @@ import { Layout, Text, Button } from "@stellar/design-system";
 import { useWallet } from "../hooks/useWallet";
 import { useNavigate } from "react-router-dom";
 import ConnectAccount from "../components/ConnectAccount";
+import TldrCard from "../components/layout/TldrCard";
 
 const Profile: React.FC = () => {
   const { address, balances } = useWallet();
@@ -24,20 +25,34 @@ const Profile: React.FC = () => {
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <Button
-              variant="tertiary"
-              size="sm"
-              onClick={() => navigate("/")}
-              className="mb-4"
-            >
-              ← Volver
-            </Button>
-            <Text as="h1" size="xl" className="text-3xl md:text-4xl font-headline text-stellar-black mb-2">
-              Mi Perfil
-            </Text>
-            <Text as="p" size="md" className="text-stellar-black font-subhead italic">
-              Gestiona tu wallet y configuración
-            </Text>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-24 items-start">
+              <div className="col-span-full lg:col-span-16">
+                <Button
+                  variant="tertiary"
+                  size="sm"
+                  onClick={() => navigate("/")}
+                  className="mb-4"
+                >
+                  ← Volver
+                </Button>
+                <Text as="h1" size="xl" className="text-3xl md:text-4xl font-headline text-stellar-black mb-2">
+                  Mi Perfil
+                </Text>
+                <Text as="p" size="md" className="text-stellar-black font-subhead italic">
+                  Gestiona tu wallet y configuración
+                </Text>
+              </div>
+              <div className="col-span-full lg:col-span-8">
+                <TldrCard
+                  summary="El Brand Manual pide conclusiones upfront: aquí está tu estado."
+                  bullets={[
+                    { label: "Wallet", detail: "Dirección visible, botón copiar y balance XLM." },
+                    { label: "Acciones", detail: "CTA claros para ver SPOTs, crear eventos y reclamar." },
+                    { label: "Confianza", detail: "Tipografía serif para subtítulos y warm grey para datos." },
+                  ]}
+                />
+              </div>
+            </div>
           </div>
 
           {!isConnected ? (

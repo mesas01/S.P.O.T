@@ -46,12 +46,22 @@ El backend expone:
 
 - `GET /health`
 - `GET /contract/admin`
+- `GET /contract/event-count`
 - `POST /creators/approve`
 - `POST /creators/revoke`
 - `POST /events/create`
+- `POST /events/claim`
 
 Los resultados de cada transacción (éxito/error) se registran en consola y en `backend/logs/backend.log`.
 Las respuestas de éxito también incluyen `signedEnvelope` (XDR base64) para que puedas inspeccionar la firma en Stellar Expert → Tools → XDR Viewer.
+
+### Quién paga las fees de `claim`
+
+Configura `CLAIM_PAYER_SECRET` (por defecto cae en `ADMIN_SECRET`). Todas las llamadas a  
+`POST /events/claim` se firman con esa clave salvo que el request incluya un `payerSecret`
+específico. Así, el asistente sólo provee su dirección `G...` y no asume costos de red.  
+Si quieres que cada organizador cubra las fees, pídele que envíe su `payerSecret` (o que
+despliegue su propio backend con su clave).
 
 ## Tests
 
@@ -69,18 +79,23 @@ Las respuestas de éxito también incluyen `signedEnvelope` (XDR base64) para qu
 
   - `INTEGRATION_CREATOR_SECRET`: clave secreta del organizador aprobado.
   - `INTEGRATION_CREATOR_ADDRESS`: cuenta pública correspondiente.
+  - `INTEGRATION_CLAIMER_ADDRESS`: cuenta pública que recibirá el POAP.
+  - Opcional: `INTEGRATION_CLAIM_PAYER_SECRET` (si no se usa `CLAIM_PAYER_SECRET`/`ADMIN_SECRET`).
   - (Opcional) `INTEGRATION_METADATA_URI` e `INTEGRATION_IMAGE_URL`.
 
   ```bash
   RUN_INTEGRATION_TESTS=true \
   INTEGRATION_CREATOR_SECRET=S... \
   INTEGRATION_CREATOR_ADDRESS=G... \
+  INTEGRATION_CLAIMER_ADDRESS=G... \
+  CLAIM_PAYER_SECRET=S... \
   npm run test:integration
   ```
 
   Este comando levanta el backend con tus credenciales, envía un `POST /events/create`
-  real (misma carga útil que el script Python) y espera a que Soroban confirme la transacción.
-  Los resultados se guardan en `logs/backend.integration.log`.
+  real, registra el nuevo `event_count`, aprueba/revoca un creador y ejecuta un `POST /events/claim`
+  para mintiar un POAP con la cuenta indicada. Los resultados y `signedEnvelope`s se guardan
+  en `logs/backend.integration.log`.
 
 ## Probar con Postman / curl
 

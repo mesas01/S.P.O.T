@@ -242,6 +242,29 @@ export async function createEvent({
   });
 }
 
+export async function claimPoap({
+  rpcUrl,
+  networkPassphrase,
+  contractId,
+  payerSecret,
+  claimer,
+  eventId,
+}) {
+  const args = [
+    nativeToScVal(eventId, { type: "u32" }),
+    Address.fromString(claimer).toScVal(),
+  ];
+
+  return sendContractInvocation({
+    rpcUrl,
+    networkPassphrase,
+    signerSecret: payerSecret,
+    contractId,
+    method: "claim",
+    args,
+  });
+}
+
 export async function getAdminAddress({
   rpcUrl,
   networkPassphrase,
@@ -257,5 +280,22 @@ export async function getAdminAddress({
     args: [],
   });
   return value;
+}
+
+export async function getEventCount({
+  rpcUrl,
+  networkPassphrase,
+  contractId,
+  adminSecret,
+}) {
+  const count = await simulateContractCall({
+    rpcUrl,
+    networkPassphrase,
+    signerSecret: adminSecret,
+    contractId,
+    method: "event_count",
+    args: [],
+  });
+  return Number(count);
 }
 

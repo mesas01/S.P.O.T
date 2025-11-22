@@ -4,6 +4,7 @@ import { useWallet } from "../hooks/useWallet";
 import { useNavigate } from "react-router-dom";
 import { generateLinkQRCode } from "../utils/qrCode";
 import { getLocalEventsByCreator } from "../utils/localEvents";
+import TldrCard from "../components/layout/TldrCard";
 
 interface EventData {
   id: string;
@@ -187,23 +188,37 @@ const MyEvents: React.FC = () => {
           <div className="max-w-5xl mx-auto">
             {/* Header */}
             <div className="mb-8">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <Text as="h1" size="xl" className="text-3xl md:text-4xl font-headline text-stellar-black mb-2">
-                    Mis Eventos
-                  </Text>
-                  <Text as="p" size="md" className="text-stellar-black/70 font-body">
-                    {isLoadingEvents ? 'Cargando...' : localEvents.length === 0 ? '0 eventos creados' : `${localEvents.length} ${localEvents.length === 1 ? 'evento creado' : 'eventos creados'}`}
-                  </Text>
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-24 items-start">
+                <div className="col-span-full lg:col-span-16">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <Text as="h1" size="xl" className="text-3xl md:text-4xl font-headline text-stellar-black mb-2">
+                        Mis Eventos
+                      </Text>
+                      <Text as="p" size="md" className="text-stellar-black/70 font-body">
+                        {isLoadingEvents ? 'Cargando...' : localEvents.length === 0 ? '0 eventos creados' : `${localEvents.length} ${localEvents.length === 1 ? 'evento creado' : 'eventos creados'}`}
+                      </Text>
+                    </div>
+                    <Button
+                      variant="primary"
+                      size="md"
+                      onClick={() => navigate("/create-event")}
+                      className="bg-stellar-gold text-stellar-black hover:bg-yellow-400 rounded-full px-6 py-2.5 font-semibold shadow-md"
+                    >
+                      ➕ Crear Evento
+                    </Button>
+                  </div>
                 </div>
-                <Button
-                  variant="primary"
-                  size="md"
-                  onClick={() => navigate("/create-event")}
-                  className="bg-stellar-gold text-stellar-black hover:bg-yellow-400 rounded-full px-6 py-2.5 font-semibold shadow-md"
-                >
-                  ➕ Crear Evento
-                </Button>
+                <div className="col-span-full lg:col-span-8">
+                  <TldrCard
+                    summary="Esta vista resume el estado de tus SPOTs."
+                    bullets={[
+                      { label: "Visibilidad", detail: "Cards con highlights y métricas claras." },
+                      { label: "Distribución", detail: "QR, links y códigos al alcance." },
+                      { label: "Narrativa", detail: "Copy directo para sponsors y equipo." },
+                    ]}
+                  />
+                </div>
               </div>
             </div>
 
