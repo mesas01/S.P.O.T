@@ -67,4 +67,31 @@ export function getBackendBaseUrl() {
   return backendBaseUrl;
 }
 
+export interface OnchainEventSummary {
+  eventId: number;
+  name: string;
+  date: number;
+  location: string;
+  description: string;
+  maxSpots: number;
+  claimStart: number;
+  claimEnd: number;
+  metadataUri?: string;
+  imageUrl: string;
+  creator: string;
+  mintedCount: number;
+}
+
+export async function fetchOnchainEvents(creator?: string) {
+  const query = new URLSearchParams();
+  if (creator) {
+    query.set("creator", creator);
+  }
+
+  const response = await request<{ events: OnchainEventSummary[] }>(
+    `/events/onchain?${query.toString()}`,
+  );
+  return response.events;
+}
+
 

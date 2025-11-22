@@ -42,6 +42,36 @@ function formatResultXdr(result) {
   }
 }
 
+function decodeEventData(scVal) {
+  const mapEntries = scVal.map();
+  const data = {};
+  mapEntries.forEach((entry) => {
+    const key = entry.key().sym().toString();
+    data[key] = entry.val();
+  });
+
+  const toStringVal = (val) => (val ? val.str().toString() : "");
+  const toU32 = (val) => (val ? Number(val.u32()) : 0);
+  const toU64Number = (val) =>
+    val ? Number(val.u64().toString()) : 0;
+  const toAddress = (val) =>
+    val ? val.address().toString() : "";
+
+  return {
+    eventId: toU32(data.event_id),
+    creator: toAddress(data.creator),
+    eventName: toStringVal(data.event_name),
+    eventDate: toU64Number(data.event_date),
+    location: toStringVal(data.location),
+    description: toStringVal(data.description),
+    maxPoaps: toU32(data.max_poaps),
+    claimStart: toU64Number(data.claim_start),
+    claimEnd: toU64Number(data.claim_end),
+    metadataUri: toStringVal(data.metadata_uri),
+    imageUrl: toStringVal(data.image_url),
+  };
+}
+
 function getServer(rpcUrl) {
   return new SorobanRpc.Server(rpcUrl, { allowHttp: rpcUrl.startsWith("http://") });
 }
@@ -130,6 +160,7 @@ async function simulateContractCall({
   contractId,
   method,
   args,
+  decode = true,
 }) {
   const server = getServer(rpcUrl);
   const signerKeypair = Keypair.fromSecret(signerSecret);
@@ -149,7 +180,7 @@ async function simulateContractCall({
   if (!simulation.result?.retval) {
     throw new Error("No retval returned from simulation");
   }
-  return scValToNative(simulation.result.retval);
+  return decode ? scValToNative(simulation.result.retval) : simulation.result.retval;
 }
 
 export async function approveCreator({
@@ -297,5 +328,69 @@ export async function getEventCount({
     args: [],
   });
   return Number(count);
+}
+
+export async function getAllEventIds({
+  rpcUrl,
+  networkPassphrase,
+  contractId,
+  adminSecret,
+}) {
+  const raw = await simulateContractCall({
+    rpcUrl,
+    networkPassphrase,
+    signerSecret: adminSecret,
+    contractId,
+    method: "get_all_events",
+    args: [],
+    decode: false,
+  });
+
+  const vec = raw?.vec() || [];
+  return vec.map((entry) => Number(entry.u32()));
+}
+
+export async function getEventDetails({
+  rpcUrl,
+  networkPassphrase,
+  contractId,
+  adminSecret,
+  eventId,
+}) {
+  const scVal = await simulateContractCall({
+    rpcUrl,
+    networkPassphrase,
+    signerSecret: adminSecret,
+    contractId,
+    method: "get_event",
+    args: [nativeToScVal(eventId, { type: "u32" })],
+    decode: false,
+  });
+
+  if (!scVal || typeof scVal.map !== "function") {
+    throw new Error("Invalid response for get_event");
+  }
+
+  return decodeEventData(scVal);
+}
+
+export async function getMintedCount({
+  rpcUrl,
+  networkPassphrase,
+  contractId,
+  adminSecret,
+  eventId,
+}) {
+  const scVal = await simulateContractCall({
+    rpcUrl,
+    networkPassphrase,
+    signerSecret: adminSecret,
+    contractId,
+    method: "minted_count",
+    args: [nativeToScVal(eventId, { type: "u32" })],
+    decode: false,
+  });
+
+  return scVal?.u32 ? Number(scVal.u32()) : 0;
 }
 

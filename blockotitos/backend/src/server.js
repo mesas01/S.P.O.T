@@ -12,6 +12,9 @@ import {
   getAdminAddress,
   claimPoap,
   getEventCount,
+  getAllEventIds,
+  getEventDetails,
+  getMintedCount,
 } from "./soroban.js";
 
 dotenv.config({ path: process.env.ENV_PATH || undefined });
@@ -412,6 +415,77 @@ app.get("/contract/event-count", async (_req, res) => {
       status: "error",
       error: error.message || String(error),
     });
+    res.status(500).json({ error: error.message || String(error) });
+  }
+});
+
+app.get("/events/onchain", async (req, res) => {
+  if (isMock) {
+    return res.json({ events: [] });
+  }
+
+  const creatorFilter = (req.query.creator || "").toString().toLowerCase();
+
+  try {
+    const eventIds = await getAllEventIds({
+      rpcUrl: RPC_URL,
+      networkPassphrase: NETWORK_PASSPHRASE,
+      contractId: CONTRACT_ID,
+      adminSecret: ADMIN_SECRET,
+    });
+
+    const events = [];
+    for (const eventId of eventIds) {
+      try {
+        const [details, mintedCount] = await Promise.all([
+          getEventDetails({
+            rpcUrl: RPC_URL,
+            networkPassphrase: NETWORK_PASSPHRASE,
+            contractId: CONTRACT_ID,
+            adminSecret: ADMIN_SECRET,
+            eventId,
+          }),
+          getMintedCount({
+            rpcUrl: RPC_URL,
+            networkPassphrase: NETWORK_PASSPHRASE,
+            contractId: CONTRACT_ID,
+            adminSecret: ADMIN_SECRET,
+            eventId,
+          }),
+        ]);
+
+        if (
+          creatorFilter &&
+          details.creator.toLowerCase() !== creatorFilter
+        ) {
+          continue;
+        }
+
+        events.push({
+          eventId: details.eventId,
+          name: details.eventName,
+          date: details.eventDate,
+          location: details.location,
+          description: details.description,
+          maxSpots: details.maxPoaps,
+          claimStart: details.claimStart,
+          claimEnd: details.claimEnd,
+          metadataUri: details.metadataUri,
+          imageUrl: details.imageUrl,
+          creator: details.creator,
+          mintedCount,
+        });
+      } catch (innerError) {
+        console.error(
+          `Failed to fetch on-chain data for event ${eventId}:`,
+          innerError,
+        );
+      }
+    }
+
+    res.json({ events });
+  } catch (error) {
+    console.error("Error fetching on-chain events:", error);
     res.status(500).json({ error: error.message || String(error) });
   }
 });

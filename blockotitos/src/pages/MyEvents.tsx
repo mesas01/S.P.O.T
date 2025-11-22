@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Layout, Text, Button } from "@stellar/design-system";
+import { useQuery } from "@tanstack/react-query";
 import { useWallet } from "../hooks/useWallet";
 import { useNavigate } from "react-router-dom";
 import { generateLinkQRCode } from "../utils/qrCode";
 import { getLocalEventsByCreator } from "../utils/localEvents";
 import TldrCard from "../components/layout/TldrCard";
+import { fetchOnchainEvents } from "../util/backend";
 
 interface EventData {
   id: string;
@@ -30,7 +32,69 @@ interface EventData {
   codes: {
     sharedCode?: string;
   };
+  creator?: string;
+  source?: "local" | "contract";
+  contractEventId?: number;
 }
+
+const DEFAULT_DISTRIBUTION_METHODS = {
+  qr: true,
+  link: true,
+  code: true,
+  geolocation: false,
+  nfc: false,
+} as const;
+
+type ClaimStatus = "open" | "upcoming" | "closed" | "soldout";
+
+const CLAIM_STATUS_STYLES: Record<ClaimStatus, string> = {
+  open: "bg-stellar-teal/15 text-stellar-teal",
+  upcoming: "bg-stellar-gold/20 text-stellar-black",
+  closed: "bg-stellar-black/10 text-stellar-black/70",
+  soldout: "bg-stellar-lilac/20 text-stellar-black",
+};
+
+const getAppOrigin = () =>
+  typeof window !== "undefined" ? window.location.origin : "";
+
+const buildMintLink = (eventId: string | number) =>
+  `${getAppOrigin()}/mint?event=${eventId}`;
+
+const getClaimStatus = (event: EventData): {
+  status: ClaimStatus;
+  label: string;
+  icon: string;
+} => {
+  const claimed = event.claimedSpots || 0;
+  const max = event.maxSpots || 0;
+  if (max > 0 && claimed >= max) {
+    return { status: "soldout", label: "Agotado", icon: "⚠️" };
+  }
+
+  const now = Date.now();
+  const start = new Date(event.claimStart).getTime();
+  const end = new Date(event.claimEnd).getTime();
+
+  if (!Number.isFinite(start) || !Number.isFinite(end)) {
+    return { status: "open", label: "Activo", icon: "🟢" };
+  }
+
+  if (now < start) {
+    return { status: "upcoming", label: "Pendiente", icon: "⏳" };
+  }
+
+  if (now > end) {
+    return { status: "closed", label: "Cerrado", icon: "🔒" };
+  }
+
+  return { status: "open", label: "Reclamable", icon: "🟢" };
+};
+
+const sortEventsByDate = (events: EventData[]) =>
+  [...events].sort(
+    (a, b) =>
+      (new Date(b.date).getTime() || 0) - (new Date(a.date).getTime() || 0),
+  );
 
 
 const MyEvents: React.FC = () => {
@@ -43,7 +107,82 @@ const MyEvents: React.FC = () => {
 
   // Obtener eventos locales (temporal hasta que el contrato esté configurado)
   const [localEvents, setLocalEvents] = useState<EventData[]>([]);
-  const [isLoadingEvents, setIsLoadingEvents] = useState(false);
+  const [isLoadingLocalEvents, setIsLoadingLocalEvents] = useState(false);
+  const {
+    data: onchainEvents = [],
+    isLoading: isLoadingOnchainEvents,
+    error: onchainError,
+    refetch: refetchOnchainEvents,
+  } = useQuery({
+    queryKey: ["onchain-events", address],
+    queryFn: () => fetchOnchainEvents(address || ""),
+    enabled: !!address,
+    refetchInterval: 15000,
+    staleTime: 15000,
+  });
+  const contractEvents = useMemo(() => {
+    if (!onchainEvents || onchainEvents.length === 0) {
+      return [];
+    }
+    return onchainEvents.map((event) => {
+      const toIso = (seconds: number) =>
+        Number.isFinite(seconds) && seconds > 0
+          ? new Date(seconds * 1000).toISOString()
+          : new Date().toISOString();
+
+      return {
+        id: event.eventId.toString(),
+        contractEventId: event.eventId,
+        name: event.name,
+        date: toIso(event.date),
+        location: event.location || "Sin ubicación",
+        maxSpots: event.maxSpots,
+        claimedSpots: event.mintedCount,
+        claimStart: toIso(event.claimStart),
+        claimEnd: toIso(event.claimEnd),
+        imageUrl:
+          event.imageUrl ||
+          "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=80",
+        distributionMethods: { ...DEFAULT_DISTRIBUTION_METHODS },
+        links: {
+          uniqueLink: buildMintLink(event.eventId),
+        },
+        codes: {
+          sharedCode: `SPOT-${event.eventId.toString().padStart(4, "0")}`,
+        },
+        creator: event.creator,
+        source: "contract" as const,
+      } satisfies EventData;
+    });
+  }, [onchainEvents]);
+  const sortedContractEvents = useMemo(
+    () => sortEventsByDate(contractEvents),
+    [contractEvents],
+  );
+  const sortedLocalEvents = useMemo(
+    () => sortEventsByDate(localEvents),
+    [localEvents],
+  );
+  const eventsToDisplay = useMemo(
+    () => sortEventsByDate([...sortedContractEvents, ...sortedLocalEvents]),
+    [sortedContractEvents, sortedLocalEvents],
+  );
+  const isLoadingEvents =
+    isLoadingLocalEvents || (isConnected && isLoadingOnchainEvents);
+  const eventsError = onchainError ? (onchainError as Error) : null;
+  const totalEvents = eventsToDisplay.length;
+  const eventsSummaryLabel = isLoadingEvents
+    ? "Cargando..."
+    : totalEvents === 0
+    ? "0 eventos creados"
+    : `${totalEvents} ${totalEvents === 1 ? "evento creado" : "eventos creados"}`;
+
+  const handleRetry = () => {
+    loadLocalEvents();
+    if (address) {
+      void refetchOnchainEvents();
+    }
+  };
 
   // Función auxiliar para generar QR
   const generateQRForEvent = async (eventId: string, uniqueLink: string) => {
@@ -61,26 +200,39 @@ const MyEvents: React.FC = () => {
   };
 
   // Generar QR cuando se expande un evento específico
-  const toggleEventDetails = async (eventId: string) => {
+  const toggleEventDetails = async (event: EventData) => {
+    const eventId = event.id;
     const isExpanding = expandedEvent !== eventId;
-    setExpandedEvent(expandedEvent === eventId ? null : eventId);
+    setExpandedEvent(isExpanding ? eventId : null);
 
     // Si estamos expandiendo y no tenemos el QR, generarlo
     if (isExpanding) {
-      const uniqueLink = `${typeof window !== 'undefined' ? window.location.origin : ''}/mint?event=${eventId}`;
+      const uniqueLink =
+        event.links.uniqueLink ??
+        buildMintLink(event.contractEventId ?? event.id);
       await generateQRForEvent(eventId, uniqueLink);
     }
   };
 
   const copyToClipboard = (text: string, type: 'link' | 'code', id: string) => {
-    navigator.clipboard.writeText(text);
-    if (type === 'link') {
-      setCopiedLink(id);
-      setTimeout(() => setCopiedLink(null), 2000);
-    } else {
-      setCopiedCode(id);
-      setTimeout(() => setCopiedCode(null), 2000);
+    if (!navigator?.clipboard) {
+      console.warn("Clipboard API no disponible en este navegador");
+      return;
     }
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        if (type === 'link') {
+          setCopiedLink(id);
+          setTimeout(() => setCopiedLink(null), 2000);
+        } else {
+          setCopiedCode(id);
+          setTimeout(() => setCopiedCode(null), 2000);
+        }
+      })
+      .catch((error) =>
+        console.error("Error copiando al portapapeles:", error),
+      );
   };
 
   const formatDate = (dateString: string) => {
@@ -99,7 +251,7 @@ const MyEvents: React.FC = () => {
   // Función para cargar eventos locales
   const loadLocalEvents = () => {
     if (address) {
-      setIsLoadingEvents(true);
+      setIsLoadingLocalEvents(true);
       try {
         const events = getLocalEventsByCreator(address);
         // Convertir eventos locales al formato EventData
@@ -113,19 +265,21 @@ const MyEvents: React.FC = () => {
           claimStart: event.claimStart,
           claimEnd: event.claimEnd,
           imageUrl: event.imageUrl,
-          distributionMethods: event.distributionMethods,
+          distributionMethods: event.distributionMethods || { ...DEFAULT_DISTRIBUTION_METHODS },
           links: {
-            uniqueLink: `${typeof window !== 'undefined' ? window.location.origin : ''}/mint?event=${event.id}`,
+            uniqueLink: buildMintLink(event.id),
           },
           codes: {
             sharedCode: `SPOT-${event.id.slice(-8).toUpperCase()}`,
           },
+          creator: event.creator,
+          source: "local",
         }));
         setLocalEvents(formattedEvents);
       } catch (error) {
         console.error("Error cargando eventos locales:", error);
       } finally {
-        setIsLoadingEvents(false);
+        setIsLoadingLocalEvents(false);
       }
     } else {
       setLocalEvents([]);
@@ -196,7 +350,7 @@ const MyEvents: React.FC = () => {
                         Mis Eventos
                       </Text>
                       <Text as="p" size="md" className="text-stellar-black/70 font-body">
-                        {isLoadingEvents ? 'Cargando...' : localEvents.length === 0 ? '0 eventos creados' : `${localEvents.length} ${localEvents.length === 1 ? 'evento creado' : 'eventos creados'}`}
+                        {eventsSummaryLabel}
                       </Text>
                     </div>
                     <Button
@@ -234,7 +388,25 @@ const MyEvents: React.FC = () => {
                   Obteniendo tus eventos...
                 </Text>
               </div>
-            ) : localEvents.length === 0 ? (
+            ) : eventsError ? (
+              <div className="bg-stellar-white rounded-3xl shadow-lg p-12 text-center border border-red-200">
+                <div className="text-6xl mb-6">⚠️</div>
+                <Text as="h2" size="lg" className="text-2xl font-headline text-stellar-black mb-4">
+                  No pudimos cargar tus eventos
+                </Text>
+                <Text as="p" size="md" className="text-stellar-black/70 mb-8 font-body max-w-xl mx-auto">
+                  {eventsError instanceof Error ? eventsError.message : "Intenta nuevamente en unos segundos."}
+                </Text>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={handleRetry}
+                  className="bg-stellar-gold text-stellar-black hover:bg-yellow-400 rounded-full px-8 py-3 font-semibold shadow-md"
+                >
+                  Reintentar
+                </Button>
+              </div>
+            ) : eventsToDisplay.length === 0 ? (
               <div className="bg-stellar-white rounded-3xl shadow-lg p-12 text-center border border-stellar-lilac/20">
                 <div className="text-6xl mb-6">📅</div>
                 <Text as="h2" size="lg" className="text-2xl font-headline text-stellar-black mb-4">
@@ -254,242 +426,270 @@ const MyEvents: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {localEvents.map((event) => (
-                  <div
-                    key={event.id}
-                    className="bg-stellar-white rounded-2xl shadow-sm border border-stellar-black/10 hover:shadow-md transition-shadow duration-200 overflow-hidden"
-                  >
-                    {/* Event Card Header - Always Visible */}
-                    <div 
-                      className="p-5 md:p-6 cursor-pointer"
-                      onClick={() => toggleEventDetails(event.id)}
+                {eventsToDisplay.map((event) => {
+                  const claimStatus = getClaimStatus(event);
+                  const mintedPercentage =
+                    event.maxSpots > 0
+                      ? Math.min(
+                          100,
+                          Math.round(
+                            (event.claimedSpots / event.maxSpots) * 100,
+                          ),
+                        )
+                      : 0;
+                  return (
+                    <div
+                      key={event.id}
+                      className="bg-stellar-white rounded-2xl shadow-sm border border-stellar-black/10 hover:shadow-md transition-shadow duration-200 overflow-hidden"
                     >
-                      <div className="flex items-start gap-4">
-                        {/* Event Image */}
-                        {event.imageUrl && (
-                          <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden border-2 border-stellar-lilac/20 flex-shrink-0 bg-stellar-warm-grey/20">
-                            {event.imageUrl.startsWith('http') || event.imageUrl.startsWith('/images/') || event.imageUrl.startsWith('data:') ? (
-                              <img 
-                                src={event.imageUrl} 
-                                alt={event.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-3xl">
-                                🎯
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        
-                        {/* Event Info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-4 mb-2">
-                            <Text as="h2" size="lg" className="text-xl md:text-2xl font-headline text-stellar-black">
-                              {event.name}
-                            </Text>
-                            <button className="flex-shrink-0 text-stellar-black/40 hover:text-stellar-black transition-colors">
-                              {expandedEvent === event.id ? '▼' : '▶'}
-                            </button>
-                          </div>
-                          <div className="flex flex-wrap gap-3 text-sm text-stellar-black/60 font-body mb-3">
-                            <span>📅 {new Date(event.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                            <span>📍 {event.location}</span>
-                          </div>
-                          
-                          {/* Stats Bar */}
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 bg-stellar-lilac/10 rounded-full px-4 py-1.5">
-                              <span className="text-sm font-semibold text-stellar-black">🎫</span>
-                              <span className="text-sm font-semibold text-stellar-black">{event.claimedSpots}/{event.maxSpots}</span>
-                              <span className="text-xs text-stellar-black/60">reclamados</span>
-                            </div>
-                            <div className="text-xs text-stellar-black/50 font-body">
-                              {event.maxSpots > 0 ? Math.round((event.claimedSpots / event.maxSpots) * 100) : 0}% completado
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Expandable Details */}
-                    {expandedEvent === event.id && (
-                      <div className="border-t border-stellar-black/10 p-5 md:p-6 bg-stellar-warm-grey/20 space-y-6">
-                        {/* Claim Period */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="bg-stellar-white rounded-xl p-4 border border-stellar-lilac/20">
-                            <Text as="p" size="xs" className="text-stellar-black/50 font-body mb-1 uppercase tracking-wide">
-                              Inicio
-                            </Text>
-                            <Text as="p" size="md" className="text-stellar-black font-body">
-                              {formatDate(event.claimStart)}
-                            </Text>
-                          </div>
-                          <div className="bg-stellar-white rounded-xl p-4 border border-stellar-lilac/20">
-                            <Text as="p" size="xs" className="text-stellar-black/50 font-body mb-1 uppercase tracking-wide">
-                              Fin
-                            </Text>
-                            <Text as="p" size="md" className="text-stellar-black font-body">
-                              {formatDate(event.claimEnd)}
-                            </Text>
-                          </div>
-                        </div>
-
-                        {/* Distribution Methods */}
-                        <div>
-                          <Text as="h3" size="sm" className="font-headline text-stellar-black mb-3 uppercase text-sm tracking-wide">
-                            Métodos Activos
-                          </Text>
-                          <div className="flex flex-wrap gap-2">
-                            {event.distributionMethods.qr && (
-                              <span className="px-4 py-2 bg-stellar-gold/20 text-stellar-black rounded-full text-sm font-body border border-stellar-gold/30">
-                                📷 QR
-                              </span>
-                            )}
-                            {event.distributionMethods.link && (
-                              <span className="px-4 py-2 bg-stellar-lilac/20 text-stellar-black rounded-full text-sm font-body border border-stellar-lilac/30">
-                                🔗 Link
-                              </span>
-                            )}
-                            {event.distributionMethods.code && (
-                              <span className="px-4 py-2 bg-stellar-teal/20 text-stellar-black rounded-full text-sm font-body border border-stellar-teal/30">
-                                🔢 Código
-                              </span>
-                            )}
-                            {event.distributionMethods.geolocation && (
-                              <span className="px-4 py-2 bg-stellar-warm-grey/50 text-stellar-black rounded-full text-sm font-body border border-stellar-black/10">
-                                📍 Geo
-                              </span>
-                            )}
-                            {event.distributionMethods.nfc && (
-                              <span className="px-4 py-2 bg-stellar-navy/20 text-stellar-black rounded-full text-sm font-body border border-stellar-navy/30">
-                                💳 NFC
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Links and Codes */}
-                        <div className="space-y-4">
-                          {/* Unique Link */}
-                          {event.links.uniqueLink && (
-                            <div className="bg-stellar-white rounded-xl p-5 border border-stellar-lilac/20">
-                              <div className="flex items-center gap-2 mb-3">
-                                <span className="text-xl">🔗</span>
-                                <Text as="h3" size="md" className="font-headline text-stellar-black">
-                                  Link Único
-                                </Text>
-                              </div>
-                              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                                <div className="flex-1 bg-stellar-warm-grey/30 rounded-lg p-3 border border-stellar-lilac/20 min-w-0">
-                                  <Text as="p" size="sm" className="font-mono text-stellar-black break-all font-body text-xs">
-                                    {event.links.uniqueLink}
-                                  </Text>
-                                </div>
-                                <Button
-                                  variant="primary"
-                                  size="md"
-                                  onClick={() => copyToClipboard(event.links.uniqueLink!, 'link', event.id)}
-                                  className={`flex-shrink-0 rounded-full px-6 py-2.5 font-semibold ${
-                                    copiedLink === event.id 
-                                      ? 'bg-stellar-teal text-stellar-white' 
-                                      : 'bg-stellar-lilac text-stellar-black hover:bg-stellar-lilac/80'
-                                  }`}
-                                >
-                                  {copiedLink === event.id ? "✓ Copiado" : "📋 Copiar"}
-                                </Button>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Shared Code */}
-                          {event.codes.sharedCode && (
-                            <div className="bg-stellar-white rounded-xl p-5 border border-stellar-gold/30">
-                              <div className="flex items-center gap-2 mb-3">
-                                <span className="text-xl">🔢</span>
-                                <Text as="h3" size="md" className="font-headline text-stellar-black">
-                                  Código Compartido
-                                </Text>
-                              </div>
-                              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                                <div className="flex-1 bg-stellar-gold/10 rounded-lg p-4 border border-stellar-gold/30 text-center">
-                                  <Text as="p" size="xl" className="font-headline text-stellar-black font-mono tracking-wider">
-                                    {event.codes.sharedCode}
-                                  </Text>
-                                </div>
-                                <Button
-                                  variant="primary"
-                                  size="md"
-                                  onClick={() => copyToClipboard(event.codes.sharedCode!, 'code', event.id)}
-                                  className={`flex-shrink-0 rounded-full px-6 py-2.5 font-semibold ${
-                                    copiedCode === event.id 
-                                      ? 'bg-stellar-teal text-stellar-white' 
-                                      : 'bg-stellar-gold text-stellar-black hover:bg-yellow-400'
-                                  }`}
-                                >
-                                  {copiedCode === event.id ? "✓ Copiado" : "📋 Copiar"}
-                                </Button>
-                              </div>
-                              <Text as="p" size="xs" className="text-stellar-black/50 mt-3 text-center font-body italic">
-                                Comparte este código con los asistentes
-                              </Text>
-                            </div>
-                          )}
-
-                          {/* QR Code */}
-                          {event.distributionMethods.qr && (
-                            <div className="bg-stellar-white rounded-xl p-5 border border-stellar-teal/20 text-center">
-                              <div className="flex items-center justify-center gap-2 mb-4">
-                                <span className="text-xl">📷</span>
-                                <Text as="h3" size="md" className="font-headline text-stellar-black">
-                                  Código QR
-                                </Text>
-                              </div>
-                              {loadingQR[event.id] ? (
-                                <div className="flex justify-center items-center py-8">
-                                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-stellar-teal"></div>
-                                  <Text as="p" size="sm" className="text-stellar-black/50 ml-4 font-body">
-                                    Generando QR...
-                                  </Text>
-                                </div>
-                              ) : qrCodes[event.id] ? (
-                                <>
-                                  <div className="flex justify-center mb-3">
-                                    <div className="bg-white p-4 rounded-xl border-2 border-stellar-teal/30 shadow-md">
-                                      <img 
-                                        src={qrCodes[event.id]} 
-                                        alt="QR Code del evento"
-                                        className="w-40 h-40"
-                                        onError={(e) => {
-                                          console.error('Error cargando QR:', e);
-                                          e.currentTarget.src = '';
-                                        }}
-                                      />
-                                    </div>
-                                  </div>
-                                  <Text as="p" size="xs" className="text-stellar-black/50 font-body italic mb-2">
-                                    Escanea para reclamar tu SPOT
-                                  </Text>
-                                  {event.links.uniqueLink && (
-                                    <Text as="p" size="xs" className="text-stellar-black/40 font-body font-mono text-xs break-all px-4">
-                                      {event.links.uniqueLink}
-                                    </Text>
-                                  )}
-                                </>
+                      {/* Event Card Header - Always Visible */}
+                      <div 
+                        className="p-5 md:p-6 cursor-pointer"
+                        onClick={() => toggleEventDetails(event)}
+                      >
+                        <div className="flex items-start gap-4">
+                          {/* Event Image */}
+                          {event.imageUrl && (
+                            <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden border-2 border-stellar-lilac/20 flex-shrink-0 bg-stellar-warm-grey/20">
+                              {event.imageUrl.startsWith('http') || event.imageUrl.startsWith('/images/') || event.imageUrl.startsWith('data:') ? (
+                                <img 
+                                  src={event.imageUrl} 
+                                  alt={event.name}
+                                  className="w-full h-full object-cover"
+                                />
                               ) : (
-                                <div className="py-8">
-                                  <Text as="p" size="sm" className="text-stellar-black/50 font-body">
-                                    No se pudo generar el código QR. Por favor, intenta nuevamente.
-                                  </Text>
+                                <div className="w-full h-full flex items-center justify-center text-3xl">
+                                  🎯
                                 </div>
                               )}
                             </div>
                           )}
+                          
+                          {/* Event Info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-4 mb-2">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <Text as="h2" size="lg" className="text-xl md:text-2xl font-headline text-stellar-black">
+                                    {event.name}
+                                  </Text>
+                                  {event.source === "contract" && (
+                                    <span className="text-[11px] uppercase tracking-wide bg-stellar-teal/15 text-stellar-teal font-semibold px-2 py-0.5 rounded-full">
+                                      On-chain
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex flex-wrap gap-3 text-sm text-stellar-black/60 font-body mt-2">
+                                  <span>📅 {new Date(event.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                  <span>📍 {event.location}</span>
+                                </div>
+                              </div>
+                              <button className="flex-shrink-0 text-stellar-black/40 hover:text-stellar-black transition-colors">
+                                {expandedEvent === event.id ? '▼' : '▶'}
+                              </button>
+                            </div>
+                            
+                            {/* Stats Bar */}
+                            <div className="flex flex-wrap items-center gap-3">
+                              <div className="flex items-center gap-2 bg-stellar-lilac/10 rounded-full px-4 py-1.5">
+                                <span className="text-sm font-semibold text-stellar-black">🎫</span>
+                                <span className="text-sm font-semibold text-stellar-black">{event.claimedSpots}/{event.maxSpots}</span>
+                                <span className="text-xs text-stellar-black/60">reclamados</span>
+                              </div>
+                              <div className="text-xs text-stellar-black/50 font-body">
+                                {mintedPercentage}% completado
+                              </div>
+                              <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${CLAIM_STATUS_STYLES[claimStatus.status]}`}>
+                                <span>{claimStatus.icon}</span>
+                                <span>{claimStatus.label}</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    )}
-                  </div>
-                ))}
+
+                      {/* Expandable Details */}
+                      {expandedEvent === event.id && (
+                        <div className="border-t border-stellar-black/10 p-5 md:p-6 bg-stellar-warm-grey/20 space-y-6">
+                          {/* Claim Period */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="bg-stellar-white rounded-xl p-4 border border-stellar-lilac/20">
+                              <Text as="p" size="xs" className="text-stellar-black/50 font-body mb-1 uppercase tracking-wide">
+                                Inicio
+                              </Text>
+                              <Text as="p" size="md" className="text-stellar-black font-body">
+                                {formatDate(event.claimStart)}
+                              </Text>
+                            </div>
+                            <div className="bg-stellar-white rounded-xl p-4 border border-stellar-lilac/20">
+                              <Text as="p" size="xs" className="text-stellar-black/50 font-body mb-1 uppercase tracking-wide">
+                                Fin
+                              </Text>
+                              <Text as="p" size="md" className="text-stellar-black font-body">
+                                {formatDate(event.claimEnd)}
+                              </Text>
+                            </div>
+                          </div>
+                          <Text as="p" size="xs" className="text-stellar-black/60 font-body">
+                            Estado del claim: <span className="font-semibold">{claimStatus.label}</span>.
+                          </Text>
+
+                          {/* Distribution Methods */}
+                          <div>
+                            <Text as="h3" size="sm" className="font-headline text-stellar-black mb-3 uppercase text-sm tracking-wide">
+                              Métodos Activos
+                            </Text>
+                            <div className="flex flex-wrap gap-2">
+                              {event.distributionMethods.qr && (
+                                <span className="px-4 py-2 bg-stellar-gold/20 text-stellar-black rounded-full text-sm font-body border border-stellar-gold/30">
+                                  📷 QR
+                                </span>
+                              )}
+                              {event.distributionMethods.link && (
+                                <span className="px-4 py-2 bg-stellar-lilac/20 text-stellar-black rounded-full text-sm font-body border border-stellar-lilac/30">
+                                  🔗 Link
+                                </span>
+                              )}
+                              {event.distributionMethods.code && (
+                                <span className="px-4 py-2 bg-stellar-teal/20 text-stellar-black rounded-full text-sm font-body border border-stellar-teal/30">
+                                  🔢 Código
+                                </span>
+                              )}
+                              {event.distributionMethods.geolocation && (
+                                <span className="px-4 py-2 bg-stellar-warm-grey/50 text-stellar-black rounded-full text-sm font-body border border-stellar-black/10">
+                                  📍 Geo
+                                </span>
+                              )}
+                              {event.distributionMethods.nfc && (
+                                <span className="px-4 py-2 bg-stellar-navy/20 text-stellar-black rounded-full text-sm font-body border border-stellar-navy/30">
+                                  💳 NFC
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Links and Codes */}
+                          <div className="space-y-4">
+                            {/* Unique Link */}
+                            {event.links.uniqueLink && (
+                              <div className="bg-stellar-white rounded-xl p-5 border border-stellar-lilac/20">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <span className="text-xl">🔗</span>
+                                  <Text as="h3" size="md" className="font-headline text-stellar-black">
+                                    Link Único
+                                  </Text>
+                                </div>
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                                  <div className="flex-1 bg-stellar-warm-grey/30 rounded-lg p-3 border border-stellar-lilac/20 min-w-0">
+                                    <Text as="p" size="sm" className="font-mono text-stellar-black break-all font-body text-xs">
+                                      {event.links.uniqueLink}
+                                    </Text>
+                                  </div>
+                                  <Button
+                                    variant="primary"
+                                    size="md"
+                                    onClick={() => copyToClipboard(event.links.uniqueLink!, 'link', event.id)}
+                                    className={`flex-shrink-0 rounded-full px-6 py-2.5 font-semibold ${
+                                      copiedLink === event.id 
+                                        ? 'bg-stellar-teal text-stellar-white' 
+                                        : 'bg-stellar-lilac text-stellar-black hover:bg-stellar-lilac/80'
+                                    }`}
+                                  >
+                                    {copiedLink === event.id ? "✓ Copiado" : "📋 Copiar"}
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Shared Code */}
+                            {event.codes.sharedCode && (
+                              <div className="bg-stellar-white rounded-xl p-5 border border-stellar-gold/30">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <span className="text-xl">🔢</span>
+                                  <Text as="h3" size="md" className="font-headline text-stellar-black">
+                                    Código Compartido
+                                  </Text>
+                                </div>
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                                  <div className="flex-1 bg-stellar-gold/10 rounded-lg p-4 border border-stellar-gold/30 text-center">
+                                    <Text as="p" size="xl" className="font-headline text-stellar-black font-mono tracking-wider">
+                                      {event.codes.sharedCode}
+                                    </Text>
+                                  </div>
+                                  <Button
+                                    variant="primary"
+                                    size="md"
+                                    onClick={() => copyToClipboard(event.codes.sharedCode!, 'code', event.id)}
+                                    className={`flex-shrink-0 rounded-full px-6 py-2.5 font-semibold ${
+                                      copiedCode === event.id 
+                                        ? 'bg-stellar-teal text-stellar-white' 
+                                        : 'bg-stellar-gold text-stellar-black hover:bg-yellow-400'
+                                    }`}
+                                  >
+                                    {copiedCode === event.id ? "✓ Copiado" : "📋 Copiar"}
+                                  </Button>
+                                </div>
+                                <Text as="p" size="xs" className="text-stellar-black/50 mt-3 text-center font-body italic">
+                                  Comparte este código con los asistentes
+                                </Text>
+                              </div>
+                            )}
+
+                            {/* QR Code */}
+                            {event.distributionMethods.qr && (
+                              <div className="bg-stellar-white rounded-xl p-5 border border-stellar-teal/20 text-center">
+                                <div className="flex items-center justify-center gap-2 mb-4">
+                                  <span className="text-xl">📷</span>
+                                  <Text as="h3" size="md" className="font-headline text-stellar-black">
+                                    Código QR
+                                  </Text>
+                                </div>
+                                {loadingQR[event.id] ? (
+                                  <div className="flex justify-center items-center py-8">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-stellar-teal"></div>
+                                    <Text as="p" size="sm" className="text-stellar-black/50 ml-4 font-body">
+                                      Generando QR...
+                                    </Text>
+                                  </div>
+                                ) : qrCodes[event.id] ? (
+                                  <>
+                                    <div className="flex justify-center mb-3">
+                                      <div className="bg-white p-4 rounded-xl border-2 border-stellar-teal/30 shadow-md">
+                                        <img 
+                                          src={qrCodes[event.id]} 
+                                          alt="QR Code del evento"
+                                          className="w-40 h-40"
+                                          onError={(e) => {
+                                            console.error('Error cargando QR:', e);
+                                            e.currentTarget.src = '';
+                                          }}
+                                        />
+                                      </div>
+                                    </div>
+                                    <Text as="p" size="xs" className="text-stellar-black/50 font-body italic mb-2">
+                                      Escanea para reclamar tu SPOT
+                                    </Text>
+                                    {event.links.uniqueLink && (
+                                      <Text as="p" size="xs" className="text-stellar-black/40 font-body font-mono text-xs break-all px-4">
+                                        {event.links.uniqueLink}
+                                      </Text>
+                                    )}
+                                  </>
+                                ) : (
+                                  <div className="py-8">
+                                    <Text as="p" size="sm" className="text-stellar-black/50 font-body">
+                                      No se pudo generar el código QR. Por favor, intenta nuevamente.
+                                    </Text>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
