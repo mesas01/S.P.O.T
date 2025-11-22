@@ -1,0 +1,270 @@
+/* Spot Cards - Estilos y animaciones específicas */
+
+/* Card container animations */
+.spot-card-container {
+    animation: fadeInUp 0.5s ease-out;
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Staggered animation for multiple cards */
+  .spot-card-container:nth-child(1) { animation-delay: 0.05s; }
+  .spot-card-container:nth-child(2) { animation-delay: 0.1s; }
+  .spot-card-container:nth-child(3) { animation-delay: 0.15s; }
+  .spot-card-container:nth-child(4) { animation-delay: 0.2s; }
+  .spot-card-container:nth-child(5) { animation-delay: 0.25s; }
+  .spot-card-container:nth-child(6) { animation-delay: 0.3s; }
+  
+  /* Enhanced hover effects for cards */
+  .spot-card {
+    position: relative;
+    transform-style: preserve-3d;
+    perspective: 1000px;
+  }
+  
+  .spot-card::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(135deg, 
+      rgba(255, 200, 69, 0.3),
+      rgba(197, 165, 255, 0.3),
+      rgba(0, 180, 216, 0.3)
+    );
+    border-radius: 1rem;
+    opacity: 0;
+    z-index: -1;
+    filter: blur(10px);
+    transition: opacity 0.4s ease;
+  }
+  
+  .spot-card:hover::before {
+    opacity: 1;
+    animation: rotate-gradient 3s linear infinite;
+  }
+  
+  @keyframes rotate-gradient {
+    0% {
+      filter: blur(10px) hue-rotate(0deg);
+    }
+    100% {
+      filter: blur(10px) hue-rotate(360deg);
+    }
+  }
+  
+  /* Image zoom effect with glow */
+  .spot-card-image-wrapper {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .spot-card-image {
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+  }
+  
+  .spot-card:hover .spot-card-image {
+    transform: scale(1.15);
+  }
+  
+  /* Glow effect behind image */
+  .spot-card-image-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, 
+      rgba(255, 200, 69, 0.4), 
+      transparent 70%
+    );
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    filter: blur(20px);
+  }
+  
+  .spot-card:hover .spot-card-image-glow {
+    opacity: 1;
+  }
+  
+  /* Pulse animation for placeholder badges */
+  @keyframes pulse-badge {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.05);
+      opacity: 0.9;
+    }
+  }
+  
+  .spot-card-badge {
+    animation: pulse-badge 2s ease-in-out infinite;
+  }
+  
+  /* Month section header animations */
+  .month-section-header {
+    animation: slideInLeft 0.6s ease-out;
+  }
+  
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  /* Counter badge bounce */
+  .month-counter-badge {
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+  
+  .month-section-header:hover .month-counter-badge {
+    transform: scale(1.1);
+  }
+  
+  /* Bottom accent line animation */
+  .spot-card-accent-line {
+    height: 3px;
+    background: linear-gradient(90deg, 
+      var(--stellar-gold), 
+      var(--stellar-lilac), 
+      var(--stellar-teal)
+    );
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .spot-card:hover .spot-card-accent-line {
+    transform: scaleX(1);
+  }
+  
+  /* Text highlight on hover */
+  .spot-card-title {
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, 
+      var(--stellar-black), 
+      var(--stellar-black)
+    );
+    background-size: 100% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+  
+  .spot-card:hover .spot-card-title {
+    background: linear-gradient(135deg, 
+      var(--stellar-gold), 
+      var(--stellar-lilac)
+    );
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* Decorative elements */
+  .month-decorative-line {
+    position: relative;
+    height: 2px;
+    background: linear-gradient(90deg, 
+      transparent, 
+      rgba(197, 165, 255, 0.3), 
+      transparent
+    );
+    overflow: hidden;
+  }
+  
+  .month-decorative-line::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+      transparent,
+      rgba(255, 200, 69, 0.6),
+      transparent
+    );
+    animation: shimmer-line 3s infinite;
+  }
+  
+  @keyframes shimmer-line {
+    0% {
+      left: -100%;
+    }
+    100% {
+      left: 100%;
+    }
+  }
+  
+  /* Grid auto-fit responsive */
+  @media (max-width: 640px) {
+    .spot-cards-grid {
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+  }
+  
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .spot-cards-grid {
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+  }
+  
+  @media (min-width: 1025px) {
+    .spot-cards-grid {
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+  }
+  
+  /* Loading skeleton for cards */
+  .spot-card-skeleton {
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes skeleton-loading {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+  
+  /* Smooth scroll behavior for month sections */
+  .month-section {
+    scroll-margin-top: 100px;
+  }
+  
+  /* Focus states for accessibility */
+  .spot-card:focus-visible {
+    outline: 3px solid var(--stellar-gold);
+    outline-offset: 4px;
+    border-radius: 1rem;
+  }
+  
+  /* Reduce motion for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    .spot-card,
+    .spot-card-image,
+    .spot-card::before,
+    .spot-card-accent-line,
+    .month-section-header {
+      animation: none !important;
+      transition: none !important;
+    }
+    
+    .spot-card:hover {
+      transform: none !important;
+    }
+  }
