@@ -25,9 +25,9 @@ const TldrCard: React.FC<TldrCardProps> = ({
   const containerClassName = [
     "brand-tldr",
     "w-full",
-    "max-w-xl",
-    "sm:max-w-2xl",
-    "md:max-w-3xl",
+    "md:max-w-none",
+    "xl:max-w-5xl",
+    "2xl:max-w-6xl",
     className,
   ]
     .filter(Boolean)
@@ -52,11 +52,11 @@ const TldrCard: React.FC<TldrCardProps> = ({
       )}
 
       {bullets.length > 0 && (
-        <ul className="mt-4 space-y-3 text-sm font-body text-stellar-black">
+        <ul className="mt-4 grid gap-4 text-sm font-body text-stellar-black md:grid-cols-2">
           {bullets.map((bullet, index) => {
             const key = typeof bullet === "string" ? `${index}-${bullet.slice(0, 10)}` : `${index}-${bullet.label}`;
             return (
-              <li key={key} className="flex gap-3">
+              <li key={key} className="flex gap-3 items-start">
                 <span className="mt-2 h-2 w-2 rounded-full bg-stellar-black/50" />
                 <div>
                   {typeof bullet === "string" ? (

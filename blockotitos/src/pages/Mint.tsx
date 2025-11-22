@@ -228,11 +228,11 @@ const Mint: React.FC = () => {
     <Layout.Content>
       <Layout.Inset>
         <div className="min-h-screen bg-stellar-white py-6 md:py-12">
-        <div className="max-w-md mx-auto">
+        <div className="max-w-6xl 2xl:max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-24 items-start">
-              <div className="col-span-full lg:col-span-16 text-center">
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-24 items-start">
+              <div className="col-span-full xl:col-span-17 text-center xl:text-left">
                 <Button
                   variant="tertiary"
                   size="sm"
@@ -248,8 +248,9 @@ const Mint: React.FC = () => {
                   Elige un método para reclamar tu SPOT
                 </Text>
               </div>
-              <div className="col-span-full lg:col-span-8">
+              <div className="col-span-full xl:col-span-24 xl:row-start-2 xl:flex xl:justify-center">
                 <TldrCard
+                  className="xl:mx-auto"
                   summary="Decide cómo reclamar tu comprobante: QR, link, código, geolocalización o NFC según el contexto del evento."
                   bullets={[
                     { label: "QR primero", detail: "Experiencia más rápida en eventos físicos." },
@@ -262,7 +263,7 @@ const Mint: React.FC = () => {
           </div>
 
           {/* Methods Grid */}
-          <div className="space-y-4">
+          <div className="space-y-4 max-w-3xl mx-auto">
             {/* QR Code */}
             <button
               onClick={() => handleMethodSelect("qr")}
@@ -275,7 +276,7 @@ const Mint: React.FC = () => {
               <div className="flex items-center space-x-4">
                 <div className="text-4xl">📷</div>
                 <div className="flex-1">
-                  <Text as="h3" size="md" className="font-subhead text-stellar-black mb-1">
+                  <Text as="h3" size="md" className="font-body font-medium text-stellar-black mb-1">
                     Escanear QR
                   </Text>
                   <Text as="p" size="sm" className="text-stellar-black/70 font-body">
@@ -297,7 +298,7 @@ const Mint: React.FC = () => {
               <div className="flex items-center space-x-4">
                 <div className="text-4xl">🔗</div>
                 <div className="flex-1">
-                  <Text as="h3" size="md" className="font-semibold text-black mb-1">
+                  <Text as="h3" size="md" className="font-body font-medium text-stellar-black mb-1">
                     Usar Link
                   </Text>
                   <Text as="p" size="sm" className="text-stellar-black/70 font-body">
@@ -319,7 +320,7 @@ const Mint: React.FC = () => {
               <div className="flex items-center space-x-4">
                 <div className="text-4xl">🔢</div>
                 <div className="flex-1">
-                  <Text as="h3" size="md" className="font-semibold text-black mb-1">
+                  <Text as="h3" size="md" className="font-body font-medium text-stellar-black mb-1">
                     Código Compartido
                   </Text>
                   <Text as="p" size="sm" className="text-stellar-black/70 font-body">
@@ -341,7 +342,7 @@ const Mint: React.FC = () => {
               <div className="flex items-center space-x-4">
                 <div className="text-4xl">📍</div>
                 <div className="flex-1">
-                  <Text as="h3" size="md" className="font-semibold text-black mb-1">
+                  <Text as="h3" size="md" className="font-body font-medium text-stellar-black mb-1">
                     Geolocalización
                   </Text>
                   <Text as="p" size="sm" className="text-stellar-black/70 font-body">
@@ -364,7 +365,7 @@ const Mint: React.FC = () => {
               <div className="flex items-center space-x-4">
                 <div className="text-4xl">💳</div>
                 <div className="flex-1">
-                  <Text as="h3" size="md" className="font-semibold text-black mb-1">
+                  <Text as="h3" size="md" className="font-body font-medium text-stellar-black mb-1">
                     NFC
                   </Text>
                   <Text as="p" size="sm" className="text-stellar-black/70 font-body">
@@ -382,7 +383,7 @@ const Mint: React.FC = () => {
 
           {/* Action Panel */}
           {activeMethod && (
-            <div className="mt-8 p-6 bg-stellar-lilac/10 rounded-xl border border-stellar-lilac/30">
+            <div className="mt-8 p-6 bg-stellar-lilac/10 rounded-xl border border-stellar-lilac/30 max-w-3xl mx-auto">
               {activeMethod === "qr" && (
                 <div className="space-y-4">
                   <Text as="p" size="md" className="text-stellar-black font-subhead">

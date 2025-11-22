@@ -67,8 +67,7 @@ const Home: React.FC = () => {
         <div className="max-w-7xl mx-auto">
           {/* Hero Section - Brand Story */}
           <section className="mb-12 md:mb-16">
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-24">
-              <div className="col-span-full lg:col-span-17 brand-surface p-6 md:p-10 text-center lg:text-left">
+            <div className="brand-surface p-6 md:p-10 text-center lg:text-left">
                 <div className="brand-eyebrow text-stellar-navy/70 mb-3">
                   SPOT · Proof of Attendance en Stellar
                 </div>
@@ -133,97 +132,77 @@ const Home: React.FC = () => {
                   </div>
                 </div>
               </div>
-
-              <div className="col-span-full lg:col-span-7">
-                <TldrCard
-                  summary="SPOT convierte tus eventos en coleccionables digitales verificados. Configura arte, cupos y métricas desde un mismo panel."
-                  bullets={[
-                    {
-                      label: "Crea experiencias",
-                      detail:
-                        "Sube tu imagen, define cupos y programa fechas de reclamo para cada evento sin depender de desarrolladores.",
-                    },
-                    {
-                      label: "Reclama sin fricción",
-                      detail:
-                        "QR, link, código, geofence o NFC listos para usar en campo, con botones visibles que empujan la conversión.",
-                    },
-                    {
-                      label: "Demuestra valor",
-                      detail:
-                        "Cada comprobante vive en Stellar: útil para reportes, patrocinios y transparencia con tu comunidad.",
-                    },
-                  ]}
-                />
-              </div>
-            </div>
           </section>
 
-          {/* Audience Guidance Section */}
-          <section className="brand-surface p-6 md:p-8 mb-12 md:mb-16">
-            <div className="brand-eyebrow text-stellar-navy/70 mb-6">
-              SPOT para cada equipo
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="rounded-2xl border border-stellar-black/10 bg-stellar-gold/10 p-6 shadow-brand-soft">
-                <Text as="h3" size="md" className="font-headline text-2xl text-stellar-black mb-2 uppercase">
-                  Organizadores & builders
-                </Text>
-                <Text as="p" size="sm" className="text-stellar-black/80 font-body mb-4">
-                  Configura certificados coleccionables en minutos, conecta APIs si lo necesitas y maneja registros desde el móvil o el escenario.
-                </Text>
-                <ul className="space-y-2 text-sm font-body text-stellar-black/80">
-                  <li>• Herramientas self-service para crear, editar y pausar eventos.</li>
-                  <li>• Integraciones Soroban listas para automatizar claims.</li>
-                  <li>• Debugger disponible para equipos técnicos.</li>
-                </ul>
-              </div>
-              <div className="rounded-2xl border border-stellar-black/10 bg-stellar-lilac/10 p-6 shadow-brand-soft">
-                <Text as="h3" size="md" className="font-headline text-2xl text-stellar-black mb-2 uppercase">
-                  Sponsors & instituciones
-                </Text>
-                <Text as="p" size="sm" className="text-stellar-black/80 font-body mb-4">
-                  Obtén reportes claros sobre asistencia verificada y comparte pruebas on-chain con aliados o reguladores.
-                </Text>
-                <ul className="space-y-2 text-sm font-body text-stellar-black/80">
-                  <li>• Métricas visibles para patrocinadores y equipo comercial.</li>
-                  <li>• Evidencia inmutable hospedada en la red Stellar.</li>
-                  <li>• Copys concisos para informes y aprobaciones rápidas.</li>
-                </ul>
-              </div>
-            </div>
-          </section>
+          {!isConnected && (
+            <>
+              {/* Audience Guidance Section */}
+              <section className="brand-surface p-6 md:p-8 mb-12 md:mb-16">
+                <div className="brand-eyebrow text-stellar-navy/70 mb-6">
+                  SPOT para cada equipo
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="rounded-2xl border border-stellar-black/10 bg-stellar-gold/10 p-6 shadow-brand-soft">
+                    <Text as="h3" size="md" className="font-headline text-2xl text-stellar-black mb-2 uppercase">
+                      Organizadores & builders
+                    </Text>
+                    <Text as="p" size="sm" className="text-stellar-black/80 font-body mb-4">
+                      Configura certificados coleccionables en minutos, conecta APIs si lo necesitas y maneja registros desde el móvil o el escenario.
+                    </Text>
+                    <ul className="space-y-2 text-sm font-body text-stellar-black/80">
+                      <li>• Herramientas self-service para crear, editar y pausar eventos.</li>
+                      <li>• Integraciones Soroban listas para automatizar claims.</li>
+                      <li>• Debugger disponible para equipos técnicos.</li>
+                    </ul>
+                  </div>
+                  <div className="rounded-2xl border border-stellar-black/10 bg-stellar-lilac/10 p-6 shadow-brand-soft">
+                    <Text as="h3" size="md" className="font-headline text-2xl text-stellar-black mb-2 uppercase">
+                      Sponsors & instituciones
+                    </Text>
+                    <Text as="p" size="sm" className="text-stellar-black/80 font-body mb-4">
+                      Obtén reportes claros sobre asistencia verificada y comparte pruebas on-chain con aliados o reguladores.
+                    </Text>
+                    <ul className="space-y-2 text-sm font-body text-stellar-black/80">
+                      <li>• Métricas visibles para patrocinadores y equipo comercial.</li>
+                      <li>• Evidencia inmutable hospedada en la red Stellar.</li>
+                      <li>• Copys concisos para informes y aprobaciones rápidas.</li>
+                    </ul>
+                  </div>
+                </div>
+              </section>
 
-          {/* Features Section - Stellar Brand Colors */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 md:mb-16">
-            <div className="bg-stellar-white rounded-xl p-6 shadow-md border-2 border-stellar-lilac/20 text-center">
-              <div className="text-4xl mb-4">📱</div>
-              <Text as="h3" size="md" className="font-headline text-stellar-black mb-2 uppercase">
-                Múltiples Métodos
-              </Text>
-              <Text as="p" size="sm" className="text-stellar-black font-body">
-                Reclama SPOTs con QR, Link, Código, Geolocalización o NFC
-              </Text>
-            </div>
-            <div className="bg-stellar-white rounded-xl p-6 shadow-md border-2 border-stellar-gold/30 text-center">
-              <div className="text-4xl mb-4">🔒</div>
-              <Text as="h3" size="md" className="font-headline text-stellar-black mb-2 uppercase">
-                En la Blockchain
-              </Text>
-              <Text as="p" size="sm" className="text-stellar-black font-body">
-                Tus SPOTs están guardados permanentemente en la red Stellar
-              </Text>
-            </div>
-            <div className="bg-stellar-white rounded-xl p-6 shadow-md border-2 border-stellar-teal/20 text-center">
-              <div className="text-4xl mb-4">🎨</div>
-              <Text as="h3" size="md" className="font-headline text-stellar-black mb-2 uppercase">
-                Personalizables
-              </Text>
-              <Text as="p" size="sm" className="text-stellar-black font-body">
-                Crea eventos únicos con imágenes y metadata personalizada
-              </Text>
-            </div>
-          </div>
+              {/* Features Section - Stellar Brand Colors */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 md:mb-16">
+                <div className="bg-stellar-white rounded-xl p-6 shadow-md border-2 border-stellar-lilac/20 text-center">
+                  <div className="text-4xl mb-4">📱</div>
+                  <Text as="h3" size="md" className="font-headline text-stellar-black mb-2 uppercase">
+                    Múltiples Métodos
+                  </Text>
+                  <Text as="p" size="sm" className="text-stellar-black font-body">
+                    Reclama SPOTs con QR, Link, Código, Geolocalización o NFC
+                  </Text>
+                </div>
+                <div className="bg-stellar-white rounded-xl p-6 shadow-md border-2 border-stellar-gold/30 text-center">
+                  <div className="text-4xl mb-4">🔒</div>
+                  <Text as="h3" size="md" className="font-headline text-stellar-black mb-2 uppercase">
+                    En la Blockchain
+                  </Text>
+                  <Text as="p" size="sm" className="text-stellar-black font-body">
+                    Tus SPOTs están guardados permanentemente en la red Stellar
+                  </Text>
+                </div>
+                <div className="bg-stellar-white rounded-xl p-6 shadow-md border-2 border-stellar-teal/20 text-center">
+                  <div className="text-4xl mb-4">🎨</div>
+                  <Text as="h3" size="md" className="font-headline text-stellar-black mb-2 uppercase">
+                    Personalizables
+                  </Text>
+                  <Text as="p" size="sm" className="text-stellar-black font-body">
+                    Crea eventos únicos con imágenes y metadata personalizada
+                  </Text>
+                </div>
+              </div>
+            </>
+          )}
 
           {/* User's SPOTs Section - Only if connected */}
           {isConnected && totalSpots > 0 && (
@@ -326,6 +305,32 @@ const Home: React.FC = () => {
               </Button>
             </div>
           )}
+
+          {/* TL;DR Summary positioned later for better focus on collection */}
+          <section className="mb-12 md:mb-16">
+            <div className="max-w-5xl lg:max-w-6xl mx-auto">
+              <TldrCard
+                summary="SPOT convierte tus eventos en coleccionables digitales verificados. Configura arte, cupos y métricas desde un mismo panel."
+                bullets={[
+                  {
+                    label: "Crea experiencias",
+                    detail:
+                      "Sube tu imagen, define cupos y programa fechas de reclamo para cada evento sin depender de desarrolladores.",
+                  },
+                  {
+                    label: "Reclama sin fricción",
+                    detail:
+                      "QR, link, código, geofence o NFC listos para usar en campo, con botones visibles que empujan la conversión.",
+                  },
+                  {
+                    label: "Demuestra valor",
+                    detail:
+                      "Cada comprobante vive en Stellar: útil para reportes, patrocinios y transparencia con tu comunidad.",
+                  },
+                ]}
+              />
+            </div>
+          </section>
         </div>
         </div>
       </Layout.Inset>

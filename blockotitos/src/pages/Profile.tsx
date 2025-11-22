@@ -22,11 +22,11 @@ const Profile: React.FC = () => {
     <Layout.Content>
       <Layout.Inset>
         <div className="min-h-screen bg-stellar-white py-6 md:py-12">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-5xl 2xl:max-w-6xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-24 items-start">
-              <div className="col-span-full lg:col-span-16">
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-24 items-start">
+              <div className="col-span-full xl:col-span-17 text-center xl:text-left">
                 <Button
                   variant="tertiary"
                   size="sm"
@@ -42,8 +42,9 @@ const Profile: React.FC = () => {
                   Gestiona tu wallet y configuración
                 </Text>
               </div>
-              <div className="col-span-full lg:col-span-8">
+              <div className="col-span-full xl:col-span-24 xl:row-start-2 xl:flex xl:justify-center">
                 <TldrCard
+                  className="xl:mx-auto"
                   summary="Aquí ves tu wallet Stellar conectada, balances y accesos rápidos para crear eventos o reclamar tus comprobantes."
                   bullets={[
                     { label: "Wallet", detail: "Dirección visible, botón copiar y balance XLM." },
@@ -67,7 +68,7 @@ const Profile: React.FC = () => {
               <ConnectAccount />
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-6 max-w-3xl mx-auto">
               {/* Wallet Info Card */}
               <div className="bg-stellar-white rounded-2xl shadow-lg p-6 md:p-8 border-2 border-stellar-lilac/20">
                 <Text as="h2" size="lg" className="text-xl font-headline text-stellar-black mb-6">

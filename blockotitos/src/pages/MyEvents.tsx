@@ -185,11 +185,11 @@ const MyEvents: React.FC = () => {
     <Layout.Content>
       <Layout.Inset>
         <div className="min-h-screen bg-stellar-white py-6 md:py-12">
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-6xl 2xl:max-w-7xl mx-auto">
             {/* Header */}
             <div className="mb-8">
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-24 items-start">
-                <div className="col-span-full lg:col-span-16">
+              <div className="grid grid-cols-1 gap-6 xl:grid-cols-24 items-start">
+                <div className="col-span-full xl:col-span-17">
                   <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                       <Text as="h1" size="xl" className="text-3xl md:text-4xl font-headline text-stellar-black mb-2">
@@ -209,8 +209,9 @@ const MyEvents: React.FC = () => {
                     </Button>
                   </div>
                 </div>
-                <div className="col-span-full lg:col-span-8">
+                <div className="col-span-full xl:col-span-24 xl:row-start-2 xl:flex xl:justify-center">
                   <TldrCard
+                    className="xl:mx-auto"
                     summary="Esta vista resume el estado de tus SPOTs."
                     bullets={[
                       { label: "Visibilidad", detail: "Cards con highlights y métricas claras." },

@@ -52,7 +52,7 @@
   }
 
   .brand-tldr {
-    @apply relative overflow-hidden rounded-2xl border border-stellar-black/10 bg-stellar-warm-grey/50 p-6 shadow-brand-soft;
+    @apply relative overflow-hidden rounded-2xl border border-stellar-black/10 bg-stellar-warm-grey/50 p-6 shadow-brand-soft w-full;
   }
 
   .brand-tldr::before {
