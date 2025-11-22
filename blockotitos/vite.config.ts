@@ -27,6 +27,8 @@ export default defineConfig(() => {
     },
     envPrefix: ["PUBLIC_", "VITE_"],
     server: {
+      host: "0.0.0.0",
+      port: 5173,
       proxy: {
         "/friendbot": {
           target: "http://localhost:8000/friendbot",
