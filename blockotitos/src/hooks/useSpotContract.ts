@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { Client } from "@stellar/stellar-sdk/contract";
 import { network } from "../contracts/util";
-import { contract as stellarContract } from "@stellar/stellar-sdk";
 
 const DEFAULT_SPOT_CONTRACT_ID =
   "CC3XATHZKTV7WGEBR337JAH3UTAMQTK7VPPSDSAKHA4KGVOCJPF6P3VF";
@@ -34,6 +33,7 @@ export const useSpotContract = (contractId?: string) => {
         contractId: id,
         networkPassphrase: network.passphrase,
         rpcUrl: network.rpcUrl,
+        allowHttp: new URL(network.rpcUrl).hostname === "localhost",
       });
       
       return client;
@@ -61,6 +61,7 @@ export const useFactoryContract = (contractId?: string) => {
         contractId: id,
         networkPassphrase: network.passphrase,
         rpcUrl: network.rpcUrl,
+        allowHttp: new URL(network.rpcUrl).hostname === "localhost",
       });
       
       return client;
