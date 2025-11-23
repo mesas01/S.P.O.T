@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Client } from "@stellar/stellar-sdk/contract";
 import { network } from "../contracts/util";
 
@@ -15,11 +15,13 @@ export const useSpotContract = (contractId?: string) => {
   const envContractId = (import.meta.env.VITE_SPOT_CONTRACT_ID || "").trim();
   const id = contractId || envContractId || DEFAULT_SPOT_CONTRACT_ID;
   const isUsingFallback = !contractId && !envContractId;
-  
-  return useMemo(() => {
+  const [client, setClient] = useState<Client | null>(null);
+
+  useEffect(() => {
     if (!id) {
       console.warn("SPOT contract ID not configured. Set VITE_SPOT_CONTRACT_ID in .env");
-      return null;
+      setClient(null);
+      return;
     }
 
     if (isUsingFallback && import.meta.env.DEV) {
@@ -28,20 +30,32 @@ export const useSpotContract = (contractId?: string) => {
       );
     }
 
-    try {
-      const client = new Client({
-        contractId: id,
-        networkPassphrase: network.passphrase,
-        rpcUrl: network.rpcUrl,
-        allowHttp: new URL(network.rpcUrl).hostname === "localhost",
+    let cancelled = false;
+
+    Client.from({
+      contractId: id,
+      networkPassphrase: network.passphrase,
+      rpcUrl: network.rpcUrl,
+      allowHttp: new URL(network.rpcUrl).hostname === "localhost",
+    })
+      .then((clientInstance) => {
+        if (!cancelled) {
+          setClient(clientInstance);
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          console.error("Error creating SPOT contract client:", error);
+          setClient(null);
+        }
       });
-      
-      return client;
-    } catch (error) {
-      console.error("Error creating SPOT contract client:", error);
-      return null;
-    }
+
+    return () => {
+      cancelled = true;
+    };
   }, [id, isUsingFallback]);
+
+  return client;
 };
 
 /**
@@ -49,66 +63,98 @@ export const useSpotContract = (contractId?: string) => {
  */
 export const useFactoryContract = (contractId?: string) => {
   const id = contractId || import.meta.env.VITE_FACTORY_CONTRACT_ID;
-  
-  return useMemo(() => {
+  const [client, setClient] = useState<Client | null>(null);
+
+  useEffect(() => {
     if (!id) {
       console.warn("Factory contract ID not configured. Set VITE_FACTORY_CONTRACT_ID in .env");
-      return null;
+      setClient(null);
+      return;
     }
 
-    try {
-      const client = new Client({
-        contractId: id,
-        networkPassphrase: network.passphrase,
-        rpcUrl: network.rpcUrl,
-        allowHttp: new URL(network.rpcUrl).hostname === "localhost",
+    let cancelled = false;
+
+    Client.from({
+      contractId: id,
+      networkPassphrase: network.passphrase,
+      rpcUrl: network.rpcUrl,
+      allowHttp: new URL(network.rpcUrl).hostname === "localhost",
+    })
+      .then((clientInstance) => {
+        if (!cancelled) {
+          setClient(clientInstance);
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          console.error("Error creating Factory contract client:", error);
+          setClient(null);
+        }
       });
-      
-      return client;
-    } catch (error) {
-      console.error("Error creating Factory contract client:", error);
-      return null;
-    }
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
+
+  return client;
 };
 
 /**
  * Hook para obtener un cliente de un contrato Event específico
  */
 export const useEventContract = (contractId: string) => {
-  return useMemo(() => {
+  const [client, setClient] = useState<Client | null>(null);
+
+  useEffect(() => {
     if (!contractId) {
-      return null;
+      setClient(null);
+      return;
     }
 
-    try {
-      const client = new Client({
-        contractId: contractId,
-        networkPassphrase: network.passphrase,
-        rpcUrl: network.rpcUrl,
+    let cancelled = false;
+
+    Client.from({
+      contractId: contractId,
+      networkPassphrase: network.passphrase,
+      rpcUrl: network.rpcUrl,
+      allowHttp: new URL(network.rpcUrl).hostname === "localhost",
+    })
+      .then((clientInstance) => {
+        if (!cancelled) {
+          setClient(clientInstance);
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          console.error("Error creating Event contract client:", error);
+          setClient(null);
+        }
       });
-      
-      return client;
-    } catch (error) {
-      console.error("Error creating Event contract client:", error);
-      return null;
-    }
+
+    return () => {
+      cancelled = true;
+    };
   }, [contractId]);
+
+  return client;
 };
 
 /**
  * Utilidad para crear un cliente de contrato desde un contractId
+ * Nota: Esta función es asíncrona porque Client.from() requiere obtener el spec del contrato
  */
-export const createContractClient = (contractId: string): Client | null => {
+export const createContractClient = async (contractId: string): Promise<Client | null> => {
   if (!contractId) {
     return null;
   }
 
   try {
-    return new Client({
+    return await Client.from({
       contractId: contractId,
       networkPassphrase: network.passphrase,
       rpcUrl: network.rpcUrl,
+      allowHttp: new URL(network.rpcUrl).hostname === "localhost",
     });
   } catch (error) {
     console.error("Error creating contract client:", error);
