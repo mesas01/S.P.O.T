@@ -753,7 +753,9 @@ export function startServer(customPort) {
   return server;
 }
 
-if (!isTestEnv) {
+// Only start server if not in serverless environment (Vercel, etc.)
+// Vercel will handle the server lifecycle
+if (!isTestEnv && !process.env.VERCEL) {
   startServer();
 }
 

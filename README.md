@@ -1,89 +1,223 @@
-# 🌟 SPOT - Stellar Proof of Togetherness
-
 <div align="center">
 
-![SPOT Logo](https://img.shields.io/badge/SPOT-Stellar%20Proof%20of%20Togetherness-7B61FF?style=for-the-badge&logo=stellar&logoColor=white)
+# <img src="FotoLogo/gifLogo.gif" alt="SPOT Logo" width="300">
 
-**Sistema descentralizado de NFTs de asistencia construido sobre Stellar Blockchain**
+# 🌟 SPOT
+## Stellar Proof of Togetherness
 
-[Características](#-características-principales) • [Arquitectura](#-arquitectura) • [Modelo de Negocio](#-modelo-de-negocio) • [Cómo Funciona](#-cómo-funciona) • [Tech Stack](#-tech-stack) • [Instalación](#-instalación)
+**La plataforma descentralizada de NFTs de asistencia construida sobre Stellar Blockchain**
 
-[![Stellar](https://img.shields.io/badge/Stellar-7D00FF?style=flat&logo=stellar&logoColor=white)](https://stellar.org)
-[![Soroban](https://img.shields.io/badge/Soroban-Smart%20Contracts-FF6B6B?style=flat)](https://developers.stellar.org/docs/build/smart-contracts/)
-[![React](https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black)](https://reactjs.org)
-[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat&logo=firebase&logoColor=black)](https://firebase.google.com)
-[![Rust](https://img.shields.io/badge/Rust-000000?style=flat&logo=rust&logoColor=white)](https://www.rust-lang.org)
+[![Stellar](https://img.shields.io/badge/Stellar-7D00FF?style=for-the-badge&logo=stellar&logoColor=white)](https://stellar.org)
+[![Soroban](https://img.shields.io/badge/Soroban-Smart%20Contracts-FF6B6B?style=for-the-badge)](https://developers.stellar.org/docs/build/smart-contracts/)
+[![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org)
+[![Rust](https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+
+---
+
+### 🚀 [Características](#-características-principales) • 🏗️ [Arquitectura](#-arquitectura) • 💰 [Modelo de Negocio](#-modelo-de-negocio) • ⚙️ [Cómo Funciona](#-cómo-funciona) • 🛠️ [Tech Stack](#-tech-stack) • 📦 [Instalación](#-instalación)
 
 </div>
 
 ---
 
-## 📋 Tabla de Contenidos
-
-- [¿Qué es SPOT?](#-qué-es-spot)
-- [Características Principales](#-características-principales)
-- [Arquitectura](#-arquitectura)
-- [Cómo Funciona](#-cómo-funciona)
-- [Modelo de Negocio](#-modelo-de-negocio)
-- [Tech Stack](#-tech-stack)
-- [Instalación](#-instalación)
-- [Equipo](#-equipo)
-- [Decisiones de Diseño](#-decisiones-de-diseño)
-- [Contribuir](#-contribuir)
-
----
-
 ## 🎯 ¿Qué es SPOT?
 
-**SPOT (Stellar Proof of Togetherness)** es una plataforma descentralizada que permite crear y distribuir NFTs de asistencia a eventos, similar a POAP de Ethereum, pero construido nativamente sobre la red Stellar.
+<div align="center">
 
-### ¿Por qué Stellar?
+**SPOT (Stellar Proof of Togetherness)** es la plataforma descentralizada que revoluciona cómo creamos y compartimos recuerdos de eventos. Similar a POAP, pero construido nativamente sobre **Stellar Blockchain** para ofrecer transacciones ultrarrápidas, costos mínimos y una experiencia verdaderamente sostenible.
 
-- ⚡ **Transacciones rápidas y económicas**: Stellar procesa transacciones en 3-5 segundos con costos mínimos
-- 🌍 **Sostenible**: Consumo energético extremadamente bajo comparado con otras blockchains
-- 💰 **Escalable**: Capaz de manejar miles de transacciones por segundo
-- 🔐 **Seguro**: Smart contracts auditados y verificables en la blockchain
+</div>
 
-### ¿Qué resuelve SPOT?
+### 🌟 ¿Por qué elegir SPOT?
 
-SPOT permite a organizadores de eventos:
-- ✅ Crear NFTs únicos de asistencia fácilmente
-- ✅ Distribuir SPOTs mediante múltiples métodos (QR, Links, Códigos, Geolocalización)
-- ✅ Verificar asistencia de forma inmutable en la blockchain
-- ✅ Crear múltiples colecciones por evento (Asistente, Ganador, Mentor, etc.)
-- ✅ Gestionar roles y permisos de forma descentralizada
+<table>
+<tr>
+<td width="50%">
+
+#### ⚡ **Rapidez y Economía**
+- Transacciones en **3-5 segundos**
+- Costos **mínimos** (fracciones de centavo)
+- Sin fees exorbitantes
+
+#### 🌍 **Sostenibilidad**
+- Consumo energético **99% menor** que otras blockchains
+- Tecnología ecológica y eficiente
+- Comprometidos con el futuro del planeta
+
+</td>
+<td width="50%">
+
+#### 💰 **Escalabilidad**
+- Miles de transacciones por segundo
+- Sin límites de crecimiento
+- Infraestructura robusta y confiable
+
+#### 🔐 **Seguridad**
+- Smart contracts auditados
+- Verificación inmutable en blockchain
+- Sistema de validación dual (on-chain + off-chain)
+
+</td>
+</tr>
+</table>
+
+### 🎯 ¿Qué problemas resuelve SPOT?
+
+<div align="left">
+
+| Problema | Solución SPOT |
+|----------|---------------|
+| 🎫 **Crear NFTs de asistencia es complicado** | Interfaz intuitiva, creación en minutos |
+| 💸 **Costos altos en otras blockchains** | Transacciones casi gratuitas en Stellar |
+| ⏱️ **Tiempos de confirmación largos** | Confirmación en 3-5 segundos |
+| 🌱 **Impacto ambiental negativo** | Blockchain sostenible y eficiente |
+| 🔗 **Limitado a un método de distribución** | Múltiples métodos: QR, Links, Geolocalización, Códigos |
+| 🎨 **No personalizable** | Múltiples colecciones por evento, roles y permisos |
+
+</div>
 
 ---
 
 ## ✨ Características Principales
 
-### 🎫 Para Organizadores
+### 🎫 Para Organizadores de Eventos
 
-- **Creación de Eventos**: Interfaz intuitiva para crear eventos con toda su metadata
-- **Múltiples Métodos de Distribución**:
-  - 📱 **QR Codes**: Escaneo y claim inmediato
-  - 🔗 **Links Únicos**: Links compartibles con expiración configurable
-  - 📍 **Geolocalización**: Validación por proximidad
-  - 🔑 **Códigos Compartidos**: Códigos especiales para eventos masivos
-- **Múltiples Colecciones**: Un evento puede tener varias colecciones de SPOTs
-- **Sistema de Roles**: Control granular de permisos (Owner, Admin, Minter)
-- **Gestión de Límites**: Controla cuántos SPOTs se pueden emitir
-- **Quemado Automático**: Los SPOTs no reclamados se queman automáticamente
+<div align="center">
+
+#### Crea, Gestiona y Distribuye SPOTs con Facilidad
+
+</div>
+
+<table>
+<tr>
+<td width="33%">
+
+#### 🎨 **Creación Intuitiva**
+- Interfaz moderna y fácil de usar
+- Formularios guiados paso a paso
+- Preview en tiempo real
+- Metadata completa del evento
+
+#### 📱 **Múltiples Métodos de Distribución**
+- **QR Codes**: Escaneo instantáneo
+- **Links Únicos**: Compartibles y con expiración
+- **Geolocalización**: Validación por proximidad
+- **Códigos Compartidos**: Para eventos masivos
+
+</td>
+<td width="33%">
+
+#### 🎯 **Gestión Avanzada**
+- Múltiples colecciones por evento
+- Sistema de roles granular
+- Control de límites de emisión
+- Quemado automático de SPOTs no reclamados
+
+#### 🔐 **Control Total**
+- Permisos personalizables (Owner, Admin, Minter)
+- Gestión de delegados
+- Configuración de períodos de claim
+- Analytics y métricas en tiempo real
+
+</td>
+<td width="33%">
+
+#### 💼 **Planes Flexibles**
+- **Gratis**: Hasta 100 SPOTs por evento
+- **Pago**: Eventos ilimitados y empresariales
+- Sin costos ocultos
+- Transparencia total
+
+</td>
+</tr>
+</table>
+
+---
 
 ### 🎁 Para Asistentes
 
-- **Claim Fácil**: Reclama tu SPOT con un solo clic
-- **Galería Personal**: Visualiza todos tus SPOTs en un solo lugar
-- **Verificación Permanente**: Prueba de asistencia inmutable en la blockchain
-- **Compartible**: Comparte tus SPOTs en redes sociales
-- **Wallet Integration**: Usa Freighter Wallet para gestionar tus SPOTs
+<div align="center">
+
+#### Reclama, Colecciona y Comparte tus SPOTs
+
+</div>
+
+<table>
+<tr>
+<td width="50%">
+
+#### ⚡ **Claim Instantáneo**
+- Un solo clic para reclamar
+- Múltiples métodos de acceso
+- Sin complicaciones técnicas
+- Confirmación en segundos
+
+#### 🖼️ **Galería Personal**
+- Visualiza todos tus SPOTs
+- Organización por eventos
+- Filtros y búsqueda avanzada
+- Exporta tu colección
+
+</td>
+<td width="50%">
+
+#### 🔗 **Comparte y Verifica**
+- Prueba de asistencia inmutable
+- Comparte en redes sociales
+- Verificación permanente en blockchain
+- Integración con Freighter Wallet
+
+#### 🎨 **Experiencia Premium**
+- NFTs únicos y coleccionables
+- Metadata rica y detallada
+- Diseños personalizados
+- Historial completo de eventos
+
+</td>
+</tr>
+</table>
+
+---
 
 ### 🔒 Seguridad y Validaciones
 
-- **Prevención de Duplicados**: Un wallet solo puede tener 1 SPOT por colección
-- **Validación de Fechas**: Períodos de claim configurables (máximo 1 semana)
-- **Control de Límites**: Validación tanto on-chain como off-chain
-- **Sistema Híbrido**: Validaciones en blockchain + backend para máxima seguridad
+<div align="center">
+
+#### Protección Multi-Capa para Máxima Seguridad
+
+</div>
+
+<table>
+<tr>
+<td>
+
+#### 🛡️ **Validaciones On-Chain**
+- ✅ Prevención de duplicados (1 SPOT por wallet)
+- ✅ Control de límites de NFTs
+- ✅ Validación de períodos de claim
+- ✅ Verificación de permisos y roles
+- ✅ Ownership verificable
+
+</td>
+<td>
+
+#### 🔐 **Validaciones Off-Chain**
+- ✅ Verificación de planes y créditos
+- ✅ Validación de geolocalización
+- ✅ Tracking de códigos/QRs usados
+- ✅ Rate limiting anti-spam
+- ✅ Validación de pagos
+
+</td>
+</tr>
+</table>
+
+<div align="center">
+
+**Sistema Híbrido**: Combinamos lo mejor de ambos mundos para ofrecer la máxima seguridad sin comprometer la experiencia de usuario.
+
+</div>
 
 ---
 
@@ -211,11 +345,23 @@ graph TB
 
 ---
 
-## 🔄 Cómo Funciona
+## ⚙️ Cómo Funciona
 
-### Flujo de Creación de Evento
+<div align="center">
 
-El organizador crea un evento y el sistema despliega un contrato inteligente:
+### Desde la Creación hasta el Claim: Un Flujo Simple y Poderoso
+
+</div>
+
+---
+
+### 🎬 Flujo de Creación de Evento
+
+<div align="center">
+
+**El organizador crea un evento y el sistema despliega automáticamente un contrato inteligente único**
+
+</div>
 
 ```mermaid
 sequenceDiagram
@@ -244,18 +390,29 @@ sequenceDiagram
     UI-->>O: Confirmación
 ```
 
-**Pasos detallados**:
-1. El organizador completa el formulario de creación de evento
-2. El sistema determina si el evento es gratuito o requiere pago
-3. Si requiere pago (>100 SPOTs o empresarial), se procesa el pago con XLM
-4. La imagen del SPOT se sube al servicio de almacenamiento
-5. El Factory Contract despliega un nuevo Event Contract
-6. La metadata se guarda en la base de datos para indexación
-7. El evento está listo para distribuir SPOTs
+#### 📋 Pasos del Proceso
 
-### Flujo de Claim de SPOT
+<div align="left">
 
-El asistente reclama su SPOT usando uno de los métodos disponibles:
+1. **📝 Formulario de Evento**: El organizador completa la información del evento (nombre, fecha, ubicación, descripción)
+2. **💰 Verificación de Plan**: El sistema determina automáticamente si el evento es gratuito (≤100 SPOTs) o requiere pago
+3. **💳 Procesamiento de Pago** (si aplica): Pago seguro con XLM a través de Stellar Network
+4. **🖼️ Subida de Imagen**: La imagen del SPOT se almacena en el servicio de storage
+5. **🏭 Despliegue de Contrato**: El Factory Contract crea automáticamente un nuevo Event Contract único
+6. **💾 Almacenamiento de Metadata**: La información se guarda tanto on-chain como off-chain
+7. **✅ Evento Listo**: El evento está activo y listo para distribuir SPOTs
+
+</div>
+
+---
+
+### 🎁 Flujo de Claim de SPOT
+
+<div align="center">
+
+**El asistente reclama su SPOT usando el método que prefiera**
+
+</div>
 
 ```mermaid
 sequenceDiagram
@@ -285,19 +442,32 @@ sequenceDiagram
     UI-->>U: SPOT recibido
 ```
 
-**Validaciones en cada paso**:
+#### 🔍 Validaciones en Cada Paso
 
-1. **Off-Chain (Backend)**:
-   - ✅ Verifica el plan del organizador
-   - ✅ Valida códigos/QRs usados
-   - ✅ Verifica geolocalización (si aplica)
-   - ✅ Valida fechas de claim
+<table>
+<tr>
+<td width="50%">
 
-2. **On-Chain (Smart Contract)**:
-   - ✅ Verifica que no haya duplicados (1 SPOT por wallet)
-   - ✅ Valida límites de NFTs
-   - ✅ Verifica período de claim
-   - ✅ Valida permisos de roles
+##### **Off-Chain (Backend)**
+- ✅ Verifica el plan del organizador
+- ✅ Valida códigos/QRs usados
+- ✅ Verifica geolocalización (si aplica)
+- ✅ Valida fechas de claim
+- ✅ Rate limiting anti-spam
+
+</td>
+<td width="50%">
+
+##### **On-Chain (Smart Contract)**
+- ✅ Verifica que no haya duplicados (1 SPOT por wallet)
+- ✅ Valida límites de NFTs
+- ✅ Verifica período de claim
+- ✅ Valida permisos de roles
+- ✅ Garantiza inmutabilidad
+
+</td>
+</tr>
+</table>
 
 ### Métodos de Distribución
 
@@ -395,60 +565,127 @@ graph TB
 
 ## 💰 Modelo de Negocio
 
-### Estructura de Precios
+<div align="center">
 
-SPOT utiliza un modelo **freemium** con opciones de pago para eventos grandes y empresariales:
+### Un Modelo Freemium Sostenible y Justo
 
-#### 🆓 Eventos Gratuitos (Personales y Pequeños)
+**Eventos pequeños gratuitos • Eventos grandes con planes flexibles**
 
-Los eventos **personales y pequeños** (hasta 100 SPOTs) son **completamente gratuitos**:
-
-| Característica | Valor |
-|----------------|-------|
-| **Precio** | 0 XLM |
-| **Límite de SPOTs** | Hasta 100 SPOTs por evento |
-| **Eventos** | Ilimitados |
-| **Métodos disponibles** | QR, Link, Códigos compartidos |
-| **Almacenamiento** | Metadata básica |
-| **Período de claim** | Máximo 1 semana |
-
-**Ideal para**: Eventos personales, meetups pequeños, reuniones familiares, eventos comunitarios
+</div>
 
 ---
 
-#### 💼 Eventos de Pago (Grandes y Empresariales)
+### 🆓 Plan Gratuito - Para Todos
 
-Los eventos que **exceden 100 SPOTs** o son de **naturaleza empresarial** requieren pago:
+<div align="center">
 
-| Característica | Valor |
-|----------------|-------|
-| **Precio** | Variable según cantidad de SPOTs |
-| **Límite de SPOTs** | Ilimitados |
-| **Eventos** | Ilimitados |
-| **Métodos disponibles** | Todos (QR, Link, Geolocalización, Códigos, NFC) |
-| **Almacenamiento** | Metadata completa on-chain |
-| **Período de claim** | Configurable |
-| **Soporte** | Prioridad |
-| **Personalización** | APIs custom, branding, integraciones |
+#### **Eventos Personales y Pequeños (Hasta 100 SPOTs)**
 
-**Ideal para**: Conferencias grandes, hackathons, eventos corporativos, plataformas de eventos
+**Completamente Gratuito • Sin Tarjeta de Crédito • Sin Límites de Eventos**
+
+</div>
+
+<table>
+<tr>
+<td width="50%">
+
+#### ✨ **Incluye:**
+- ✅ **0 XLM** - Totalmente gratuito
+- ✅ **Hasta 100 SPOTs** por evento
+- ✅ **Eventos ilimitados**
+- ✅ **Métodos**: QR, Links, Códigos compartidos
+- ✅ **Metadata básica** almacenada
+- ✅ **Período de claim**: Máximo 1 semana
+
+</td>
+<td width="50%">
+
+#### 🎯 **Ideal para:**
+- 🏠 Eventos personales
+- 👥 Meetups pequeños
+- 👨‍👩‍👧‍👦 Reuniones familiares
+- 🌱 Eventos comunitarios
+- 🎓 Clases y talleres pequeños
+
+</td>
+</tr>
+</table>
+
+---
+
+### 💼 Plan de Pago - Para Eventos Grandes
+
+<div align="center">
+
+#### **Eventos Empresariales y Masivos (Más de 100 SPOTs)**
+
+**Precios Flexibles • Funcionalidades Completas • Soporte Prioritario**
+
+</div>
+
+<table>
+<tr>
+<td width="50%">
+
+#### 🚀 **Incluye:**
+- 💰 **Precio variable** según cantidad de SPOTs
+- ♾️ **SPOTs ilimitados** por evento
+- 🎯 **Todos los métodos**: QR, Links, Geolocalización, Códigos, NFC
+- 📦 **Metadata completa** on-chain
+- ⏰ **Período de claim** configurable
+- 🎨 **Personalización** completa
+- 📞 **Soporte prioritario**
+
+</td>
+<td width="50%">
+
+#### 🎯 **Ideal para:**
+- 🏢 Conferencias grandes
+- 💻 Hackathons masivos
+- 🏛️ Eventos corporativos
+- 🌐 Plataformas de eventos
+- 🎪 Festivales y convenciones
+
+</td>
+</tr>
+</table>
+
+---
 
 ---
 
 ### 💝 Sistema de Donaciones
 
-**Las personas pueden donar y recibir un SPOT exclusivo**:
+<div align="center">
 
-- ✅ **Donaciones**: Cualquier persona puede hacer una donación en XLM
-- ✅ **SPOT Exclusivo**: Los donantes reciben automáticamente un SPOT especial de "Donante"
-- ✅ **Sostenibilidad**: Las donaciones ayudan a mantener la plataforma gratuita para eventos pequeños
-- ✅ **Reconocimiento**: Los SPOTs de donante son únicos y coleccionables
+#### **Apoya el Proyecto y Recibe un SPOT Exclusivo**
 
-**Cómo funciona**:
-1. El usuario hace una donación desde la plataforma
-2. El sistema genera automáticamente un SPOT exclusivo de "Donante"
-3. El SPOT se mintea directamente en la wallet del donante
-4. Las donaciones se utilizan para mantener la infraestructura y soportar eventos gratuitos
+**Tu contribución ayuda a mantener SPOT gratuito para eventos pequeños**
+
+</div>
+
+<table>
+<tr>
+<td width="50%">
+
+#### 🎁 **Beneficios para Donantes:**
+- 🎨 **SPOT Exclusivo** de "Donante" automático
+- 🏆 **NFT único** y coleccionable
+- 💚 **Apoyo a la sostenibilidad** del proyecto
+- 🌟 **Reconocimiento** en la comunidad
+
+</td>
+<td width="50%">
+
+#### 🔄 **Cómo Funciona:**
+1. 💰 El usuario hace una donación en XLM
+2. 🎨 El sistema genera automáticamente un SPOT exclusivo
+3. 🪙 El SPOT se mintea en la wallet del donante
+4. 🚀 Las donaciones financian eventos gratuitos
+
+</td>
+</tr>
+</table>
 
 ### Flujo de Financiamiento
 
@@ -531,38 +768,106 @@ graph TB
 
 ## 📦 Instalación
 
-### Prerrequisitos
+<div align="center">
 
-- [Rust](https://www.rust-lang.org/tools/install) (latest stable)
-- [Node.js](https://nodejs.org/) v22+
-- [Stellar CLI](https://github.com/stellar/stellar-core)
-- [Scaffold Stellar CLI Plugin](https://github.com/AhaLabs/scaffold-stellar)
+### Configura SPOT en Minutos
 
-### Setup del Proyecto
+**Sigue estos pasos simples para tener SPOT funcionando en tu máquina**
+
+</div>
+
+---
+
+### 📋 Prerrequisitos
+
+<table>
+<tr>
+<td width="25%">
+
+#### 🦀 **Rust**
+[Descargar](https://www.rust-lang.org/tools/install)
+- Latest stable version
+- Necesario para contratos
+
+</td>
+<td width="25%">
+
+#### 📦 **Node.js**
+[Descargar](https://nodejs.org/)
+- Versión 22 o superior
+- Para frontend y backend
+
+</td>
+<td width="25%">
+
+#### ⭐ **Stellar CLI**
+[Instalar](https://github.com/stellar/stellar-core)
+- Para interactuar con Stellar
+
+</td>
+<td width="25%">
+
+#### 🔧 **Scaffold Stellar**
+[Instalar](https://github.com/AhaLabs/scaffold-stellar)
+- Plugin CLI para desarrollo
+
+</td>
+</tr>
+</table>
+
+---
+
+### 🚀 Setup Rápido
+
+<div align="left">
+
+#### **1️⃣ Clonar el Repositorio**
 
 ```bash
-# 1. Clonar el repositorio
 git clone <repo-url>
 cd commitsPre
+```
 
-# 2. Configurar variables de entorno
+#### **2️⃣ Configurar Variables de Entorno**
+
+```bash
 cd blockotitos
 cp .env.example .env
-# Editar .env con tus configuraciones
+# Edita .env con tus configuraciones
+```
 
-# 3. Instalar dependencias del frontend
+#### **3️⃣ Instalar Dependencias**
+
+```bash
 npm install
+cd backend && npm install && cd ..
+```
 
-# 4. Compilar contratos
+#### **4️⃣ Compilar Contratos**
+
+```bash
 cargo build --target wasm32v1-none --release
+```
 
-# 5. Iniciar entorno de desarrollo
+#### **5️⃣ Iniciar Desarrollo**
+
+```bash
 npm run dev
 ```
 
-### Configuración de Entornos
+¡Listo! 🎉 La aplicación estará corriendo en `http://localhost:5173`
 
-Edita `environments.toml` para configurar tus entornos (local, testnet, mainnet).
+</div>
+
+---
+
+### ⚙️ Configuración de Entornos
+
+Edita `environments.toml` para configurar tus entornos:
+
+- **Local**: Desarrollo en tu máquina
+- **Testnet**: Pruebas en Stellar Testnet
+- **Mainnet**: Producción en Stellar Mainnet
 
 ---
 
@@ -861,14 +1166,28 @@ graph TB
 
 ---
 
+---
+
 <div align="center">
 
-**Hecho con ❤️ usando Stellar Blockchain**
+## 🌟 ¿Listo para Empezar?
+
+**Únete a la revolución de los NFTs de asistencia en Stellar**
+
+[📦 Instalación](#-instalación) • [📖 Documentación](docs/) • [💬 Comunidad](#-enlaces-útiles) • [🤝 Contribuir](#-contribuir)
+
+---
+
+### 💜 Hecho con ❤️ usando Stellar Blockchain
+
+[![GitHub stars](https://img.shields.io/github/stars/tu-usuario/tu-repo?style=social)](https://github.com/tu-usuario/tu-repo)
+[![GitHub forks](https://img.shields.io/github/forks/tu-usuario/tu-repo?style=social)](https://github.com/tu-usuario/tu-repo)
+[![GitHub issues](https://img.shields.io/github/issues/tu-usuario/tu-repo)](https://github.com/tu-usuario/tu-repo/issues)
 
 [⭐ Dános una estrella](https://github.com/tu-usuario/tu-repo) • [🐛 Reportar Bug](https://github.com/tu-usuario/tu-repo/issues) • [💡 Sugerir Feature](https://github.com/tu-usuario/tu-repo/issues)
-
-</div>
 
 ---
 
 **Última actualización**: Noviembre 2025
+
+</div>
