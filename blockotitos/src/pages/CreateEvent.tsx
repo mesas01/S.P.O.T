@@ -269,8 +269,8 @@ const CreateEvent: React.FC = () => {
               variant="primary"
               size="lg"
               onClick={() => navigate("/")}
-              className="bg-stellar-gold text-stellar-black"
-            >
+              className="bg-stellar-gold text-stellar-black rounded-full px-8 py-3 font-semibold"
+              >
               Ir a Home
             </Button>
           </div>
