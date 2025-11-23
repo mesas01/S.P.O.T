@@ -8,7 +8,7 @@ import { fetchMintedCount, fetchOnchainEvents } from "../util/backend";
  */
 export const useCreateEvent = () => {
   return useMutation({
-    mutationFn: async (params: {
+    mutationFn: async (_params: {
       eventName: string;
       eventDate: number;
       location: string;
@@ -33,7 +33,7 @@ export const useCreateEvent = () => {
  */
 export const useClaimSpot = () => {
   return useMutation({
-    mutationFn: async (eventId: number) => {
+    mutationFn: async (_eventId: number) => {
       // Este hook debería usar el backend directamente
       // Por ahora, lanzamos un error indicando que se debe usar el backend
       throw new Error("useClaimSpot should use backend API. Use claimEventRequest from util/backend.ts instead.");

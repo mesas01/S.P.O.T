@@ -1,4 +1,3 @@
-import { Button, Layout } from "@stellar/design-system";
 import "./App.module.css";
 import ConnectAccount from "./components/ConnectAccount.tsx";
 import MobileMenu from "./components/MobileMenu.tsx";
