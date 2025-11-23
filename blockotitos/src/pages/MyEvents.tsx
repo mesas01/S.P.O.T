@@ -9,6 +9,7 @@ import TldrCard from "../components/layout/TldrCard";
 import { fetchMintedCount, fetchOnchainEvents } from "../util/backend";
 import { useNotification } from "../hooks/useNotification";
 import { buildErrorDetail } from "../utils/notificationHelpers";
+import ruedaGif from "../images/rueda.gif";
 
 interface EventData {
   id: string;
@@ -534,7 +535,13 @@ const MyEvents: React.FC = () => {
             {/* Events List */}
             {isLoadingEvents ? (
               <div className="bg-stellar-white rounded-3xl shadow-lg p-12 text-center border border-stellar-lilac/20">
-                <div className="text-6xl mb-6">⏳</div>
+                <div className="mb-6 flex justify-center">
+                  <img 
+                    src={ruedaGif} 
+                    alt="Cargando..." 
+                    className="w-24 h-24 object-contain"
+                  />
+                </div>
                 <Text as="h2" size="lg" className="text-2xl font-headline text-stellar-black mb-4">
                   Cargando eventos...
                 </Text>

@@ -521,9 +521,9 @@ const Home: React.FC = () => {
                 <div className="relative">
                   <div className="mb-8">
                     <img 
-                      src="https://cdn.sanity.io/images/e2r40yh6/production-i18n/44270b1791ec9a9513467e238259dd3a516ddbea-1024x768.png?rect=128,0,768,768&w=128&h=128&auto=format&dpr=2"
+                      src="https://cdn.sanity.io/images/e2r40yh6/production-i18n/b26bdb6d8de9b8eb4f933b56f2366c0b80433c1c-4790x3693.png?w=506&auto=format&dpr=2"
                       alt="Conecta Wallet"
-                      className="w-40 h-40 mx-auto object-contain drop-shadow-2xl"
+                      className="w-56 h-56 md:w-64 md:h-64 mx-auto object-contain drop-shadow-2xl"
                     />
                   </div>
                   <Text as="h2" size="lg" className="text-3xl font-bold text-stellar-black mb-4 uppercase">
