@@ -183,6 +183,15 @@ app.use(
 // Servir estáticos (temporal en Cloud Run)
 app.use("/uploads", express.static(uploadsDir));
 
+// En producción, servir el frontend (Vite build)
+// En local: backend/src/../../dist = dist/ (raíz del proyecto)
+// En Docker: src/../../dist apunta mal, pero ../dist funciona en ambos casos
+// porque en Docker la estructura es /app/src/ y /app/dist/
+const distDir = process.env.DIST_DIR || path.resolve(__dirname, "../../dist");
+if (!isTestEnv && fs.existsSync(distDir)) {
+  app.use(express.static(distDir));
+}
+
 // Manejo de errores de Multer y JSON
 app.use((err, _req, res, next) => {
   if (err instanceof multer.MulterError) {
@@ -626,6 +635,13 @@ app.get("/claimers/:claimer/events", async (req, res) => {
     res.status(500).json({ error: error.message || String(error) });
   }
 });
+
+// SPA fallback: servir index.html para rutas del frontend
+if (!isTestEnv && fs.existsSync(distDir)) {
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(distDir, "index.html"));
+  });
+}
 
 function normalizePort(value) {
   const portNumber = Number(value);
