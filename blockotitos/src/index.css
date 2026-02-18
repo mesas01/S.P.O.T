@@ -93,11 +93,88 @@
       display: block;
     }
   }
-  
+
   /* Stellar Highlight Styles */
   .stellar-highlight {
     background: linear-gradient(180deg, rgba(253, 218, 36, 0.2) 0%, rgba(253, 218, 36, 0.05) 100%);
     padding: 0.125rem 0.25rem;
     border-radius: 0.25rem;
+  }
+}
+
+/* =============================================
+   Scroll-triggered animations (from landing page)
+   ============================================= */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.7s ease-out both;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.7s ease-out both;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.7s ease-out both;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-slide-in-left,
+  .animate-slide-in-right,
+  .animate-float,
+  .animate-pulse-glow {
+    animation: none !important;
+    opacity: 1 !important;
   }
 }

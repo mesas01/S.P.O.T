@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Layout, Text, Button } from "@stellar/design-system";
+import { Button } from "@stellar/design-system";
 import { useWallet } from "../hooks/useWallet";
 import { useNavigate } from "react-router-dom";
 import MonthSection from "../components/spot/MonthSection";
@@ -15,6 +15,121 @@ import {
 } from "../utils/claimedSpots";
 import { fetchClaimedEventsByClaimer } from "../util/backend";
 import { connectWallet } from "../util/wallet";
+import {
+  QrCode,
+  Link2,
+  Palette,
+  KeyRound,
+  MapPin,
+  Nfc,
+  Wallet,
+  CalendarPlus,
+  Award,
+  Hammer,
+  Building2,
+  Zap,
+  ArrowRight,
+} from "lucide-react";
+import { useScrollReveal } from "../hooks/useScrollReveal";
+
+// ─── Static data ────────────────────────────────────────────────────────────
+
+const features = [
+  {
+    icon: QrCode,
+    title: "Múltiples Métodos",
+    description: "Reclama SPOTs con QR, Link, Código, Geolocalización o NFC",
+    color: "text-stellar-gold",
+    border: "border-stellar-gold/20",
+    bg: "bg-stellar-gold/5",
+  },
+  {
+    icon: Link2,
+    title: "En la Blockchain",
+    description: "Tus SPOTs están guardados permanentemente en la red Stellar",
+    color: "text-stellar-teal",
+    border: "border-stellar-teal/20",
+    bg: "bg-stellar-teal/5",
+  },
+  {
+    icon: Palette,
+    title: "Personalizables",
+    description: "Crea eventos únicos con imágenes y metadata personalizada",
+    color: "text-stellar-lilac",
+    border: "border-stellar-lilac/20",
+    bg: "bg-stellar-lilac/5",
+  },
+  {
+    icon: KeyRound,
+    title: "Self-Service",
+    description:
+      "Herramientas para crear, editar y pausar eventos sin depender de desarrolladores",
+    color: "text-stellar-gold",
+    border: "border-stellar-gold/20",
+    bg: "bg-stellar-gold/5",
+  },
+  {
+    icon: MapPin,
+    title: "Geolocalización",
+    description:
+      "Verifica asistencia real con validación por ubicación y proximidad al evento",
+    color: "text-stellar-teal",
+    border: "border-stellar-teal/20",
+    bg: "bg-stellar-teal/5",
+  },
+  {
+    icon: Nfc,
+    title: "Integraciones Soroban",
+    description:
+      "Automatiza claims con contratos inteligentes listos para producción",
+    color: "text-stellar-lilac",
+    border: "border-stellar-lilac/20",
+    bg: "bg-stellar-lilac/5",
+  },
+];
+
+const steps = [
+  {
+    icon: Wallet,
+    step: "01",
+    title: "Conecta tu Wallet",
+    description:
+      "Conecta tu wallet de Stellar para acceder a la plataforma. Compatible con las principales wallets del ecosistema.",
+    color: "text-stellar-gold",
+    bg: "bg-stellar-gold/10",
+    border: "border-stellar-gold/30",
+  },
+  {
+    icon: CalendarPlus,
+    step: "02",
+    title: "Crea tu Evento",
+    description:
+      "Sube tu imagen, define cupos y programa fechas de reclamo para cada evento sin depender de desarrolladores.",
+    color: "text-stellar-lilac",
+    bg: "bg-stellar-lilac/10",
+    border: "border-stellar-lilac/30",
+  },
+  {
+    icon: QrCode,
+    step: "03",
+    title: "Distribuye SPOTs",
+    description:
+      "QR, link, código, geofence o NFC listos para usar en campo, con botones visibles que empujan la conversión.",
+    color: "text-stellar-teal",
+    bg: "bg-stellar-teal/10",
+    border: "border-stellar-teal/30",
+  },
+  {
+    icon: Award,
+    step: "04",
+    title: "Demuestra Valor",
+    description:
+      "Cada comprobante vive en Stellar: útil para reportes, patrocinios y transparencia con tu comunidad.",
+    color: "text-stellar-gold",
+    bg: "bg-stellar-gold/10",
+    border: "border-stellar-gold/30",
+  },
+];
 
 const mockSpots: SpotData[] = [
   {
@@ -57,17 +172,27 @@ const mockSpots: SpotData[] = [
   },
 ];
 
+// ─── Component ───────────────────────────────────────────────────────────────
+
 const Home: React.FC = () => {
   const { address } = useWallet();
   const navigate = useNavigate();
   const isConnected = !!address;
   const [claimedSpots, setClaimedSpots] = useState<SpotData[]>([]);
 
+  // Scroll reveal refs
+  const { ref: featuresRef, isVisible: featuresVisible } = useScrollReveal();
+  const { ref: audiencesRef, isVisible: audiencesVisible } = useScrollReveal();
+  const { ref: howItWorksRef, isVisible: howItWorksVisible } =
+    useScrollReveal();
+  const { ref: ctaRef, isVisible: ctaVisible } = useScrollReveal();
+  const { ref: collectionRef, isVisible: collectionVisible } =
+    useScrollReveal();
+
   // Scroll al inicio cuando se conecta la wallet
   useEffect(() => {
     if (address) {
-      // Scroll suave hacia arriba cuando se conecta la wallet
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }, [address]);
 
@@ -133,7 +258,7 @@ const Home: React.FC = () => {
       window.removeEventListener("claimedSpotsUpdated", handleUpdate);
     };
   }, [address]);
-  
+
   const spotsToDisplay = useMemo(() => {
     if (claimedSpots.length === 0) {
       return mockSpots;
@@ -148,441 +273,588 @@ const Home: React.FC = () => {
   const totalSpots = getTotalSpots(spotsToDisplay);
   const hasDisplaySpots = spotsToDisplay.length > 0;
 
-  return (
-    <div className="bg-stellar-white min-h-screen">
-      <Layout.Content>
-        <Layout.Inset>
-          <div className="min-h-screen bg-stellar-white py-6 md:py-12 relative overflow-hidden">
-          {/* Background decorative elements */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-20 left-20 w-96 h-96 bg-stellar-lilac/5 rounded-full blur-3xl" />
-            <div className="absolute bottom-40 right-20 w-96 h-96 bg-stellar-gold/5 rounded-full blur-3xl" />
-            <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-stellar-teal/5 rounded-full blur-3xl" />
-          </div>
+  // ─── Render ────────────────────────────────────────────────────────────────
 
-          <div className="max-w-7xl mx-auto relative z-10">
-            {/* Hero Section - Rediseñado con logo y título sobre imagen de fondo */}
-            <section className="mb-16 md:mb-20">
-              <div className="relative rounded-3xl overflow-hidden border-2 border-stellar-lilac/20 bg-stellar-white shadow-xl">
-                {/* Background image - Solo detrás del logo y título */}
-                <div className="absolute inset-0 h-80 md:h-96">
-                  <div className="absolute inset-0 bg-gradient-to-b from-stellar-black/40 via-stellar-black/30 to-stellar-white z-10" />
-                  <img 
+  return (
+    <div className="bg-stellar-white min-h-screen overflow-hidden">
+      {/* Background decorative glow elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div
+          className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-stellar-gold/10 blur-[120px] animate-pulse-glow"
+        />
+        <div
+          className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-stellar-lilac/10 blur-[100px] animate-pulse-glow"
+          style={{ animationDelay: "1.5s" }}
+        />
+        <div
+          className="absolute top-1/2 right-1/3 w-64 h-64 rounded-full bg-stellar-teal/5 blur-[80px] animate-pulse-glow"
+          style={{ animationDelay: "0.8s" }}
+        />
+      </div>
+
+      <div className="relative z-10">
+        {/* ═══════════════════════════════════════════
+            HERO SECTION
+            ═══════════════════════════════════════════ */}
+        <section className="relative min-h-[90vh] flex items-center overflow-hidden pt-8 pb-16">
+          <div className="mx-auto max-w-7xl px-6 w-full">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+
+              {/* Left: Content */}
+              <div className="animate-fade-up">
+                {/* Eyebrow badge */}
+                <div className="inline-flex items-center gap-2 rounded-full border border-stellar-gold/30 bg-stellar-gold/10 px-4 py-1.5 mb-8">
+                  <Zap size={14} className="text-stellar-gold" />
+                  <span className="text-xs font-body uppercase tracking-wider text-stellar-gold">
+                    Proof of Attendance en Stellar
+                  </span>
+                </div>
+
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline tracking-tight text-stellar-black mb-6 leading-[1.05]">
+                  SPOT
+                  <span className="block text-stellar-gold">Stellar Proof</span>
+                  <span className="block text-stellar-black/50 text-3xl md:text-4xl font-body font-normal mt-2 normal-case">
+                    of Togetherness
+                  </span>
+                </h1>
+
+                <p className="text-lg md:text-xl text-stellar-black/70 max-w-xl mb-4 leading-relaxed font-body">
+                  <span className="text-stellar-black font-semibold">
+                    Sabemos a quién hablamos: bancos, policymakers y builders.
+                  </span>
+                </p>
+                <p className="text-base md:text-lg text-stellar-black/60 max-w-xl mb-10 leading-relaxed font-body">
+                  SPOT es tu comprobante coleccionable en Stellar: diseña la
+                  pieza, define la ventana de reclamo y entrega recuerdos
+                  verificables que demuestran asistencia ante sponsors,
+                  instituciones y comunidades.
+                </p>
+
+                {/* Wallet + CTAs */}
+                <div className="flex flex-col gap-4 items-start">
+                  <ConnectAccount />
+                  <div className="flex flex-col sm:flex-row gap-3 w-full">
+                    <button
+                      onClick={() => navigate("/mint")}
+                      className="inline-flex items-center justify-center gap-2 bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full px-8 py-3 shadow-lg hover:shadow-xl transition-all text-base font-body"
+                    >
+                      Reclamar SPOT <ArrowRight size={18} />
+                    </button>
+                    <button
+                      onClick={() => navigate("/create-event")}
+                      className="inline-flex items-center justify-center gap-2 border-2 border-stellar-lilac/40 text-stellar-black hover:bg-stellar-lilac/10 font-semibold rounded-full px-8 py-3 transition-all text-base font-body"
+                    >
+                      Crear Evento
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Hero image with floating stat cards */}
+              <div
+                className="relative animate-fade-up hidden lg:block"
+                style={{ animationDelay: "0.2s" }}
+              >
+                <div className="relative">
+                  <img
                     src="https://cdn.sanity.io/images/e2r40yh6/production-i18n/cdd8e585244fe22db899e5c2e463bde2793355e2-4200x3508.png?rect=0,356,4200,2797&w=506&h=337&auto=format&dpr=2"
-                    alt="Background"
-                    className="w-full h-full object-cover"
+                    alt="Colección de badges SPOT"
+                    className="rounded-2xl shadow-2xl shadow-stellar-gold/10 w-full"
+                  />
+
+                  {/* Floating stat card 1 - Total SPOTs */}
+                  <div className="absolute -top-4 -left-8 bg-stellar-white/90 backdrop-blur-md border border-stellar-black/10 rounded-xl px-4 py-3 animate-float shadow-lg">
+                    <p className="text-xs text-stellar-black/60 font-body uppercase tracking-wide">
+                      Total SPOTs
+                    </p>
+                    <p className="text-2xl font-headline text-stellar-gold">
+                      2,847
+                    </p>
+                  </div>
+
+                  {/* Floating stat card 2 - Eventos activos */}
+                  <div
+                    className="absolute -bottom-4 -right-8 bg-stellar-white/90 backdrop-blur-md border border-stellar-black/10 rounded-xl px-4 py-3 animate-float shadow-lg"
+                    style={{ animationDelay: "2s" }}
+                  >
+                    <p className="text-xs text-stellar-black/60 font-body uppercase tracking-wide">
+                      Eventos activos
+                    </p>
+                    <p className="text-2xl font-headline text-stellar-lilac">
+                      42
+                    </p>
+                  </div>
+
+                  {/* Floating stat card 3 - Red */}
+                  <div
+                    className="absolute top-1/2 -right-6 bg-stellar-white/90 backdrop-blur-md border border-stellar-black/10 rounded-xl px-4 py-3 animate-float shadow-lg"
+                    style={{ animationDelay: "3.5s" }}
+                  >
+                    <p className="text-xs text-stellar-black/60 font-body uppercase tracking-wide">
+                      Red
+                    </p>
+                    <p className="text-sm font-headline text-stellar-teal">
+                      Stellar Testnet
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════════
+            NOT CONNECTED — INFO SECTIONS
+            ═══════════════════════════════════════════ */}
+        {!isConnected && (
+          <>
+            {/* ── Features ─────────────────────────── */}
+            <section
+              id="features"
+              ref={featuresRef as React.RefObject<HTMLElement>}
+              className="py-24 md:py-32 relative"
+            >
+              {/* Section separator */}
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-stellar-black/10 to-transparent" />
+
+              <div className="mx-auto max-w-7xl px-6">
+                <div
+                  className={`text-center mb-16 ${featuresVisible ? "animate-fade-up" : "opacity-0"}`}
+                >
+                  <span className="text-xs font-body uppercase tracking-widest text-stellar-gold mb-4 block">
+                    Funciones
+                  </span>
+                  <h2 className="text-3xl md:text-5xl font-headline text-stellar-black mb-4 uppercase">
+                    Todo lo que necesitas
+                  </h2>
+                  <p className="text-stellar-black/60 text-lg max-w-2xl mx-auto font-body">
+                    Configura certificados coleccionables en minutos, conecta
+                    APIs si lo necesitas y maneja registros desde el móvil o el
+                    escenario.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {features.map((feature, i) => (
+                    <div
+                      key={feature.title}
+                      className={`group relative rounded-2xl border ${feature.border} ${feature.bg} p-8 transition-all duration-500 hover:scale-[1.02] hover:shadow-xl hover:shadow-stellar-gold/5 ${
+                        featuresVisible ? "animate-fade-up" : "opacity-0"
+                      }`}
+                      style={{ animationDelay: `${i * 0.1}s` }}
+                    >
+                      <div
+                        className={`inline-flex items-center justify-center w-12 h-12 rounded-xl ${feature.bg} border ${feature.border} mb-5`}
+                      >
+                        <feature.icon size={24} className={feature.color} />
+                      </div>
+                      <h3 className="text-xl font-headline text-stellar-black mb-3 uppercase">
+                        {feature.title}
+                      </h3>
+                      <p className="text-stellar-black/60 leading-relaxed font-body">
+                        {feature.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* ── Audiences ────────────────────────── */}
+            <section
+              id="audiences"
+              ref={audiencesRef as React.RefObject<HTMLElement>}
+              className="py-24 md:py-32 relative"
+            >
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-stellar-black/10 to-transparent" />
+
+              <div className="mx-auto max-w-7xl px-6">
+                <div
+                  className={`text-center mb-16 ${audiencesVisible ? "animate-fade-up" : "opacity-0"}`}
+                >
+                  <span className="text-xs font-body uppercase tracking-widest text-stellar-lilac mb-4 block">
+                    SPOT para cada equipo
+                  </span>
+                  <h2 className="text-3xl md:text-5xl font-headline text-stellar-black mb-4 uppercase">
+                    Dos audiencias, un producto
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Organizadores & builders */}
+                  <div
+                    className={`relative rounded-2xl border border-stellar-gold/20 bg-stellar-gold/5 p-8 md:p-10 transition-all duration-500 hover:border-stellar-gold/40 ${
+                      audiencesVisible ? "animate-slide-in-left" : "opacity-0"
+                    }`}
+                  >
+                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-stellar-gold/10 border border-stellar-gold/20 mb-6">
+                      <Hammer size={28} className="text-stellar-gold" />
+                    </div>
+                    <h3 className="text-2xl md:text-3xl font-headline text-stellar-black mb-3 uppercase">
+                      Organizadores & builders
+                    </h3>
+                    <p className="text-stellar-black/60 mb-6 leading-relaxed font-body">
+                      Configura certificados coleccionables en minutos, conecta
+                      APIs si lo necesitas y maneja registros desde el móvil o
+                      el escenario.
+                    </p>
+                    <ul className="space-y-3">
+                      <li className="flex items-start gap-3">
+                        <span className="mt-1.5 block h-1.5 w-1.5 rounded-full bg-stellar-gold shrink-0" />
+                        <span className="text-sm text-stellar-black/70 font-body">
+                          Herramientas self-service para crear, editar y pausar
+                          eventos.
+                        </span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="mt-1.5 block h-1.5 w-1.5 rounded-full bg-stellar-gold shrink-0" />
+                        <span className="text-sm text-stellar-black/70 font-body">
+                          Integraciones Soroban listas para automatizar claims.
+                        </span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="mt-1.5 block h-1.5 w-1.5 rounded-full bg-stellar-gold shrink-0" />
+                        <span className="text-sm text-stellar-black/70 font-body">
+                          Debugger disponible para equipos técnicos.
+                        </span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* Sponsors & instituciones */}
+                  <div
+                    className={`relative rounded-2xl border border-stellar-lilac/20 bg-stellar-lilac/5 p-8 md:p-10 transition-all duration-500 hover:border-stellar-lilac/40 ${
+                      audiencesVisible ? "animate-slide-in-right" : "opacity-0"
+                    }`}
+                  >
+                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-stellar-lilac/10 border border-stellar-lilac/20 mb-6">
+                      <Building2 size={28} className="text-stellar-lilac" />
+                    </div>
+                    <h3 className="text-2xl md:text-3xl font-headline text-stellar-black mb-3 uppercase">
+                      Sponsors & instituciones
+                    </h3>
+                    <p className="text-stellar-black/60 mb-6 leading-relaxed font-body">
+                      Obtén reportes claros sobre asistencia verificada y
+                      comparte pruebas on-chain con aliados o reguladores.
+                    </p>
+                    <ul className="space-y-3">
+                      <li className="flex items-start gap-3">
+                        <span className="mt-1.5 block h-1.5 w-1.5 rounded-full bg-stellar-lilac shrink-0" />
+                        <span className="text-sm text-stellar-black/70 font-body">
+                          Métricas visibles para patrocinadores y equipo
+                          comercial.
+                        </span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="mt-1.5 block h-1.5 w-1.5 rounded-full bg-stellar-lilac shrink-0" />
+                        <span className="text-sm text-stellar-black/70 font-body">
+                          Evidencia inmutable hospedada en la red Stellar.
+                        </span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="mt-1.5 block h-1.5 w-1.5 rounded-full bg-stellar-lilac shrink-0" />
+                        <span className="text-sm text-stellar-black/70 font-body">
+                          Copys concisos para informes y aprobaciones rápidas.
+                        </span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* ── How It Works ─────────────────────── */}
+            <section
+              id="how-it-works"
+              ref={howItWorksRef as React.RefObject<HTMLElement>}
+              className="py-24 md:py-32 relative"
+            >
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-stellar-black/10 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-stellar-black/10 to-transparent" />
+
+              <div className="relative mx-auto max-w-7xl px-6">
+                <div
+                  className={`text-center mb-20 ${howItWorksVisible ? "animate-fade-up" : "opacity-0"}`}
+                >
+                  <span className="text-xs font-body uppercase tracking-widest text-stellar-teal mb-4 block">
+                    Proceso
+                  </span>
+                  <h2 className="text-3xl md:text-5xl font-headline text-stellar-black mb-4 uppercase">
+                    Cómo funciona
+                  </h2>
+                  <p className="text-stellar-black/60 text-lg max-w-2xl mx-auto font-body">
+                    SPOT convierte tus eventos en coleccionables digitales
+                    verificados. Configura arte, cupos y métricas desde un mismo
+                    panel.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
+                  {/* Connecting line (desktop only) */}
+                  <div className="hidden lg:block absolute top-16 left-[12.5%] right-[12.5%] h-px bg-gradient-to-r from-stellar-gold/30 via-stellar-lilac/30 to-stellar-teal/30" />
+
+                  {steps.map((step, i) => (
+                    <div
+                      key={step.step}
+                      className={`relative text-center ${howItWorksVisible ? "animate-fade-up" : "opacity-0"}`}
+                      style={{ animationDelay: `${i * 0.15}s` }}
+                    >
+                      <div className="relative inline-flex flex-col items-center mb-6">
+                        <div
+                          className={`w-16 h-16 rounded-2xl ${step.bg} border ${step.border} flex items-center justify-center relative z-10`}
+                        >
+                          <step.icon size={28} className={step.color} />
+                        </div>
+                        <span
+                          className={`mt-3 text-xs font-body font-bold ${step.color} tracking-widest`}
+                        >
+                          {step.step}
+                        </span>
+                      </div>
+                      <h3 className="text-lg font-headline text-stellar-black mb-3 uppercase">
+                        {step.title}
+                      </h3>
+                      <p className="text-sm text-stellar-black/60 leading-relaxed font-body">
+                        {step.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* ── CTA Section ──────────────────────── */}
+            <section
+              ref={ctaRef as React.RefObject<HTMLElement>}
+              className="py-24 md:py-32 relative"
+            >
+              <div className="mx-auto max-w-7xl px-6">
+                <div
+                  className={`relative rounded-3xl overflow-hidden ${ctaVisible ? "animate-fade-up" : "opacity-0"}`}
+                >
+                  {/* Gradient background */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-stellar-gold/15 via-stellar-lilac/10 to-stellar-teal/10" />
+                  <div className="absolute inset-0 bg-stellar-white/80 backdrop-blur-sm" />
+                  {/* Gold glow */}
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-32 bg-stellar-gold/20 blur-[100px] rounded-full" />
+
+                  <div className="relative px-8 py-16 md:px-16 md:py-24 text-center">
+                    <span className="text-xs font-body uppercase tracking-widest text-stellar-gold mb-6 block">
+                      Empieza ahora
+                    </span>
+                    <h2 className="text-3xl md:text-5xl font-headline text-stellar-black mb-6 uppercase">
+                      Crea experiencias verificables
+                    </h2>
+                    <p className="text-lg text-stellar-black/60 max-w-2xl mx-auto mb-10 leading-relaxed font-body">
+                      Sube tu imagen, define cupos y programa fechas de reclamo
+                      para cada evento sin depender de desarrolladores. Cada
+                      comprobante vive en Stellar.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                      <button
+                        onClick={() => navigate("/mint")}
+                        className="inline-flex items-center justify-center gap-2 bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full px-10 py-3 shadow-lg hover:shadow-xl transition-all text-base font-body"
+                      >
+                        Reclamar SPOT <ArrowRight size={18} />
+                      </button>
+                      <button
+                        onClick={() => navigate("/create-event")}
+                        className="inline-flex items-center justify-center gap-2 border-2 border-stellar-lilac/40 text-stellar-black hover:bg-stellar-lilac/10 font-semibold rounded-full px-10 py-3 transition-all text-base font-body"
+                      >
+                        Crear Evento
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </>
+        )}
+
+        {/* ═══════════════════════════════════════════
+            CONNECTED — SPOT COLLECTION
+            ═══════════════════════════════════════════ */}
+        {isConnected && hasDisplaySpots && (
+          <div
+            ref={collectionRef as React.RefObject<HTMLDivElement>}
+            className="mx-auto max-w-7xl px-6 py-12"
+          >
+            <div
+              className={`mb-10 ${collectionVisible ? "animate-fade-up" : "opacity-0"}`}
+            >
+              <h2 className="text-3xl md:text-4xl font-headline text-stellar-black mb-3 uppercase">
+                Tu <span className="text-stellar-gold">Colección</span>
+              </h2>
+              <p className="text-stellar-black/60 italic text-lg font-subhead">
+                {totalSpots} {totalSpots === 1 ? "SPOT" : "SPOTs"} en tu
+                colección
+              </p>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
+              <div className="relative rounded-2xl border border-stellar-lilac/20 bg-stellar-lilac/5 p-6 group hover:-translate-y-1 transition-all duration-300">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-stellar-lilac/10 rounded-full blur-2xl" />
+                <div className="relative">
+                  <div className="text-4xl font-headline text-stellar-lilac mb-2">
+                    {totalSpots}
+                  </div>
+                  <div className="text-base text-stellar-black/60 font-body">
+                    Total SPOTs
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative rounded-2xl border border-stellar-gold/30 bg-stellar-gold/5 p-6 group hover:-translate-y-1 transition-all duration-300">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-stellar-gold/10 rounded-full blur-2xl" />
+                <div className="relative">
+                  <div className="text-4xl font-headline text-stellar-gold mb-2">
+                    {Object.keys(groupedSpots).length}
+                  </div>
+                  <div className="text-base text-stellar-black/60 font-body">
+                    Meses activos
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative rounded-2xl border border-stellar-teal/20 bg-stellar-teal/5 p-6 group hover:-translate-y-1 transition-all duration-300">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-stellar-teal/10 rounded-full blur-2xl" />
+                <div className="relative">
+                  <div className="text-4xl font-headline text-stellar-teal mb-2">
+                    {new Date().getFullYear()}
+                  </div>
+                  <div className="text-base text-stellar-black/60 font-body">
+                    Año actual
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* SPOTs grouped by month */}
+            <div>
+              {Object.keys(groupedSpots).length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-stellar-black/50 font-body">
+                    No hay SPOTs para mostrar
+                  </p>
+                </div>
+              ) : (
+                Object.values(groupedSpots).map(
+                  (group: {
+                    year: number;
+                    month: string;
+                    spots: SpotData[];
+                  }) => (
+                    <MonthSection
+                      key={`${group.year}-${group.month}`}
+                      month={group.month}
+                      year={group.year}
+                      spots={group.spots}
+                      onSpotClick={(spot) => {
+                        console.log("SPOT clicked:", spot);
+                      }}
+                    />
+                  ),
+                )
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── Empty state: connected but no SPOTs ── */}
+        {isConnected && totalSpots === 0 && (
+          <div className="mx-auto max-w-7xl px-6 py-12">
+            <div className="relative rounded-3xl overflow-hidden border border-stellar-lilac/20 bg-stellar-lilac/5 p-12 text-center">
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-stellar-gold/10 rounded-full blur-3xl" />
+              </div>
+              <div className="relative">
+                <div className="mb-6">
+                  <img
+                    src="https://cdn.sanity.io/images/e2r40yh6/production-i18n/9bed752a12d4ffe6c6118c93f8ca36ad60a573d3-1072x1072.png?rect=0,108,1072,857&w=1224&h=979&auto=format&dpr=2"
+                    alt="No SPOTs"
+                    className="w-32 h-32 mx-auto object-contain drop-shadow-2xl opacity-50"
                   />
                 </div>
-
-                {/* Content sobre la imagen */}
-                <div className="relative z-20 p-8 md:p-12 lg:p-16">
-                  {/* Logo de Stellar grande con efecto */}
-                  <div className="flex justify-center lg:justify-start mb-6">
-                    <div className="relative group">
-                      <div className="absolute inset-0 bg-stellar-gold/30 rounded-full blur-3xl group-hover:blur-[60px] transition-all duration-500" />
-                      <img 
-                        src="https://cdn.sanity.io/images/e2r40yh6/production-i18n/9bed752a12d4ffe6c6118c93f8ca36ad60a573d3-1072x1072.png?rect=0,108,1072,857&w=1224&h=979&auto=format&dpr=2"
-                        alt="Stellar"
-                        className="relative w-24 h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 object-contain drop-shadow-2xl group-hover:scale-110 transition-transform duration-500 filter brightness-110"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Título con sombra para contraste */}
-                  <Text
-                    as="h1"
-                    size="xl"
-                    className="text-4xl md:text-5xl lg:text-6xl font-bold text-stellar-white mb-8 tracking-tight uppercase text-center lg:text-left drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]"
-                  >
-                    SPOT · Stellar Proof of Togetherness
-                  </Text>
-                  
-                  <Text
-                    as="p"
-                    size="lg"
-                    className="text-lg md:text-2xl text-stellar-black/80 mb-4 italic font-light text-center lg:text-left"
-                  >
-                    <span className="text-stellar-gold font-medium">
-                      Sabemos a quién hablamos: bancos, policymakers y builders.
-                    </span>
-                  </Text>
-                  
-                  <Text
-                    as="p"
-                    size="md"
-                    className="text-base md:text-lg text-stellar-black/80 max-w-3xl mb-10 text-center lg:text-left mx-auto lg:mx-0"
-                  >
-                    SPOT es tu comprobante coleccionable en Stellar: diseña la pieza, define la ventana de reclamo y entrega recuerdos verificables que demuestran asistencia ante sponsors, instituciones y comunidades.
-                  </Text>
-
-                  {/* Wallet + CTA Buttons */}
-                  <div className="flex flex-col gap-6 items-center lg:items-start">
-                    <div className="w-full flex justify-center lg:justify-start">
-                      <ConnectAccount />
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center w-full">
-                      <Button
-                        onClick={() => navigate("/mint")}
-                        variant="primary"
-                        size="lg"
-                        className="bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full px-8 py-3 shadow-lg hover:shadow-xl transition-all w-full sm:w-auto"
-                      >
-                        ⚡ Reclamar SPOT
-                      </Button>
-                      <Button
-                        onClick={() => navigate("/create-event")}
-                        variant="secondary"
-                        size="lg"
-                        className="bg-stellar-lilac text-stellar-black hover:bg-stellar-lilac/80 font-semibold rounded-full px-8 py-3 shadow-lg hover:shadow-xl transition-all w-full sm:w-auto"
-                      >
-                        ➕ Crear Evento
-                      </Button>
-                      {isConnected && (
-                        <Button
-                          onClick={() => navigate("/profile")}
-                          variant="tertiary"
-                          size="lg"
-                          className="bg-stellar-white border-2 border-stellar-black/10 text-stellar-black hover:bg-stellar-black/5 font-medium rounded-full px-8 py-3 shadow-md hover:shadow-lg transition-all w-full sm:w-auto"
-                        >
-                          👤 Mis SPOTs
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                <h2 className="text-3xl font-headline text-stellar-black mb-4 uppercase">
+                  Aún no tienes SPOTs
+                </h2>
+                <p className="text-stellar-black/60 max-w-md mx-auto mb-8 font-body">
+                  Asiste a eventos y reclama tus SPOTs para comenzar tu
+                  colección.
+                </p>
+                <Button
+                  onClick={() => navigate("/mint")}
+                  variant="primary"
+                  size="lg"
+                  className="bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full px-10 py-4 shadow-lg hover:shadow-xl transition-all"
+                >
+                  Reclamar mi Primer SPOT
+                </Button>
               </div>
-            </section>
-
-            {!isConnected && (
-              <>
-                {/* Audience Guidance Section - Rediseñado */}
-                <section className="mb-16 md:mb-20">
-                  <div className="text-center mb-10">
-                    <div className="text-sm uppercase tracking-wider text-stellar-black/60 font-semibold mb-3">
-                      SPOT para cada equipo
-                    </div>
-                    <h2 className="text-3xl md:text-4xl font-bold text-stellar-black uppercase">
-                      Diseñado para{" "}
-                      <span className="text-stellar-gold">Profesionales</span>
-                    </h2>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {/* Card 1 - con imagen */}
-                    <div className="relative rounded-3xl overflow-hidden border-2 border-stellar-gold/20 bg-stellar-white shadow-xl group hover:-translate-y-2 transition-all duration-300">
-                      {/* Hero image */}
-                      <div className="relative h-56 bg-gradient-to-br from-stellar-gold/10 to-stellar-gold/5 flex items-center justify-center overflow-hidden">
-                        <div className="absolute inset-0 bg-stellar-gold/5 group-hover:bg-stellar-gold/10 transition-colors duration-300" />
-                        <img 
-                          src="https://cdn.sanity.io/images/e2r40yh6/production-i18n/48e528e291d7c6cfa7e5535a3f07703043d95e76-1064x966.png"
-                          alt="Organizadores"
-                          className="relative w-40 h-40 object-contain drop-shadow-2xl group-hover:scale-110 transition-transform duration-500"
-                        />
-                      </div>
-
-                      <div className="p-8">
-                        <Text as="h3" size="md" className="text-2xl font-bold text-stellar-black mb-3 uppercase">
-                          Organizadores & Builders
-                        </Text>
-                        <Text as="p" size="sm" className="text-stellar-black/80 mb-6">
-                          Configura certificados coleccionables en minutos, conecta APIs si lo necesitas y maneja registros desde el móvil o el escenario.
-                        </Text>
-                        <ul className="space-y-3 text-sm text-stellar-black/80">
-                          <li className="flex items-start gap-2">
-                            <span className="text-stellar-gold font-bold">•</span>
-                            <span>Herramientas self-service para crear, editar y pausar eventos.</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="text-stellar-gold font-bold">•</span>
-                            <span>Integraciones Soroban listas para automatizar claims.</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="text-stellar-gold font-bold">•</span>
-                            <span>Debugger disponible para equipos técnicos.</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-
-                    {/* Card 2 - con imagen */}
-                    <div className="relative rounded-3xl overflow-hidden border-2 border-stellar-lilac/20 bg-stellar-white shadow-xl group hover:-translate-y-2 transition-all duration-300">
-                      {/* Hero image */}
-                      <div className="relative h-56 bg-gradient-to-br from-stellar-lilac/10 to-stellar-lilac/5 flex items-center justify-center overflow-hidden">
-                        <div className="absolute inset-0 bg-stellar-lilac/5 group-hover:bg-stellar-lilac/10 transition-colors duration-300" />
-                        <img 
-                          src="https://cdn.sanity.io/images/e2r40yh6/production-i18n/0d0e3d25f708801c44682ad9d680ae707c5e40cb-4200x3508.png?rect=841,0,2518,3147&w=1012&h=1265&auto=format&dpr=2"
-                          alt="Sponsors"
-                          className="relative w-40 h-40 object-contain drop-shadow-2xl group-hover:scale-110 transition-transform duration-500"
-                        />
-                      </div>
-
-                      <div className="p-8">
-                        <Text as="h3" size="md" className="text-2xl font-bold text-stellar-black mb-3 uppercase">
-                          Sponsors & Instituciones
-                        </Text>
-                        <Text as="p" size="sm" className="text-stellar-black/80 mb-6">
-                          Obtén reportes claros sobre asistencia verificada y comparte pruebas on-chain con aliados o reguladores.
-                        </Text>
-                        <ul className="space-y-3 text-sm text-stellar-black/80">
-                          <li className="flex items-start gap-2">
-                            <span className="text-stellar-lilac font-bold">•</span>
-                            <span>Métricas visibles para patrocinadores y equipo comercial.</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="text-stellar-lilac font-bold">•</span>
-                            <span>Evidencia inmutable hospedada en la red Stellar.</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="text-stellar-lilac font-bold">•</span>
-                            <span>Copys concisos para informes y aprobaciones rápidas.</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-
-                {/* Features Section - Rediseñado con imágenes grandes */}
-                <section className="mb-16 md:mb-20">
-                  <div className="text-center mb-12">
-                    <h2 className="text-3xl md:text-4xl font-bold text-stellar-black uppercase mb-4">
-                      Características <span className="text-stellar-teal">Principales</span>
-                    </h2>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {/* Feature 1 */}
-                    <div className="relative rounded-3xl overflow-hidden border-2 border-stellar-lilac/20 bg-stellar-white shadow-xl group hover:-translate-y-2 transition-all duration-300">
-                      <div className="relative h-48 bg-gradient-to-br from-stellar-lilac/10 to-stellar-lilac/5 flex items-center justify-center">
-                        <div className="absolute inset-0 bg-stellar-lilac/5 group-hover:bg-stellar-lilac/10 transition-colors duration-300" />
-                        <img 
-                          src="https://cdn.sanity.io/images/e2r40yh6/production-i18n/1e1d26a6ea7bd878932cb753bbd028e455fe0331-1100x1100.png?w=128&h=128&auto=format&dpr=2"
-                          alt="Múltiples Métodos"
-                          className="relative w-28 h-28 object-contain drop-shadow-2xl group-hover:scale-110 transition-transform duration-500"
-                        />
-                      </div>
-                      <div className="p-6 text-center">
-                        <Text as="h3" size="md" className="text-xl font-bold text-stellar-black mb-3 uppercase">
-                          Múltiples Métodos
-                        </Text>
-                        <Text as="p" size="sm" className="text-stellar-black/80">
-                          Reclama SPOTs con QR, Link, Código, Geolocalización o NFC
-                        </Text>
-                      </div>
-                    </div>
-
-                    {/* Feature 2 */}
-                    <div className="relative rounded-3xl overflow-hidden border-2 border-stellar-gold/30 bg-stellar-white shadow-xl group hover:-translate-y-2 transition-all duration-300">
-                      <div className="relative h-48 bg-gradient-to-br from-stellar-gold/10 to-stellar-gold/5 flex items-center justify-center">
-                        <div className="absolute inset-0 bg-stellar-gold/5 group-hover:bg-stellar-gold/10 transition-colors duration-300" />
-                        <img 
-                          src="https://cdn.sanity.io/images/e2r40yh6/production-i18n/9bed752a12d4ffe6c6118c93f8ca36ad60a573d3-1072x1072.png?rect=0,108,1072,857&w=1224&h=979&auto=format&dpr=2"
-                          alt="Blockchain"
-                          className="relative w-28 h-28 object-contain drop-shadow-2xl group-hover:scale-110 transition-transform duration-500"
-                        />
-                      </div>
-                      <div className="p-6 text-center">
-                        <Text as="h3" size="md" className="text-xl font-bold text-stellar-black mb-3 uppercase">
-                          En la Blockchain
-                        </Text>
-                        <Text as="p" size="sm" className="text-stellar-black/80">
-                          Tus SPOTs están guardados permanentemente en la red Stellar
-                        </Text>
-                      </div>
-                    </div>
-
-                    {/* Feature 3 */}
-                    <div className="relative rounded-3xl overflow-hidden border-2 border-stellar-teal/20 bg-stellar-white shadow-xl group hover:-translate-y-2 transition-all duration-300">
-                      <div className="relative h-48 bg-gradient-to-br from-stellar-teal/10 to-stellar-teal/5 flex items-center justify-center">
-                        <div className="absolute inset-0 bg-stellar-teal/5 group-hover:bg-stellar-teal/10 transition-colors duration-300" />
-                        <img 
-                          src="https://cdn.sanity.io/images/e2r40yh6/production-i18n/47afd92486b4fa3731d8f58a38dabf41b71cb336-1100x1100.png?w=128&h=128&auto=format&dpr=2"
-                          alt="Personalizables"
-                          className="relative w-28 h-28 object-contain drop-shadow-2xl group-hover:scale-110 transition-transform duration-500"
-                        />
-                      </div>
-                      <div className="p-6 text-center">
-                        <Text as="h3" size="md" className="text-xl font-bold text-stellar-black mb-3 uppercase">
-                          Personalizables
-                        </Text>
-                        <Text as="p" size="sm" className="text-stellar-black/80">
-                          Crea eventos únicos con imágenes y metadata personalizada
-                        </Text>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-              </>
-            )}
-
-            {/* User's SPOTs Section - Solo si está conectado */}
-            {isConnected && hasDisplaySpots && (
-              <>
-                <div className="mb-10">
-                  <h2 className="text-3xl md:text-4xl font-bold text-stellar-black mb-3 uppercase">
-                    Tu <span className="text-stellar-gold">Colección</span>
-                  </h2>
-                  <Text as="p" size="md" className="text-stellar-black/70 italic text-lg">
-                    {totalSpots} {totalSpots === 1 ? 'SPOT' : 'SPOTs'} en tu colección
-                  </Text>
-                </div>
-
-                {/* Stats Section - Rediseñado */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
-                  <div className="relative rounded-2xl overflow-hidden border-2 border-stellar-lilac/20 bg-stellar-white shadow-lg p-6 group hover:-translate-y-1 transition-all duration-300">
-                    <div className="absolute top-0 right-0 w-20 h-20 bg-stellar-lilac/10 rounded-full blur-2xl" />
-                    <div className="relative">
-                      <div className="text-4xl font-bold text-stellar-lilac mb-2">
-                        {totalSpots}
-                      </div>
-                      <div className="text-base text-stellar-black/70 font-medium">Total SPOTs</div>
-                    </div>
-                  </div>
-
-                  <div className="relative rounded-2xl overflow-hidden border-2 border-stellar-gold/30 bg-stellar-white shadow-lg p-6 group hover:-translate-y-1 transition-all duration-300">
-                    <div className="absolute top-0 right-0 w-20 h-20 bg-stellar-gold/10 rounded-full blur-2xl" />
-                    <div className="relative">
-                      <div className="text-4xl font-bold text-stellar-gold mb-2">
-                        {Object.keys(groupedSpots).length}
-                      </div>
-                      <div className="text-base text-stellar-black/70 font-medium">Meses activos</div>
-                    </div>
-                  </div>
-
-                  <div className="relative rounded-2xl overflow-hidden border-2 border-stellar-teal/20 bg-stellar-white shadow-lg p-6 group hover:-translate-y-1 transition-all duration-300">
-                    <div className="absolute top-0 right-0 w-20 h-20 bg-stellar-teal/10 rounded-full blur-2xl" />
-                    <div className="relative">
-                      <div className="text-4xl font-bold text-stellar-teal mb-2">
-                        {new Date().getFullYear()}
-                      </div>
-                      <div className="text-base text-stellar-black/70 font-medium">Año actual</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* SPOTs grouped by month */}
-                <div>
-                  {Object.keys(groupedSpots).length === 0 ? (
-                    <div className="text-center py-12">
-                      <Text as="p" size="md" className="text-gray-500">
-                        No hay SPOTs para mostrar
-                      </Text>
-                    </div>
-                  ) : (
-                    Object.values(groupedSpots).map((group: { year: number; month: string; spots: SpotData[] }) => (
-                      <MonthSection
-                        key={`${group.year}-${group.month}`}
-                        month={group.month}
-                        year={group.year}
-                        spots={group.spots}
-                        onSpotClick={(spot) => {
-                          console.log("SPOT clicked:", spot);
-                        }}
-                      />
-                    ))
-                  )}
-                </div>
-              </>
-            )}
-
-            {/* Empty State - Not connected or no SPOTs */}
-            {isConnected && totalSpots === 0 && (
-              <div className="relative rounded-3xl overflow-hidden border-2 border-stellar-lilac/20 bg-stellar-white shadow-xl p-12 text-center">
-                <div className="absolute inset-0 overflow-hidden">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-stellar-gold/10 rounded-full blur-3xl" />
-                </div>
-                
-                <div className="relative">
-                  <div className="mb-6">
-                    <img 
-                      src="https://cdn.sanity.io/images/e2r40yh6/production-i18n/9bed752a12d4ffe6c6118c93f8ca36ad60a573d3-1072x1072.png?rect=0,108,1072,857&w=1224&h=979&auto=format&dpr=2"
-                      alt="No SPOTs"
-                      className="w-32 h-32 mx-auto object-contain drop-shadow-2xl opacity-50"
-                    />
-                  </div>
-                  <Text as="h2" size="lg" className="text-3xl font-bold text-stellar-black mb-4 uppercase">
-                    Aún no tienes SPOTs
-                  </Text>
-                  <Text as="p" size="md" className="text-stellar-black/70 max-w-md mx-auto mb-8">
-                    Asiste a eventos y reclama tus SPOTs para comenzar tu colección.
-                  </Text>
-                  <Button
-                    onClick={() => navigate("/mint")}
-                    variant="primary"
-                    size="lg"
-                    className="bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full px-10 py-4 shadow-lg hover:shadow-xl transition-all"
-                  >
-                    Reclamar mi Primer SPOT
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Not Connected State - Rediseñado */}
-            {!isConnected && (
-              <div className="relative rounded-3xl overflow-hidden border-2 border-stellar-lilac/20 bg-stellar-white shadow-xl p-12 text-center mb-16">
-                <div className="absolute inset-0 overflow-hidden">
-                  <div className="absolute -top-20 -right-20 w-80 h-80 bg-stellar-lilac/10 rounded-full blur-3xl" />
-                  <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-stellar-gold/10 rounded-full blur-3xl" />
-                </div>
-                
-                <div className="relative">
-                  <div className="mb-8">
-                    <img 
-                      src="https://cdn.sanity.io/images/e2r40yh6/production-i18n/b26bdb6d8de9b8eb4f933b56f2366c0b80433c1c-4790x3693.png?w=506&auto=format&dpr=2"
-                      alt="Conecta Wallet"
-                      className="w-56 h-56 md:w-64 md:h-64 mx-auto object-contain drop-shadow-2xl"
-                    />
-                  </div>
-                  <Text as="h2" size="lg" className="text-3xl font-bold text-stellar-black mb-4 uppercase">
-                    Conecta tu Wallet
-                  </Text>
-                  <Text as="p" size="md" className="text-stellar-black/70 max-w-lg mx-auto mb-8 text-lg">
-                    Conecta tu wallet de Stellar para ver tu colección de SPOTs y reclamar nuevos.
-                  </Text>
-                  <Button
-                    onClick={() => void connectWallet()}
-                    variant="primary"
-                    size="lg"
-                    className="bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full px-10 py-4 shadow-lg hover:shadow-xl transition-all"
-                  >
-                    Conectar Wallet
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* TL;DR Summary - Rediseñado */}
-            <section className="mb-16">
-              <div className="max-w-5xl mx-auto">
-                <TldrCard
-                  label=""
-                  summary="SPOT convierte tus eventos en coleccionables digitales verificados. Configura arte, cupos y métricas desde un mismo panel."
-                  bullets={[
-                    {
-                      label: "Crea experiencias",
-                      detail:
-                        "Sube tu imagen, define cupos y programa fechas de reclamo para cada evento sin depender de desarrolladores.",
-                    },
-                    {
-                      label: "Reclama sin fricción",
-                      detail:
-                        "QR, link, código, geofence o NFC listos para usar en campo, con botones visibles que empujan la conversión.",
-                    },
-                    {
-                      label: "Demuestra valor",
-                      detail:
-                        "Cada comprobante vive en Stellar: útil para reportes, patrocinios y transparencia con tu comunidad.",
-                    },
-                  ]}
-                />
-              </div>
-            </section>
+            </div>
           </div>
+        )}
+
+        {/* ── Not connected wallet prompt ─────────── */}
+        {!isConnected && (
+          <div className="mx-auto max-w-7xl px-6 pb-24">
+            <div className="relative rounded-3xl overflow-hidden border border-stellar-lilac/20 bg-stellar-lilac/5 p-12 text-center">
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute -top-20 -right-20 w-80 h-80 bg-stellar-lilac/10 rounded-full blur-3xl" />
+                <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-stellar-gold/10 rounded-full blur-3xl" />
+              </div>
+              <div className="relative">
+                <div className="mb-8">
+                  <img
+                    src="https://cdn.sanity.io/images/e2r40yh6/production-i18n/b26bdb6d8de9b8eb4f933b56f2366c0b80433c1c-4790x3693.png?w=506&auto=format&dpr=2"
+                    alt="Conecta Wallet"
+                    className="w-48 h-48 md:w-56 md:h-56 mx-auto object-contain drop-shadow-2xl"
+                  />
+                </div>
+                <h2 className="text-3xl font-headline text-stellar-black mb-4 uppercase">
+                  Conecta tu Wallet
+                </h2>
+                <p className="text-stellar-black/60 max-w-lg mx-auto mb-8 text-lg font-body">
+                  Conecta tu wallet de Stellar para ver tu colección de SPOTs y
+                  reclamar nuevos.
+                </p>
+                <button
+                  onClick={() => void connectWallet()}
+                  className="inline-flex items-center justify-center gap-2 bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full px-10 py-4 shadow-lg hover:shadow-xl transition-all font-body"
+                >
+                  Conectar Wallet
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── TL;DR Summary ───────────────────────── */}
+        <div className="mx-auto max-w-5xl px-6 pb-24">
+          <TldrCard
+            label=""
+            summary="SPOT convierte tus eventos en coleccionables digitales verificados. Configura arte, cupos y métricas desde un mismo panel."
+            bullets={[
+              {
+                label: "Crea experiencias",
+                detail:
+                  "Sube tu imagen, define cupos y programa fechas de reclamo para cada evento sin depender de desarrolladores.",
+              },
+              {
+                label: "Reclama sin fricción",
+                detail:
+                  "QR, link, código, geofence o NFC listos para usar en campo, con botones visibles que empujan la conversión.",
+              },
+              {
+                label: "Demuestra valor",
+                detail:
+                  "Cada comprobante vive en Stellar: útil para reportes, patrocinios y transparencia con tu comunidad.",
+              },
+            ]}
+          />
         </div>
-        </Layout.Inset>
-      </Layout.Content>
+      </div>
     </div>
   );
 };
