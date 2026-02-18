@@ -4,6 +4,7 @@ import ConnectAccount from "./components/ConnectAccount.tsx";
 import MobileMenu from "./components/MobileMenu.tsx";
 import { Routes, Route, Outlet, NavLink, Link } from "react-router-dom";
 import { Plus, Zap, User } from "lucide-react";
+import spotLogo from "./images/Recurso_1.svg";
 import Home from "./pages/Home";
 import Mint from "./pages/Mint";
 import CreateEvent from "./pages/CreateEvent";
@@ -43,7 +44,7 @@ const AppLayout: React.FC = () => {
             <NavLink to="/" className="flex items-center gap-2 no-underline">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-stellar-gold">
               <img 
-              src="src\images\Recurso_1.svg"
+              src={spotLogo}
               alt="Soto"
               className="w-6 h-6 object-contain"
             />
@@ -151,7 +152,7 @@ const AppLayout: React.FC = () => {
               <Link to="/" className="flex items-center gap-2 mb-4 no-underline">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-stellar-gold">
                 <img 
-              src="src\images\Recurso_1.svg"
+              src={spotLogo}
               alt="Soto"
               className="w-6 h-6 object-contain"
             />
