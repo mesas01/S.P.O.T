@@ -1,5 +1,4 @@
 import React, { useState, useRef } from "react";
-import { Layout, Text, Button, Input } from "@stellar/design-system";
 import { useWallet } from "../hooks/useWallet";
 import { useNavigate } from "react-router-dom";
 import { useNotification } from "../hooks/useNotification";
@@ -7,13 +6,25 @@ import { saveLocalEvent } from "../utils/localEvents";
 import { createEventRequest } from "../util/backend";
 import TldrCard from "../components/layout/TldrCard";
 import { buildErrorDetail, buildTxDetail } from "../utils/notificationHelpers";
+import {
+  Lock,
+  QrCode,
+  Link2,
+  Hash,
+  MapPin,
+  Nfc,
+  X,
+  Upload,
+  ArrowLeft,
+  Loader2,
+} from "lucide-react";
 
 const CreateEvent: React.FC = () => {
   const { address } = useWallet();
   const navigate = useNavigate();
   const isConnected = !!address;
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [formData, setFormData] = useState({
     eventName: "",
     eventDate: "",
@@ -39,66 +50,53 @@ const CreateEvent: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showNotification } = useNotification();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validar tipo de archivo
-    if (!file.type.startsWith('image/')) {
+    if (!file.type.startsWith("image/")) {
       alert("Por favor, selecciona un archivo de imagen válido");
       return;
     }
 
-    // Validar tamaño (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       alert("La imagen no puede ser mayor a 5MB");
       return;
     }
 
-    // Crear preview
     const reader = new FileReader();
     reader.onloadend = () => {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         imageFile: file,
         imagePreview: reader.result as string,
-        imageUrl: "", // Limpiar URL si hay archivo
+        imageUrl: "",
       }));
     };
     reader.readAsDataURL(file);
   };
 
   const handleRemoveImage = () => {
-    setFormData(prev => ({
-      ...prev,
-      imageFile: null,
-      imagePreview: "",
-    }));
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    setFormData((prev) => ({ ...prev, imageFile: null, imagePreview: "" }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleMethodToggle = (method: keyof typeof distributionMethods) => {
-    setDistributionMethods(prev => ({
-      ...prev,
-      [method]: !prev[method],
-    }));
+    setDistributionMethods((prev) => ({ ...prev, [method]: !prev[method] }));
   };
 
   const placeholderImage = "https://via.placeholder.com/300";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!isConnected) {
       showNotification({
         type: "error",
@@ -126,22 +124,29 @@ const CreateEvent: React.FC = () => {
     }
 
     try {
-      // Convertir fechas a timestamps Unix (segundos)
-      const eventDate = Math.floor(new Date(formData.eventDate).getTime() / 1000);
-      const claimStart = Math.floor(new Date(formData.claimStart).getTime() / 1000);
-      const claimEnd = Math.floor(new Date(formData.claimEnd).getTime() / 1000);
+      const eventDate = Math.floor(
+        new Date(formData.eventDate).getTime() / 1000,
+      );
+      const claimStart = Math.floor(
+        new Date(formData.claimStart).getTime() / 1000,
+      );
+      const claimEnd = Math.floor(
+        new Date(formData.claimEnd).getTime() / 1000,
+      );
 
-      // Metadata URI - por ahora usar un placeholder
-      const metadataUri = formData.metadataUri || `https://spot.example.com/metadata/${Date.now()}`;
+      const metadataUri =
+        formData.metadataUri ||
+        `https://spot.example.com/metadata/${Date.now()}`;
 
-      const imageUrlForRequest = formData.imageFile ? undefined : (formData.imageUrl || placeholderImage);
+      const imageUrlForRequest = formData.imageFile
+        ? undefined
+        : formData.imageUrl || placeholderImage;
       const localPreviewFallback = formData.imageFile
         ? formData.imagePreview || placeholderImage
         : imageUrlForRequest || placeholderImage;
 
-      // Guardar evento localmente (temporal hasta que el contrato esté configurado)
       setIsSubmitting(true);
-      
+
       try {
         const backendPayload = {
           creator: address!,
@@ -165,7 +170,8 @@ const CreateEvent: React.FC = () => {
           );
         }
 
-        const resolvedImageUrl = backendResponse.imageUrl || localPreviewFallback || placeholderImage;
+        const resolvedImageUrl =
+          backendResponse.imageUrl || localPreviewFallback || placeholderImage;
 
         const newEvent = saveLocalEvent(
           {
@@ -181,27 +187,23 @@ const CreateEvent: React.FC = () => {
             creator: address!,
             distributionMethods,
           },
-          {
-            id: newEventId ? newEventId.toString() : undefined,
-          },
+          { id: newEventId ? newEventId.toString() : undefined },
         );
 
         console.log("Evento creado exitosamente (local):", newEvent);
-        
-        // Disparar evento personalizado para actualizar otras pestañas/páginas
-        window.dispatchEvent(new Event('localStorageUpdated'));
-        
+        window.dispatchEvent(new Event("localStorageUpdated"));
+
         showNotification({
           type: "success",
           title: "Evento creado",
-          message: "Tu evento SPOT está listo. Copia el detalle si necesitas reenviar la transacción.",
+          message:
+            "Tu evento SPOT está listo. Copia el detalle si necesitas reenviar la transacción.",
           copyText: buildTxDetail(backendResponse.txHash, {
             eventId: newEventId ?? newEvent.id,
             creator: address,
           }),
         });
-        
-        // Limpiar formulario
+
         setFormData({
           eventName: "",
           eventDate: "",
@@ -222,11 +224,8 @@ const CreateEvent: React.FC = () => {
           code: false,
           nfc: false,
         });
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
-        
-        // Navegar a mis eventos después de un pequeño delay
+        if (fileInputRef.current) fileInputRef.current.value = "";
+
         setTimeout(() => {
           navigate("/my-events");
         }, 500);
@@ -235,7 +234,8 @@ const CreateEvent: React.FC = () => {
         showNotification({
           type: "error",
           title: "Error al crear evento",
-          message: "No pudimos crear el evento. Copia el detalle para soporte.",
+          message:
+            "No pudimos crear el evento. Copia el detalle para soporte.",
           copyText: buildErrorDetail(error),
         });
       } finally {
@@ -252,368 +252,343 @@ const CreateEvent: React.FC = () => {
     }
   };
 
+  const inputClass =
+    "w-full px-4 py-3 bg-white border border-stellar-black/15 rounded-xl text-stellar-black font-body text-sm placeholder:text-stellar-black/30 focus:outline-none focus:ring-2 focus:ring-stellar-lilac/30 focus:border-stellar-lilac/50 transition-colors";
+  const labelClass =
+    "block text-xs font-semibold font-body uppercase tracking-widest text-stellar-black/50 mb-2";
+
+  const distributionMethodConfigs = [
+    { key: "qr" as const, Icon: QrCode, label: "QR Code" },
+    { key: "link" as const, Icon: Link2, label: "Link Único" },
+    { key: "code" as const, Icon: Hash, label: "Código" },
+    { key: "geolocation" as const, Icon: MapPin, label: "Geolocalización" },
+    { key: "nfc" as const, Icon: Nfc, label: "NFC" },
+  ];
+
   if (!isConnected) {
     return (
-      <Layout.Content>
-        <Layout.Inset>
-          <div className="min-h-screen bg-stellar-white py-12">
-          <div className="max-w-2xl mx-auto text-center">
-            <div className="text-6xl mb-6">🔐</div>
-              <Text as="h2" size="lg" className="text-2xl font-headline text-stellar-black mb-4">
-                Conecta tu Wallet
-              </Text>
-            <Text as="p" size="md" className="text-stellar-black mb-6 font-body">
-              Necesitas conectar tu wallet para crear un evento.
-            </Text>
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={() => navigate("/")}
-              className="bg-stellar-gold text-stellar-black rounded-full px-8 py-3 font-semibold"
-              >
-              Ir a Home
-            </Button>
+      <div className="min-h-[60vh] flex items-center justify-center px-6 py-20">
+        <div className="max-w-md w-full text-center">
+          <div className="flex justify-center mb-6">
+            <div className="w-16 h-16 rounded-2xl bg-stellar-lilac/10 border border-stellar-lilac/20 flex items-center justify-center">
+              <Lock size={28} className="text-stellar-lilac" />
+            </div>
           </div>
-          </div>
-        </Layout.Inset>
-      </Layout.Content>
+          <h2 className="text-2xl font-headline text-stellar-black mb-3">
+            Conecta tu Wallet
+          </h2>
+          <p className="text-stellar-black/60 font-body mb-8">
+            Necesitas conectar tu wallet para crear un evento.
+          </p>
+          <button
+            onClick={() => navigate("/")}
+            className="inline-flex items-center gap-2 bg-stellar-gold text-stellar-black px-8 py-3 rounded-full font-semibold font-body hover:bg-stellar-gold/90 transition-all shadow-md"
+          >
+            Ir a Home
+          </button>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Layout.Content>
-      <Layout.Inset>
-        <div className="min-h-screen bg-stellar-white py-6 md:py-12">
-        <div className="max-w-2xl mx-auto">
-          {/* Header */}
-          <div className="mb-10 space-y-6">
-            <div>
-              <Button
-                variant="tertiary"
-                size="sm"
-                onClick={() => navigate("/")}
-                className="mb-4"
-              >
-                ← Volver
-              </Button>
-              <Text as="h1" size="xl" className="text-3xl md:text-4xl font-headline text-stellar-black mb-2">
-                Crear Evento
-              </Text>
-              <Text as="p" size="md" className="text-stellar-black font-subhead italic">
-                Completa el formulario para crear tu evento SPOT
-              </Text>
-            </div>
-                <TldrCard
-                  label=""
-                  summary="Antes de completar el formulario, asegúrate de tener arte, fechas y métodos de entrega listos."
-                  bullets={[
-                    { label: "Visual", detail: "Usa imágenes humanas y resalta highlights." },
-                    { label: "Tiempo", detail: "Define claim window claro (inicio/fin)." },
-                    { label: "Métodos", detail: "Activa QR, link, código, geo o NFC según tu audiencia." },
-                  ]}
-                />
+    <div className="py-12 px-6">
+      <div className="max-w-2xl mx-auto">
+        {/* Page header */}
+        <div className="mb-10">
+          <button
+            onClick={() => navigate("/")}
+            className="inline-flex items-center gap-2 text-sm text-stellar-black/50 hover:text-stellar-black font-body transition-colors mb-6"
+          >
+            <ArrowLeft size={14} />
+            Volver
+          </button>
+          <h1 className="text-3xl md:text-4xl font-headline text-stellar-black mb-3">
+            Crear Evento
+          </h1>
+          <p className="text-stellar-black/60 font-body">
+            Completa el formulario para crear tu evento SPOT
+          </p>
+          <div className="mt-6">
+            <TldrCard
+              label=""
+              summary="Antes de completar el formulario, asegúrate de tener arte, fechas y métodos de entrega listos."
+              bullets={[
+                {
+                  label: "Visual",
+                  detail: "Usa imágenes humanas y resalta highlights.",
+                },
+                {
+                  label: "Tiempo",
+                  detail: "Define claim window claro (inicio/fin).",
+                },
+                {
+                  label: "Métodos",
+                  detail:
+                    "Activa QR, link, código, geo o NFC según tu audiencia.",
+                },
+              ]}
+            />
+          </div>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Event Name */}
+          <div>
+            <label htmlFor="eventName" className={labelClass}>
+              Nombre del Evento *
+            </label>
+            <input
+              id="eventName"
+              name="eventName"
+              type="text"
+              value={formData.eventName}
+              onChange={handleInputChange}
+              placeholder="Ej: Hackathon Stellar 2024"
+              required
+              className={inputClass}
+            />
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Event Name */}
-            <div>
-              <label htmlFor="eventName" className="block text-sm font-medium text-stellar-black mb-2 font-body uppercase tracking-wide">
-                Nombre del Evento *
-              </label>
-              <Input
-                id="eventName"
-                fieldSize="md"
-                name="eventName"
-                type="text"
-                value={formData.eventName}
-                onChange={handleInputChange}
-                placeholder="Ej: Hackathon Stellar 2024"
-                required
-                className="w-full !border-2 !border-stellar-lilac/60 rounded-full px-4 py-2 focus:!border-stellar-lilac focus:ring-2 focus:ring-stellar-lilac/20"
-                style={{ border: '2px solid rgba(183, 172, 232, 0.6)', borderRadius: '9999px' }}
-              />
-            </div>
+          {/* Event Date */}
+          <div>
+            <label htmlFor="eventDate" className={labelClass}>
+              Fecha del Evento *
+            </label>
+            <input
+              id="eventDate"
+              name="eventDate"
+              type="datetime-local"
+              value={formData.eventDate}
+              onChange={handleInputChange}
+              required
+              className={inputClass}
+            />
+          </div>
 
-            {/* Event Date */}
+          {/* Location */}
+          <div>
+            <label htmlFor="location" className={labelClass}>
+              Ubicación *
+            </label>
+            <input
+              id="location"
+              name="location"
+              type="text"
+              value={formData.location}
+              onChange={handleInputChange}
+              placeholder="Ej: Bogotá, Colombia"
+              required
+              className={inputClass}
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <label htmlFor="description" className={labelClass}>
+              Descripción *
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              placeholder="Describe tu evento..."
+              required
+              rows={4}
+              className={`${inputClass} resize-none`}
+            />
+          </div>
+
+          {/* Max SPOTs */}
+          <div>
+            <label htmlFor="maxSpots" className={labelClass}>
+              Máximo de SPOTs *
+            </label>
+            <input
+              id="maxSpots"
+              name="maxSpots"
+              type="number"
+              value={formData.maxSpots}
+              onChange={handleInputChange}
+              placeholder="Ej: 100"
+              min="1"
+              required
+              className={inputClass}
+            />
+          </div>
+
+          {/* Claim Period */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="eventDate" className="block text-sm font-medium text-black mb-2">
-                Fecha del Evento *
+              <label htmlFor="claimStart" className={labelClass}>
+                Inicio de Reclamo *
               </label>
-              <Input
-                id="eventDate"
-                fieldSize="md"
-                name="eventDate"
+              <input
+                id="claimStart"
+                name="claimStart"
                 type="datetime-local"
-                value={formData.eventDate}
+                value={formData.claimStart}
                 onChange={handleInputChange}
                 required
-                className="w-full !border-2 !border-stellar-lilac/60 rounded-full px-4 py-2 focus:!border-stellar-lilac focus:ring-2 focus:ring-stellar-lilac/20"
-                style={{ border: '2px solid rgba(183, 172, 232, 0.6)', borderRadius: '9999px' }}
+                className={inputClass}
               />
             </div>
-
-            {/* Location */}
             <div>
-              <label htmlFor="location" className="block text-sm font-medium text-black mb-2">
-                Ubicación *
+              <label htmlFor="claimEnd" className={labelClass}>
+                Fin de Reclamo *
               </label>
-              <Input
-                id="location"
-                fieldSize="md"
-                name="location"
-                type="text"
-                value={formData.location}
+              <input
+                id="claimEnd"
+                name="claimEnd"
+                type="datetime-local"
+                value={formData.claimEnd}
                 onChange={handleInputChange}
-                placeholder="Ej: Bogotá, Colombia"
                 required
-                className="w-full !border-2 !border-stellar-lilac/60 rounded-full px-4 py-2 focus:!border-stellar-lilac focus:ring-2 focus:ring-stellar-lilac/20"
-                style={{ border: '2px solid rgba(183, 172, 232, 0.6)', borderRadius: '9999px' }}
+                className={inputClass}
               />
             </div>
+          </div>
 
-            {/* Description */}
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-black mb-2">
-                Descripción *
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                placeholder="Describe tu evento..."
-                required
-                rows={4}
-                className="w-full px-4 py-2 border-2 border-stellar-lilac/60 rounded-2xl focus:border-stellar-lilac focus:ring-2 focus:ring-stellar-lilac/20 resize-none"
-                style={{ border: '2px solid rgba(183, 172, 232, 0.6)', borderRadius: '1rem' }}
-              />
-            </div>
+          {/* Image Upload */}
+          <div>
+            <label className={labelClass}>Imagen del Evento</label>
 
-            {/* Max SPOTs */}
-            <div>
-              <label htmlFor="maxSpots" className="block text-sm font-medium text-black mb-2">
-                Máximo de SPOTs *
-              </label>
-              <Input
-                id="maxSpots"
-                fieldSize="md"
-                name="maxSpots"
-                type="number"
-                value={formData.maxSpots}
-                onChange={handleInputChange}
-                placeholder="Ej: 100"
-                min="1"
-                required
-                className="w-full !border-2 !border-stellar-lilac/60 rounded-full px-4 py-2 focus:!border-stellar-lilac focus:ring-2 focus:ring-stellar-lilac/20"
-                style={{ border: '2px solid rgba(183, 172, 232, 0.6)', borderRadius: '9999px' }}
-              />
-            </div>
-
-            {/* Claim Period */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="claimStart" className="block text-sm font-medium text-black mb-2">
-                  Inicio de Reclamo *
-                </label>
-                <Input
-                  id="claimStart"
-                fieldSize="md"
-                  name="claimStart"
-                  type="datetime-local"
-                  value={formData.claimStart}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full !border-2 !border-stellar-lilac/60 rounded-full px-4 py-2 focus:!border-stellar-lilac focus:ring-2 focus:ring-stellar-lilac/20"
-                  style={{ border: '2px solid rgba(183, 172, 232, 0.6)', borderRadius: '9999px' }}
+            {/* Preview */}
+            {formData.imagePreview && (
+              <div className="mb-4 relative inline-block">
+                <img
+                  src={formData.imagePreview}
+                  alt="Preview"
+                  className="w-full max-w-md h-48 object-cover rounded-xl border border-stellar-lilac/20"
                 />
-              </div>
-              <div>
-                <label htmlFor="claimEnd" className="block text-sm font-medium text-black mb-2">
-                  Fin de Reclamo *
-                </label>
-                <Input
-                  id="claimEnd"
-                fieldSize="md"
-                  name="claimEnd"
-                  type="datetime-local"
-                  value={formData.claimEnd}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full !border-2 !border-stellar-lilac/60 rounded-full px-4 py-2 focus:!border-stellar-lilac focus:ring-2 focus:ring-stellar-lilac/20"
-                  style={{ border: '2px solid rgba(183, 172, 232, 0.6)', borderRadius: '9999px' }}
-                />
-              </div>
-            </div>
-
-            {/* Image Upload */}
-            <div>
-              <label className="block text-sm font-medium text-stellar-black mb-2 font-body uppercase tracking-wide">
-                Imagen del Evento *
-              </label>
-              
-              {/* Preview de imagen */}
-              {formData.imagePreview && (
-                <div className="mb-4 relative">
-                  <img
-                    src={formData.imagePreview}
-                    alt="Preview"
-                    className="w-full max-w-md h-48 object-cover rounded-lg border-2 border-stellar-lilac/20"
-                  />
-                  <Button
-                    type="button"
-                    variant="tertiary"
-                    size="sm"
-                    onClick={handleRemoveImage}
-                    className="absolute top-2 right-2 bg-red-500/80 text-white hover:bg-red-600 rounded-full px-4 py-1.5 shadow-md"
-                  >
-                    ✕ Remover
-                  </Button>
-                </div>
-              )}
-
-              {/* Input de archivo */}
-              <div className="flex items-center gap-4">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                  id="imageFile"
-                />
-                <Button
+                <button
                   type="button"
-                  variant="tertiary"
-                  size="md"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="bg-stellar-lilac/20 text-stellar-black hover:bg-stellar-lilac/30 font-body"
+                  onClick={handleRemoveImage}
+                  className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center bg-stellar-black/60 text-white rounded-full hover:bg-stellar-black transition-colors"
                 >
-                  📷 {formData.imageFile ? "Cambiar Imagen" : "Subir Imagen"}
-                </Button>
-                {formData.imageFile && (
-                  <Text as="p" size="sm" className="text-stellar-black/70 font-body">
-                    {formData.imageFile.name} ({(formData.imageFile.size / 1024 / 1024).toFixed(2)} MB)
-                  </Text>
-                )}
+                  <X size={13} />
+                </button>
               </div>
+            )}
 
-              {/* Opción alternativa: URL */}
-              <div className="mt-4">
-                <Text as="p" size="sm" className="text-stellar-black/70 mb-2 font-body">
-                  O ingresa una URL de imagen:
-                </Text>
-              <Input
+            <div className="flex items-center gap-4">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+                id="imageFile"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="inline-flex items-center gap-2 bg-stellar-lilac/10 border border-stellar-lilac/30 text-stellar-black hover:bg-stellar-lilac/20 px-5 py-2.5 rounded-xl font-body text-sm font-semibold transition-all"
+              >
+                <Upload size={14} />
+                {formData.imageFile ? "Cambiar Imagen" : "Subir Imagen"}
+              </button>
+              {formData.imageFile && (
+                <span className="text-sm text-stellar-black/60 font-body">
+                  {formData.imageFile.name} (
+                  {(formData.imageFile.size / 1024 / 1024).toFixed(2)} MB)
+                </span>
+              )}
+            </div>
+
+            <div className="mt-4">
+              <p className="text-xs text-stellar-black/50 font-body mb-2">
+                O ingresa una URL de imagen:
+              </p>
+              <input
                 id="imageUrl"
-                fieldSize="md"
                 name="imageUrl"
                 type="url"
                 value={formData.imageUrl}
                 onChange={handleInputChange}
                 placeholder="https://example.com/image.png o /images/events/mi-evento.jpg"
                 disabled={!!formData.imageFile}
-                className="w-full !border-2 !border-stellar-lilac/60 rounded-full px-4 py-2 focus:!border-stellar-lilac focus:ring-2 focus:ring-stellar-lilac/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ border: '2px solid rgba(183, 172, 232, 0.6)', borderRadius: '9999px' }}
-              />
-              </div>
-
-              {/* Nota sobre almacenamiento */}
-              <Text as="p" size="xs" className="text-stellar-black/50 mt-2 font-body italic">
-                Nota: Por ahora, las imágenes se almacenarán temporalmente. Para producción, se implementará almacenamiento permanente (IPFS, Firebase, etc.)
-              </Text>
-            </div>
-
-            {/* Metadata URI */}
-            <div>
-              <label htmlFor="metadataUri" className="block text-sm font-medium text-stellar-black mb-2 font-body uppercase tracking-wide">
-                URI de Metadata (Opcional)
-              </label>
-              <Input
-                id="metadataUri"
-                fieldSize="md"
-                name="metadataUri"
-                type="url"
-                value={formData.metadataUri}
-                onChange={handleInputChange}
-                placeholder="https://example.com/metadata.json"
-                className="w-full !border-2 !border-stellar-lilac/60 rounded-full px-4 py-2 focus:!border-stellar-lilac focus:ring-2 focus:ring-stellar-lilac/20"
-                style={{ border: '2px solid rgba(183, 172, 232, 0.6)', borderRadius: '9999px' }}
+                className={`${inputClass} disabled:opacity-40 disabled:cursor-not-allowed`}
               />
             </div>
 
-            {/* Distribution Methods */}
-            <div>
-              <label className="block text-sm font-medium text-stellar-black mb-4 font-body uppercase tracking-wide">
-                Métodos de Distribución
-              </label>
-              <div className="space-y-3">
-                <label className="flex items-center space-x-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={distributionMethods.qr}
-                    onChange={() => handleMethodToggle("qr")}
-                    className="w-5 h-5 text-stellar-lilac border-stellar-black/20 rounded focus:ring-stellar-lilac"
-                  />
-                  <span className="text-stellar-black font-body">📷 QR Code</span>
-                </label>
-                <label className="flex items-center space-x-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={distributionMethods.link}
-                    onChange={() => handleMethodToggle("link")}
-                    className="w-5 h-5 text-stellar-lilac border-stellar-black/20 rounded focus:ring-stellar-lilac"
-                  />
-                  <span className="text-stellar-black font-body">🔗 Unique Link</span>
-                </label>
-                <label className="flex items-center space-x-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={distributionMethods.code}
-                    onChange={() => handleMethodToggle("code")}
-                    className="w-5 h-5 text-stellar-lilac border-stellar-black/20 rounded focus:ring-stellar-lilac"
-                  />
-                  <span className="text-stellar-black font-body">🔢 Código Compartido</span>
-                </label>
-                <label className="flex items-center space-x-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={distributionMethods.geolocation}
-                    onChange={() => handleMethodToggle("geolocation")}
-                    className="w-5 h-5 text-stellar-lilac border-stellar-black/20 rounded focus:ring-stellar-lilac"
-                  />
-                  <span className="text-stellar-black font-body">📍 Geolocalización</span>
-                </label>
-                <label className="flex items-center space-x-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={distributionMethods.nfc}
-                    onChange={() => handleMethodToggle("nfc")}
-                    className="w-5 h-5 text-stellar-lilac border-stellar-black/20 rounded focus:ring-stellar-lilac"
-                  />
-                  <span className="text-stellar-black font-body">💳 NFC</span>
-                </label>
-              </div>
-            </div>
+            <p className="text-xs text-stellar-black/40 mt-2 font-body italic">
+              Las imágenes se almacenarán temporalmente. Para producción, se
+              implementará almacenamiento permanente (IPFS, Firebase, etc.)
+            </p>
+          </div>
 
-            {/* Submit Button */}
-            <div className="pt-6">
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                disabled={isSubmitting}
-                className="w-full bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3 shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? "Creando evento..." : "Crear Evento"}
-              </Button>
+          {/* Metadata URI */}
+          <div>
+            <label htmlFor="metadataUri" className={labelClass}>
+              URI de Metadata (Opcional)
+            </label>
+            <input
+              id="metadataUri"
+              name="metadataUri"
+              type="url"
+              value={formData.metadataUri}
+              onChange={handleInputChange}
+              placeholder="https://example.com/metadata.json"
+              className={inputClass}
+            />
+          </div>
+
+          {/* Distribution Methods */}
+          <div>
+            <label className={labelClass}>Métodos de Distribución</label>
+            <div className="flex flex-wrap gap-3">
+              {distributionMethodConfigs.map(({ key, Icon, label }) => {
+                const isActive = distributionMethods[key];
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => handleMethodToggle(key)}
+                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full border text-sm font-semibold font-body transition-all ${
+                      isActive
+                        ? "bg-stellar-lilac/15 border-stellar-lilac/40 text-stellar-black"
+                        : "border-stellar-black/10 text-stellar-black/40 hover:border-stellar-black/20 hover:text-stellar-black/60"
+                    }`}
+                  >
+                    <Icon
+                      size={13}
+                      className={
+                        isActive
+                          ? "text-stellar-lilac"
+                          : "text-stellar-black/30"
+                      }
+                    />
+                    {label}
+                  </button>
+                );
+              })}
             </div>
-          </form>
-        </div>
-        </div>
-      </Layout.Inset>
-    </Layout.Content>
+          </div>
+
+          {/* Submit */}
+          <div className="pt-4">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full inline-flex items-center justify-center gap-2 bg-stellar-gold text-stellar-black px-8 py-4 rounded-full font-semibold font-body text-base hover:bg-stellar-gold/90 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Creando evento...
+                </>
+              ) : (
+                "Crear Evento"
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };
 
 export default CreateEvent;
-

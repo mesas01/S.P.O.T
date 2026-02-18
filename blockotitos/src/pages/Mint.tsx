@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Layout, Text, Button, Input } from "@stellar/design-system";
 import { useWallet } from "../hooks/useWallet";
 import { useNavigate } from "react-router-dom";
 import { useNotification } from "../hooks/useNotification";
@@ -10,6 +9,78 @@ import {
   upsertClaimedSpot,
 } from "../utils/claimedSpots";
 import { buildErrorDetail, buildTxDetail } from "../utils/notificationHelpers";
+import {
+  QrCode,
+  Link2,
+  Hash,
+  MapPin,
+  Nfc,
+  Lock,
+  ArrowLeft,
+  Loader2,
+} from "lucide-react";
+
+// ─── Claim methods config ────────────────────────────────────────────────────
+
+const claimMethods = [
+  {
+    id: "qr",
+    Icon: QrCode,
+    title: "Escanear QR",
+    description: "Escanea el código QR del evento para reclamar tu SPOT al instante.",
+    color: "text-stellar-gold",
+    bg: "bg-stellar-gold/10",
+    border: "border-stellar-gold/20",
+    activeBorder: "border-stellar-gold",
+    activeBg: "bg-stellar-gold/10",
+  },
+  {
+    id: "link",
+    Icon: Link2,
+    title: "Usar Link",
+    description: "Ingresa el link único del evento para reclamar de forma remota.",
+    color: "text-stellar-lilac",
+    bg: "bg-stellar-lilac/10",
+    border: "border-stellar-lilac/20",
+    activeBorder: "border-stellar-lilac",
+    activeBg: "bg-stellar-lilac/10",
+  },
+  {
+    id: "code",
+    Icon: Hash,
+    title: "Código Compartido",
+    description: "Ingresa el código compartido por el organizador del evento.",
+    color: "text-stellar-teal",
+    bg: "bg-stellar-teal/10",
+    border: "border-stellar-teal/20",
+    activeBorder: "border-stellar-teal",
+    activeBg: "bg-stellar-teal/10",
+  },
+  {
+    id: "geolocation",
+    Icon: MapPin,
+    title: "Geolocalización",
+    description: "Verifica tu ubicación cerca del evento para validar asistencia.",
+    color: "text-stellar-gold",
+    bg: "bg-stellar-gold/10",
+    border: "border-stellar-gold/20",
+    activeBorder: "border-stellar-gold",
+    activeBg: "bg-stellar-gold/10",
+  },
+  {
+    id: "nfc",
+    Icon: Nfc,
+    title: "NFC",
+    description: "Acerca tu dispositivo al tag NFC para una experiencia táctil.",
+    color: "text-stellar-lilac",
+    bg: "bg-stellar-lilac/10",
+    border: "border-stellar-lilac/20",
+    activeBorder: "border-stellar-lilac",
+    activeBg: "bg-stellar-lilac/10",
+  },
+];
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 const Mint: React.FC = () => {
   const { address } = useWallet();
@@ -26,12 +97,8 @@ const Mint: React.FC = () => {
 
   const handleMethodSelect = (method: string) => {
     setActiveMethod(method);
-    // Scroll suave al panel de acción después de un pequeño delay para que el DOM se actualice
     setTimeout(() => {
-      actionPanelRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
+      actionPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 100);
   };
 
@@ -43,7 +110,6 @@ const Mint: React.FC = () => {
 
   const persistClaimedSpotLocally = async (eventId: number) => {
     if (!address) return;
-
     claimPersistControllerRef.current?.abort();
     const controller = new AbortController();
     claimPersistControllerRef.current = controller;
@@ -56,15 +122,10 @@ const Mint: React.FC = () => {
         return;
       }
     } catch (error) {
-      if (
-        error instanceof Error &&
-        (error.name === "AbortError" || /aborted/i.test(error.message))
-      ) {
-        console.info("Persistencia del claim cancelada (abortada).");
+      if (error instanceof Error && (error.name === "AbortError" || /aborted/i.test(error.message))) {
         return;
       }
       console.warn("No se pudo obtener metadata del evento:", error);
-      return;
     } finally {
       if (claimPersistControllerRef.current === controller) {
         claimPersistControllerRef.current = null;
@@ -78,22 +139,15 @@ const Mint: React.FC = () => {
       const queryEvent = maybeUrl.searchParams.get("event");
       if (queryEvent) {
         const parsed = Number(queryEvent);
-        if (!Number.isNaN(parsed)) {
-          return parsed;
-        }
+        if (!Number.isNaN(parsed)) return parsed;
       }
-    } catch {
-      // not a valid URL, continue
-    }
+    } catch { /* not a valid URL */ }
 
     const match = link.match(/(\d+)/g);
     if (match) {
       const parsed = Number(match[match.length - 1]);
-      if (!Number.isNaN(parsed)) {
-        return parsed;
-      }
+      if (!Number.isNaN(parsed)) return parsed;
     }
-
     return null;
   };
 
@@ -106,14 +160,9 @@ const Mint: React.FC = () => {
 
   const executeClaim = async (eventId: number) => {
     if (!address) {
-      showNotification({
-        type: "error",
-        title: "Wallet requerida",
-        message: "Conecta tu wallet antes de reclamar el coleccionable",
-      });
+      showNotification({ type: "error", title: "Wallet requerida", message: "Conecta tu wallet antes de reclamar el coleccionable" });
       return;
     }
-
     setIsProcessing(true);
     try {
       const response = await claimEventRequest({ claimer: address, eventId });
@@ -126,84 +175,45 @@ const Mint: React.FC = () => {
       await persistClaimedSpotLocally(eventId);
       navigate("/");
     } catch (error: any) {
-      console.error("Error al reclamar SPOT:", error);
-      showNotification({
-        type: "error",
-        title: "Error al reclamar",
-        message: "No se pudo completar el reclamo. Copia el detalle para soporte.",
-        copyText: buildErrorDetail(error),
-      });
+      showNotification({ type: "error", title: "Error al reclamar", message: "No se pudo completar el reclamo.", copyText: buildErrorDetail(error) });
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleQRScan = async () => {
-    // TODO: Implementar escáner QR con eventId real
-    showNotification({
-      type: "info",
-      title: "Próximamente",
-      message: "El escaneo QR enviará el reclamo automático al backend.",
-    });
+    showNotification({ type: "info", title: "Próximamente", message: "El escaneo QR enviará el reclamo automático al backend." });
   };
 
   const handleLinkClaim = async () => {
-    if (!linkValue.trim()) {
-      alert("Por favor, ingresa un link válido");
-      return;
-    }
-
+    if (!linkValue.trim()) { alert("Por favor, ingresa un link válido"); return; }
     setIsProcessing(true);
     try {
       const eventId = extractEventIdFromLink(linkValue.trim());
       if (eventId === null) {
-        showNotification({
-          type: "error",
-          title: "Link no válido",
-          message: "No pudimos encontrar un ID de evento en el link",
-        });
+        showNotification({ type: "error", title: "Link no válido", message: "No pudimos encontrar un ID de evento en el link" });
         return;
       }
       await executeClaim(eventId);
     } catch (error) {
-      console.error("Error al reclamar SPOT:", error);
-      showNotification({
-        type: "error",
-        title: "Error al reclamar",
-        message: "No pudimos procesar el link. Copia el detalle para soporte.",
-        copyText: buildErrorDetail(error),
-      });
+      showNotification({ type: "error", title: "Error al reclamar", message: "No pudimos procesar el link.", copyText: buildErrorDetail(error) });
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleCodeClaim = async () => {
-    if (!codeValue.trim()) {
-      alert("Por favor, ingresa un código válido");
-      return;
-    }
-
+    if (!codeValue.trim()) { alert("Por favor, ingresa un código válido"); return; }
     setIsProcessing(true);
     try {
       const eventId = extractEventIdFromCode(codeValue.trim());
       if (eventId === null) {
-        showNotification({
-          type: "error",
-          title: "Código inválido",
-          message: "Incluye el ID numérico del evento en el código compartido",
-        });
+        showNotification({ type: "error", title: "Código inválido", message: "Incluye el ID numérico del evento en el código compartido" });
         return;
       }
       await executeClaim(eventId);
     } catch (error) {
-      console.error("Error al reclamar SPOT:", error);
-      showNotification({
-        type: "error",
-        title: "Error al reclamar",
-        message: "No pudimos procesar el código. Copia el detalle para soporte.",
-        copyText: buildErrorDetail(error),
-      });
+      showNotification({ type: "error", title: "Error al reclamar", message: "No pudimos procesar el código.", copyText: buildErrorDetail(error) });
     } finally {
       setIsProcessing(false);
     }
@@ -212,347 +222,234 @@ const Mint: React.FC = () => {
   const handleGeolocation = async () => {
     setIsProcessing(true);
     try {
-      // TODO: Solicitar permisos de geolocalización y extraer eventId
       if (!navigator.geolocation) {
-        showNotification({
-          type: "error",
-          title: "Sin geolocalización",
-          message: "Tu navegador no soporta geolocalización",
-        });
+        showNotification({ type: "error", title: "Sin geolocalización", message: "Tu navegador no soporta geolocalización" });
         return;
       }
-
       navigator.geolocation.getCurrentPosition(
         async () => {
-          // TODO: Validar proximidad y ejecutar claim
-          showNotification({
-            type: "info",
-            title: "Validación pendiente",
-            message: "La validación por geolocalización aún no está implementada.",
-          });
+          showNotification({ type: "info", title: "Validación pendiente", message: "La validación por geolocalización aún no está implementada." });
         },
         (error) => {
-          console.error("Error de geolocalización:", error);
-          showNotification({
-            type: "error",
-            title: "Error de ubicación",
-            message: "No pudimos obtener tu posición. Copia el detalle para soporte.",
-            copyText: buildErrorDetail(error),
-          });
-        }
+          showNotification({ type: "error", title: "Error de ubicación", message: "No pudimos obtener tu posición.", copyText: buildErrorDetail(error) });
+        },
       );
     } catch (error) {
-      console.error("Error:", error);
-      showNotification({
-        type: "error",
-        title: "Error al reclamar",
-        message: "No pudimos completar la validación por geolocalización.",
-        copyText: buildErrorDetail(error),
-      });
+      showNotification({ type: "error", title: "Error al reclamar", message: "No pudimos completar la validación por geolocalización.", copyText: buildErrorDetail(error) });
     } finally {
       setIsProcessing(false);
     }
   };
 
+  // ── Not connected guard ───────────────────────────────────────────────────
   if (!isConnected) {
     return (
-      <Layout.Content>
-        <Layout.Inset>
-          <div className="min-h-screen bg-stellar-white py-12">
-          <div className="max-w-md mx-auto text-center">
-            <div className="text-6xl mb-6">🔐</div>
-              <Text as="h2" size="lg" className="text-2xl font-headline text-stellar-black mb-4">
-                Conecta tu Wallet
-              </Text>
-            <Text as="p" size="md" className="text-stellar-black mb-6 font-body">
-              Necesitas conectar tu wallet para reclamar un SPOT.
-            </Text>
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={() => navigate("/")}
-              className="bg-stellar-gold text-stellar-black rounded-full px-8 py-3 font-semibold"
-              >
-              Ir a Home
-            </Button>
+      <div className="min-h-screen bg-stellar-white flex items-center justify-center px-6 py-24">
+        <div className="max-w-md w-full text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-stellar-lilac/10 border border-stellar-lilac/20 mb-6 mx-auto">
+            <Lock size={28} className="text-stellar-lilac" />
           </div>
+          <h2 className="text-2xl font-headline text-stellar-black mb-3 uppercase">
+            Conecta tu Wallet
+          </h2>
+          <p className="text-stellar-black/60 mb-8 font-body">
+            Necesitas conectar tu wallet para reclamar un SPOT.
+          </p>
+          <button
+            onClick={() => navigate("/")}
+            className="inline-flex items-center gap-2 bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full px-8 py-3 shadow-lg transition-all font-body"
+          >
+            <ArrowLeft size={16} />
+            Ir a Home
+          </button>
         </div>
-        </Layout.Inset>
-      </Layout.Content>
+      </div>
     );
   }
 
+  // ── Main view ─────────────────────────────────────────────────────────────
   return (
-    <Layout.Content>
-      <Layout.Inset>
-        <div className="min-h-screen bg-stellar-white py-6 md:py-12">
-        <div className="max-w-6xl 2xl:max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-24 items-start">
-              <div className="col-span-full xl:col-span-17 text-center xl:text-left">
-                <Button
-                  variant="tertiary"
-                  size="sm"
-                  onClick={() => navigate("/")}
-                  className="mb-4"
-                >
-                  ← Volver
-                </Button>
-                <Text as="h1" size="xl" className="text-3xl md:text-4xl font-headline text-stellar-black mb-2">
-                  Reclamar SPOT
-                </Text>
-                <Text as="p" size="md" className="text-stellar-black font-subhead italic">
-                  Elige un método para reclamar tu SPOT
-                </Text>
-              </div>
-              <div className="col-span-full xl:col-span-24 xl:row-start-2 xl:flex xl:justify-center">
-                <TldrCard
-                  label=""
-                  className="xl:mx-auto"
-                  summary="Decide cómo reclamar tu comprobante: QR, link, código, geolocalización o NFC según el contexto del evento."
-                  bullets={[
-                    { label: "QR primero", detail: "Experiencia más rápida en eventos físicos." },
-                    { label: "Link único", detail: "Ideal para claims remotos con copy pragmático." },
-                    { label: "Geo & NFC", detail: "Visibilidad de métodos futuros con transparencia." },
-                  ]}
-                />
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen bg-stellar-white">
+      {/* Page header */}
+      <div className="mx-auto max-w-4xl px-6 pt-10 pb-8">
+        <button
+          onClick={() => navigate("/")}
+          className="inline-flex items-center gap-2 text-sm text-stellar-black/50 hover:text-stellar-black transition-colors font-body mb-6"
+        >
+          <ArrowLeft size={15} />
+          Volver
+        </button>
 
-          {/* Methods Grid */}
-          <div className="space-y-4 max-w-3xl mx-auto">
-            {/* QR Code */}
-            <button
-              onClick={() => handleMethodSelect("qr")}
-              className={`w-full p-6 rounded-xl border-2 transition-all duration-200 text-left ${
-                activeMethod === "qr"
-                  ? "border-stellar-gold bg-stellar-gold/10"
-                  : "border-stellar-lilac/30 bg-stellar-white hover:border-stellar-lilac hover:bg-stellar-lilac/5"
-              }`}
-            >
-              <div className="flex items-center space-x-4">
-                <div className="text-4xl">📷</div>
-                <div className="flex-1">
-                  <Text as="h3" size="md" className="font-body font-medium text-stellar-black mb-1">
-                    Escanear QR
-                  </Text>
-                  <Text as="p" size="sm" className="text-stellar-black/70 font-body">
-                    Escanea el código QR del evento
-                  </Text>
-                </div>
-              </div>
-            </button>
+        <span className="text-xs font-body uppercase tracking-widest text-stellar-teal mb-3 block">
+          Métodos de reclamo
+        </span>
+        <h1 className="text-3xl md:text-4xl font-headline text-stellar-black mb-3 uppercase">
+          Reclamar SPOT
+        </h1>
+        <p className="text-stellar-black/60 font-body max-w-xl">
+          Decide cómo reclamar tu comprobante: QR, link, código, geolocalización
+          o NFC según el contexto del evento.
+        </p>
+      </div>
 
-            {/* Link */}
-            <button
-              onClick={() => handleMethodSelect("link")}
-              className={`w-full p-6 rounded-xl border-2 transition-all duration-200 text-left ${
-                activeMethod === "link"
-                  ? "border-stellar-gold bg-stellar-gold/10"
-                  : "border-stellar-lilac/30 bg-stellar-white hover:border-stellar-lilac hover:bg-stellar-lilac/5"
-              }`}
-            >
-              <div className="flex items-center space-x-4">
-                <div className="text-4xl">🔗</div>
-                <div className="flex-1">
-                  <Text as="h3" size="md" className="font-body font-medium text-stellar-black mb-1">
-                    Usar Link
-                  </Text>
-                  <Text as="p" size="sm" className="text-stellar-black/70 font-body">
-                    Ingresa el link único del evento
-                  </Text>
-                </div>
-              </div>
-            </button>
-
-            {/* Code */}
-            <button
-              onClick={() => handleMethodSelect("code")}
-              className={`w-full p-6 rounded-xl border-2 transition-all duration-200 text-left ${
-                activeMethod === "code"
-                  ? "border-stellar-gold bg-stellar-gold/10"
-                  : "border-stellar-lilac/30 bg-stellar-white hover:border-stellar-lilac hover:bg-stellar-lilac/5"
-              }`}
-            >
-              <div className="flex items-center space-x-4">
-                <div className="text-4xl">🔢</div>
-                <div className="flex-1">
-                  <Text as="h3" size="md" className="font-body font-medium text-stellar-black mb-1">
-                    Código Compartido
-                  </Text>
-                  <Text as="p" size="sm" className="text-stellar-black/70 font-body">
-                    Ingresa el código del evento
-                  </Text>
-                </div>
-              </div>
-            </button>
-
-            {/* Geolocation */}
-            <button
-              onClick={() => handleMethodSelect("geolocation")}
-              className={`w-full p-6 rounded-xl border-2 transition-all duration-200 text-left ${
-                activeMethod === "geolocation"
-                  ? "border-stellar-gold bg-stellar-gold/10"
-                  : "border-stellar-lilac/30 bg-stellar-white hover:border-stellar-lilac hover:bg-stellar-lilac/5"
-              }`}
-            >
-              <div className="flex items-center space-x-4">
-                <div className="text-4xl">📍</div>
-                <div className="flex-1">
-                  <Text as="h3" size="md" className="font-body font-medium text-stellar-black mb-1">
-                    Geolocalización
-                  </Text>
-                  <Text as="p" size="sm" className="text-stellar-black/70 font-body">
-                    Verifica tu ubicación cerca del evento
-                  </Text>
-                </div>
-              </div>
-            </button>
-
-            {/* NFC */}
-            <button
-              onClick={() => handleMethodSelect("nfc")}
-              className={`w-full p-6 rounded-xl border-2 transition-all duration-200 text-left ${
-                activeMethod === "nfc"
-                  ? "border-stellar-gold bg-stellar-gold/10"
-                  : "border-stellar-lilac/30 bg-stellar-white hover:border-stellar-lilac hover:bg-stellar-lilac/5"
-              }`}
-              disabled={!("NDEFReader" in window)}
-            >
-              <div className="flex items-center space-x-4">
-                <div className="text-4xl">💳</div>
-                <div className="flex-1">
-                  <Text as="h3" size="md" className="font-body font-medium text-stellar-black mb-1">
-                    NFC
-                  </Text>
-                  <Text as="p" size="sm" className="text-stellar-black/70 font-body">
-                    Acerca tu dispositivo al tag NFC
-                  </Text>
-                  {!("NDEFReader" in window) && (
-                    <Text as="p" size="xs" className="text-gray-400 mt-1">
-                      No disponible en tu dispositivo
-                    </Text>
-                  )}
-                </div>
-              </div>
-            </button>
-          </div>
-
-          {/* Action Panel */}
-          {activeMethod && (
-            <div 
-              ref={actionPanelRef}
-              className="mt-8 p-6 bg-stellar-lilac/10 rounded-xl border border-stellar-lilac/30 max-w-3xl mx-auto"
-            >
-              {activeMethod === "qr" && (
-                <div className="space-y-4">
-                  <Text as="p" size="md" className="text-stellar-black font-subhead">
-                    Escanear código QR
-                  </Text>
-                  <Button
-                    onClick={handleQRScan}
-                    variant="primary"
-                    size="lg"
-                    disabled={isProcessing}
-                    className="w-full bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3 shadow-md hover:shadow-lg transition-all"
-                  >
-                    {isProcessing ? "Procesando..." : "Abrir Cámara"}
-                  </Button>
-                </div>
-              )}
-
-              {activeMethod === "link" && (
-                <div className="space-y-4">
-                  <Text as="p" size="md" className="text-stellar-black font-subhead">
-                    Ingresa el link del evento
-                  </Text>
-                  <Input
-                    id="link-input"
-                    fieldSize="md"
-                    type="url"
-                    value={linkValue}
-                    onChange={(e) => setLinkValue(e.target.value)}
-                    placeholder="https://spot.example.com/event/..."
-                    className="w-full !border-2 !border-stellar-lilac/60 rounded-full px-4 py-2 focus:!border-stellar-lilac focus:ring-2 focus:ring-stellar-lilac/20"
-                    style={{ border: '2px solid rgba(183, 172, 232, 0.6)', borderRadius: '9999px' }}
-                  />
-                  <Button
-                    onClick={handleLinkClaim}
-                    variant="primary"
-                    size="lg"
-                    disabled={isProcessing || !linkValue.trim()}
-                    className="w-full bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3 shadow-md hover:shadow-lg transition-all"
-                  >
-                    {isProcessing ? "Procesando..." : "Reclamar SPOT"}
-                  </Button>
-                </div>
-              )}
-
-              {activeMethod === "code" && (
-                <div className="space-y-4">
-                  <Text as="p" size="md" className="text-stellar-black font-subhead">
-                    Ingresa el código del evento
-                  </Text>
-                  <Input
-                    id="code-input"
-                    fieldSize="md"
-                    type="text"
-                    value={codeValue}
-                    onChange={(e) => setCodeValue(e.target.value.toUpperCase())}
-                    placeholder="Ej: HACKATHON2024"
-                    className="w-full uppercase !border-2 !border-stellar-lilac/60 rounded-full px-4 py-2 focus:!border-stellar-lilac focus:ring-2 focus:ring-stellar-lilac/20"
-                    style={{ border: '2px solid rgba(183, 172, 232, 0.6)', borderRadius: '9999px' }}
-                  />
-                  <Button
-                    onClick={handleCodeClaim}
-                    variant="primary"
-                    size="lg"
-                    disabled={isProcessing || !codeValue.trim()}
-                    className="w-full bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3 shadow-md hover:shadow-lg transition-all"
-                  >
-                    {isProcessing ? "Procesando..." : "Reclamar SPOT"}
-                  </Button>
-                </div>
-              )}
-
-              {activeMethod === "geolocation" && (
-                <div className="space-y-4">
-                  <Text as="p" size="md" className="text-stellar-black font-subhead">
-                    Verificar ubicación
-                  </Text>
-                  <Button
-                    onClick={handleGeolocation}
-                    variant="primary"
-                    size="lg"
-                    disabled={isProcessing}
-                    className="w-full bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3 shadow-md hover:shadow-lg transition-all"
-                  >
-                    {isProcessing ? "Procesando..." : "Verificar Ubicación"}
-                  </Button>
-                </div>
-              )}
-
-              {activeMethod === "nfc" && (
-                <div className="space-y-4">
-                  <Text as="p" size="md" className="text-stellar-black font-subhead">
-                    Acerca tu dispositivo al tag NFC
-                  </Text>
-                  <Text as="p" size="sm" className="text-stellar-black/70 font-body">
-                    Asegúrate de que NFC esté activado en tu dispositivo
-                  </Text>
-                  {/* TODO: Implementar NFC reader */}
-                </div>
-              )}
-            </div>
-          )}
-          </div>
+      <div className="mx-auto max-w-4xl px-6 pb-16">
+        {/* TL;DR */}
+        <div className="mb-8">
+          <TldrCard
+            label=""
+            summary="Decide cómo reclamar tu comprobante: QR, link, código, geolocalización o NFC según el contexto del evento."
+            bullets={[
+              { label: "QR primero", detail: "Experiencia más rápida en eventos físicos." },
+              { label: "Link único", detail: "Ideal para claims remotos con copy pragmático." },
+              { label: "Geo & NFC", detail: "Visibilidad de métodos futuros con transparencia." },
+            ]}
+          />
         </div>
-        </Layout.Inset>
-      </Layout.Content>
-    );
-  };
+
+        {/* Method cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          {claimMethods.map((method) => {
+            const isActive = activeMethod === method.id;
+            const isNfcDisabled = method.id === "nfc" && !("NDEFReader" in window);
+            return (
+              <button
+                key={method.id}
+                onClick={() => !isNfcDisabled && handleMethodSelect(method.id)}
+                disabled={isNfcDisabled}
+                className={`group relative rounded-2xl border-2 p-6 text-left transition-all duration-300 ${
+                  isNfcDisabled
+                    ? "opacity-40 cursor-not-allowed border-stellar-black/10 bg-stellar-warm-grey/20"
+                    : isActive
+                    ? `${method.activeBorder} ${method.activeBg} shadow-lg scale-[1.02]`
+                    : `${method.border} ${method.bg} hover:scale-[1.02] hover:shadow-md`
+                }`}
+              >
+                <div className="flex items-start gap-4">
+                  <div className={`flex-shrink-0 w-11 h-11 rounded-xl ${method.bg} border ${method.border} flex items-center justify-center`}>
+                    <method.Icon size={20} className={method.color} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-headline text-stellar-black mb-1 uppercase">
+                      {method.title}
+                    </h3>
+                    <p className="text-xs text-stellar-black/60 leading-relaxed font-body">
+                      {method.description}
+                    </p>
+                    {isNfcDisabled && (
+                      <p className="text-xs text-stellar-black/40 mt-1 font-body">
+                        No disponible en este dispositivo
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Active indicator */}
+                {isActive && (
+                  <div className={`absolute top-3 right-3 w-2 h-2 rounded-full ${method.color.replace("text-", "bg-")}`} />
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Action panel */}
+        {activeMethod && (
+          <div
+            ref={actionPanelRef}
+            className="rounded-2xl border border-stellar-lilac/20 bg-stellar-lilac/5 p-8"
+          >
+            {activeMethod === "qr" && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-headline text-stellar-black uppercase">
+                  Escanear código QR
+                </h3>
+                <button
+                  onClick={handleQRScan}
+                  disabled={isProcessing}
+                  className="w-full inline-flex items-center justify-center gap-2 bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3 px-8 shadow-md transition-all font-body disabled:opacity-50"
+                >
+                  {isProcessing ? <><Loader2 size={16} className="animate-spin" /> Procesando...</> : "Abrir Cámara"}
+                </button>
+              </div>
+            )}
+
+            {activeMethod === "link" && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-headline text-stellar-black uppercase">
+                  Ingresa el link del evento
+                </h3>
+                <input
+                  type="url"
+                  value={linkValue}
+                  onChange={(e) => setLinkValue(e.target.value)}
+                  placeholder="https://spot.example.com/event/..."
+                  className="w-full px-5 py-3 border-2 border-stellar-lilac/40 rounded-xl bg-stellar-white text-stellar-black placeholder-stellar-black/30 focus:border-stellar-lilac focus:outline-none focus:ring-2 focus:ring-stellar-lilac/20 font-body text-sm transition-colors"
+                />
+                <button
+                  onClick={handleLinkClaim}
+                  disabled={isProcessing || !linkValue.trim()}
+                  className="w-full inline-flex items-center justify-center gap-2 bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3 px-8 shadow-md transition-all font-body disabled:opacity-50"
+                >
+                  {isProcessing ? <><Loader2 size={16} className="animate-spin" /> Procesando...</> : "Reclamar SPOT"}
+                </button>
+              </div>
+            )}
+
+            {activeMethod === "code" && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-headline text-stellar-black uppercase">
+                  Ingresa el código del evento
+                </h3>
+                <input
+                  type="text"
+                  value={codeValue}
+                  onChange={(e) => setCodeValue(e.target.value.toUpperCase())}
+                  placeholder="Ej: HACKATHON2024"
+                  className="w-full px-5 py-3 border-2 border-stellar-teal/40 rounded-xl bg-stellar-white text-stellar-black placeholder-stellar-black/30 focus:border-stellar-teal focus:outline-none focus:ring-2 focus:ring-stellar-teal/20 font-body text-sm uppercase tracking-widest transition-colors"
+                />
+                <button
+                  onClick={handleCodeClaim}
+                  disabled={isProcessing || !codeValue.trim()}
+                  className="w-full inline-flex items-center justify-center gap-2 bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3 px-8 shadow-md transition-all font-body disabled:opacity-50"
+                >
+                  {isProcessing ? <><Loader2 size={16} className="animate-spin" /> Procesando...</> : "Reclamar SPOT"}
+                </button>
+              </div>
+            )}
+
+            {activeMethod === "geolocation" && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-headline text-stellar-black uppercase">
+                  Verificar ubicación
+                </h3>
+                <p className="text-stellar-black/60 font-body text-sm">
+                  Asegúrate de estar en el lugar del evento. Usaremos tu ubicación para validar la asistencia.
+                </p>
+                <button
+                  onClick={handleGeolocation}
+                  disabled={isProcessing}
+                  className="w-full inline-flex items-center justify-center gap-2 bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3 px-8 shadow-md transition-all font-body disabled:opacity-50"
+                >
+                  {isProcessing ? <><Loader2 size={16} className="animate-spin" /> Verificando...</> : "Verificar Ubicación"}
+                </button>
+              </div>
+            )}
+
+            {activeMethod === "nfc" && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-headline text-stellar-black uppercase">
+                  Acerca tu dispositivo al tag NFC
+                </h3>
+                <p className="text-stellar-black/60 font-body text-sm">
+                  Asegúrate de que NFC esté activado en tu dispositivo y acércalo al punto de reclamo.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export default Mint;
-
