@@ -1,29 +1,24 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 
-# Copiar workspace raíz y frontend package.json
-COPY package.json package-lock.json ./
-COPY frontend/package.json frontend/package-lock.json ./frontend/
-COPY packages/ packages/
+COPY frontend/package.json frontend/package-lock.json ./
 
-# Instalar dependencias
-RUN npm ci --ignore-scripts
+RUN npm ci
 
-# Copiar código frontend
-COPY frontend/ frontend/
+COPY frontend/src ./src
+COPY frontend/public ./public
+COPY frontend/index.html frontend/vite.config.ts frontend/tailwind.config.js frontend/postcss.config.js ./
+COPY frontend/tsconfig.json frontend/tsconfig.app.json frontend/tsconfig.node.json ./
 
-# Build args para variables de entorno
 ARG VITE_BACKEND_URL
 ARG VITE_SPOT_CONTRACT_ID
 ARG PUBLIC_STELLAR_NETWORK
 ARG PUBLIC_STELLAR_RPC_URL
 ARG PUBLIC_STELLAR_HORIZON_URL
 
-WORKDIR /app/frontend
 RUN npx tsc -b && npx vite build
 
-# --- Producción con nginx ---
 FROM nginx:alpine
-COPY --from=builder /app/frontend/dist /usr/share/nginx/html
+COPY --from=builder /app/dist /usr/share/nginx/html
 COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
