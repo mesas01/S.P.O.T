@@ -2,14 +2,27 @@ name: Deploy to Coolify
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "develop"]
 
 jobs:
-  deploy:
+  deploy-production:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    environment: production
     steps:
-      - name: Trigger Coolify Deployment
+      - name: Trigger Production Deployment
         run: |
           curl -s -X GET \
             -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" \
             "${{ secrets.COOLIFY_WEBHOOK_URL }}"
+
+  deploy-development:
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    environment: development
+    steps:
+      - name: Trigger Development Deployment
+        run: |
+          curl -s -X GET \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" \
+            "${{ secrets.COOLIFY_WEBHOOK_URL_DEV }}"

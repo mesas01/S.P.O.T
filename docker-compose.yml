@@ -4,54 +4,76 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
       args:
-        - VITE_BACKEND_URL=${VITE_BACKEND_URL:-http://localhost:8080}
+        - VITE_BACKEND_URL=${VITE_BACKEND_URL:-}
         - VITE_SPOT_CONTRACT_ID=${VITE_SPOT_CONTRACT_ID}
         - PUBLIC_STELLAR_NETWORK=${PUBLIC_STELLAR_NETWORK:-TESTNET}
+        - PUBLIC_STELLAR_RPC_URL=${PUBLIC_STELLAR_RPC_URL:-}
+        - PUBLIC_STELLAR_HORIZON_URL=${PUBLIC_STELLAR_HORIZON_URL:-}
     ports:
       - "80:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   backend:
     build:
       context: backend
       dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    env_file:
-      - backend/.env
+    expose:
+      - "8080"
     environment:
-      - DATABASE_URL=postgresql://spot:spot_secret@postgres:5432/spot
+      - PORT=8080
+      - NODE_ENV=production
+      - RPC_URL=${RPC_URL}
+      - NETWORK_PASSPHRASE=${NETWORK_PASSPHRASE}
+      - ADMIN_SECRET=${ADMIN_SECRET}
+      - CLAIM_PAYER_SECRET=${CLAIM_PAYER_SECRET}
+      - SPOT_CONTRACT_ID=${SPOT_CONTRACT_ID}
+      - MOCK_MODE=${MOCK_MODE:-false}
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+      - DATABASE_URL=postgresql://spot:${POSTGRES_PASSWORD:-spot_secret}@postgres:5432/spot
       - MINIO_ENDPOINT=minio
       - MINIO_PORT=9000
-      - MINIO_ACCESS_KEY=spot_minio
-      - MINIO_SECRET_KEY=spot_minio_secret
-      - MINIO_BUCKET=spot-images
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-spot_minio}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-spot_minio_secret}
+      - MINIO_BUCKET=${MINIO_BUCKET:-spot-images}
     depends_on:
-      - postgres
-      - minio
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   postgres:
     image: postgres:16-alpine
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=spot
-      - POSTGRES_PASSWORD=spot_secret
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-spot_secret}
       - POSTGRES_DB=spot
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U spot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   minio:
     image: minio/minio
-    ports:
-      - "9000:9000"
-      - "9001:9001"
     volumes:
       - minio_data:/data
     environment:
-      - MINIO_ROOT_USER=spot_minio
-      - MINIO_ROOT_PASSWORD=spot_minio_secret
+      - MINIO_ROOT_USER=${MINIO_ACCESS_KEY:-spot_minio}
+      - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY:-spot_minio_secret}
     command: server /data --console-address ":9001"
 
 volumes:

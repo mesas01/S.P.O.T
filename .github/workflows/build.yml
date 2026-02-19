@@ -2,7 +2,7 @@ name: Build Project and Run Tests
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "develop"]
   pull_request:
 
 env:
