@@ -14,6 +14,11 @@ services:
     networks:
       - default
       - coolify
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.spot-frontend.rule=Host(`${SERVICE_FQDN_FRONTEND}`)"
+      - "traefik.http.routers.spot-frontend.entryPoints=http"
+      - "traefik.http.services.spot-frontend.loadbalancer.server.port=80"
     depends_on:
       backend:
         condition: service_started
