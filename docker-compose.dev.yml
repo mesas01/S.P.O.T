@@ -52,7 +52,12 @@ services:
     command: sh -c "npm install && npx prisma generate && npx prisma migrate deploy && node --watch src/server.js"
     environment:
       - PORT=4000
-      - MOCK_MODE=true
+      - MOCK_MODE=false
+      - RPC_URL=https://soroban-testnet.stellar.org
+      - NETWORK_PASSPHRASE=Test SDF Network ; September 2015
+      - ADMIN_SECRET=SBK5VSQDTBWV6DFIL4RQFQIEIKV4EIBPNPARZ5FGJP6VWQHUQI4RER7W
+      - CLAIM_PAYER_SECRET=SBK5VSQDTBWV6DFIL4RQFQIEIKV4EIBPNPARZ5FGJP6VWQHUQI4RER7W
+      - SPOT_CONTRACT_ID=CBL3NMYFDRNAYS2E7RXNPY25QJAWPRSFIU2PCMPLVPQGH3K45TC3V7JR
       - DATABASE_URL=postgresql://spot:spot_secret@postgres:5432/spot
       - MINIO_ENDPOINT=minio
       - MINIO_PORT=9000

@@ -50,6 +50,10 @@ const CreateEvent: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showNotification } = useNotification();
 
+  const nowLocal = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 16);
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
@@ -362,6 +366,7 @@ const CreateEvent: React.FC = () => {
               type="datetime-local"
               value={formData.eventDate}
               onChange={handleInputChange}
+              min={nowLocal}
               required
               className={inputClass}
             />
@@ -431,6 +436,7 @@ const CreateEvent: React.FC = () => {
                 type="datetime-local"
                 value={formData.claimStart}
                 onChange={handleInputChange}
+                min={formData.eventDate || nowLocal}
                 required
                 className={inputClass}
               />
@@ -445,6 +451,7 @@ const CreateEvent: React.FC = () => {
                 type="datetime-local"
                 value={formData.claimEnd}
                 onChange={handleInputChange}
+                min={formData.claimStart || formData.eventDate || nowLocal}
                 required
                 className={inputClass}
               />

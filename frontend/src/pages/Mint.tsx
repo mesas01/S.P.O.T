@@ -1,8 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useWallet } from "../hooks/useWallet";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useNotification } from "../hooks/useNotification";
-import { claimEventRequest, fetchOnchainEvents } from "../util/backend";
+import {
+  claimEventRequest,
+  fetchOnchainEvents,
+  type OnchainEventSummary,
+} from "../util/backend";
+import { connectWallet } from "../util/wallet";
 import TldrCard from "../components/layout/TldrCard";
 import {
   mapEventToClaimedSpot,
@@ -18,6 +23,9 @@ import {
   Lock,
   ArrowLeft,
   Loader2,
+  Calendar,
+  MapPinIcon,
+  Users,
 } from "lucide-react";
 
 // ─── Claim methods config ────────────────────────────────────────────────────
@@ -88,12 +96,19 @@ const Mint: React.FC = () => {
   const navigate = useNavigate();
   const { showNotification } = useNotification();
 
+  const [searchParams] = useSearchParams();
   const [activeMethod, setActiveMethod] = useState<string | null>(null);
   const [linkValue, setLinkValue] = useState("");
   const [codeValue, setCodeValue] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [eventInfo, setEventInfo] = useState<OnchainEventSummary | null>(null);
+  const [eventLoading, setEventLoading] = useState(false);
   const claimPersistControllerRef = useRef<AbortController | null>(null);
   const actionPanelRef = useRef<HTMLDivElement | null>(null);
+
+  const urlEventId = searchParams.get("event");
+  const parsedEventId = urlEventId ? Number(urlEventId) : null;
+  const hasDirectEvent = parsedEventId !== null && !Number.isNaN(parsedEventId);
 
   const handleMethodSelect = (method: string) => {
     setActiveMethod(method);
@@ -107,6 +122,24 @@ const Mint: React.FC = () => {
       claimPersistControllerRef.current?.abort();
     };
   }, []);
+
+  // Fetch event info when arriving via direct link
+  useEffect(() => {
+    if (!hasDirectEvent) return;
+    let cancelled = false;
+    setEventLoading(true);
+    fetchOnchainEvents()
+      .then((events) => {
+        if (cancelled) return;
+        const match = events.find((e) => e.eventId === parsedEventId);
+        if (match) setEventInfo(match);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setEventLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [hasDirectEvent, parsedEventId]);
 
   const persistClaimedSpotLocally = async (eventId: number) => {
     if (!address) return;
@@ -241,7 +274,120 @@ const Mint: React.FC = () => {
     }
   };
 
-  // ── Not connected guard ───────────────────────────────────────────────────
+  // ── Direct link: confirmation view ────────────────────────────────────────
+  if (hasDirectEvent) {
+    const formatDate = (ts: number) =>
+      new Date(ts * 1000).toLocaleDateString("es", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+    return (
+      <div className="min-h-screen bg-stellar-white flex items-center justify-center px-6 py-12">
+        <div className="max-w-lg w-full">
+          <button
+            onClick={() => navigate("/")}
+            className="inline-flex items-center gap-2 text-sm text-stellar-black/50 hover:text-stellar-black transition-colors font-body mb-8"
+          >
+            <ArrowLeft size={15} />
+            Volver
+          </button>
+
+          <div className="rounded-2xl border-2 border-stellar-lilac/20 bg-white p-8 shadow-lg">
+            <span className="text-xs font-body uppercase tracking-widest text-stellar-teal mb-3 block">
+              Confirmar reclamo
+            </span>
+            <h1 className="text-2xl md:text-3xl font-headline text-stellar-black mb-6 uppercase">
+              Reclamar SPOT
+            </h1>
+
+            {/* Event info */}
+            {eventLoading ? (
+              <div className="flex items-center gap-3 mb-6 text-stellar-black/50">
+                <Loader2 size={16} className="animate-spin" />
+                <span className="font-body text-sm">Cargando info del evento...</span>
+              </div>
+            ) : eventInfo ? (
+              <div className="rounded-xl border border-stellar-lilac/15 bg-stellar-lilac/5 p-5 mb-6 space-y-3">
+                {eventInfo.imageUrl && (
+                  <img
+                    src={eventInfo.imageUrl}
+                    alt={eventInfo.name}
+                    className="w-full h-40 object-cover rounded-lg border border-stellar-lilac/10"
+                  />
+                )}
+                <h3 className="text-lg font-headline text-stellar-black uppercase">
+                  {eventInfo.name}
+                </h3>
+                <div className="space-y-2 text-sm font-body text-stellar-black/70">
+                  <div className="flex items-center gap-2">
+                    <Calendar size={14} className="text-stellar-lilac" />
+                    {formatDate(eventInfo.date)}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPinIcon size={14} className="text-stellar-lilac" />
+                    {eventInfo.location}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Users size={14} className="text-stellar-lilac" />
+                    {eventInfo.mintedCount} / {eventInfo.maxSpots} reclamados
+                  </div>
+                </div>
+                {eventInfo.description && (
+                  <p className="text-xs text-stellar-black/50 font-body pt-1">
+                    {eventInfo.description}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-stellar-lilac/15 bg-stellar-lilac/5 p-5 mb-6">
+                <p className="text-sm font-body text-stellar-black/70">
+                  Evento <span className="font-semibold">#{parsedEventId}</span>
+                </p>
+              </div>
+            )}
+
+            {/* Action */}
+            {isProcessing ? (
+              <div className="flex flex-col items-center gap-3 py-4">
+                <Loader2 size={32} className="animate-spin text-stellar-lilac" />
+                <p className="text-sm font-body text-stellar-black/60">
+                  Procesando tu reclamo...
+                </p>
+              </div>
+            ) : !isConnected ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 rounded-xl bg-stellar-gold/10 border border-stellar-gold/20 p-4">
+                  <Lock size={18} className="text-stellar-gold flex-shrink-0" />
+                  <p className="text-sm font-body text-stellar-black/70">
+                    Para reclamar tu SPOT necesitas conectar tu wallet primero.
+                  </p>
+                </div>
+                <button
+                  onClick={() => void connectWallet()}
+                  className="w-full inline-flex items-center justify-center gap-2 bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3.5 px-8 shadow-md transition-all font-body text-base"
+                >
+                  Conectar Wallet
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => executeClaim(parsedEventId!)}
+                className="w-full inline-flex items-center justify-center gap-2 bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3.5 px-8 shadow-md transition-all font-body text-base"
+              >
+                Confirmar Reclamo
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Not connected guard (manual methods) ────────────────────────────────
   if (!isConnected) {
     return (
       <div className="min-h-screen bg-stellar-white flex items-center justify-center px-6 py-24">
@@ -267,7 +413,7 @@ const Mint: React.FC = () => {
     );
   }
 
-  // ── Main view ─────────────────────────────────────────────────────────────
+  // ── Main view (manual methods) ──────────────────────────────────────────
   return (
     <div className="min-h-screen bg-stellar-white">
       {/* Page header */}

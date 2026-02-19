@@ -1,99 +1,104 @@
 import { useState } from "react";
-import { Button, Modal, Profile } from "@stellar/design-system";
 import { useWallet } from "../hooks/useWallet";
 import { connectWallet } from "../util/wallet";
+import { LogOut, X, Loader2 } from "lucide-react";
 
 export const WalletButton = () => {
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
   const { address, isPending, disconnect } = useWallet();
-  const buttonLabel = isPending ? "Loading..." : "Connect";
 
   if (!address) {
     return (
-      <Button variant="primary" size="md" onClick={() => void connectWallet()}>
-        {buttonLabel}
-      </Button>
+      <button
+        onClick={() => void connectWallet()}
+        disabled={isPending}
+        className="inline-flex items-center gap-2 bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full px-6 py-2.5 shadow-md transition-all font-body text-sm disabled:opacity-50"
+      >
+        {isPending ? (
+          <>
+            <Loader2 size={14} className="animate-spin" />
+            Cargando...
+          </>
+        ) : (
+          "Conectar"
+        )}
+      </button>
     );
   }
 
+  const shortAddress = `${address.slice(0, 6)}...${address.slice(-4)}`;
+
   return (
-    <div
-      className="flex flex-row items-center gap-2 sm:gap-3 opacity-100"
-      style={{
-        opacity: isPending ? 0.6 : 1,
-      }}
-    >
-      <div id="modalContainer">
-        <Modal
-          visible={showDisconnectModal}
-          onClose={() => setShowDisconnectModal(false)}
-          parentId="modalContainer"
+    <>
+      <button
+        onClick={() => setShowDisconnectModal(true)}
+        className="inline-flex items-center gap-2 bg-stellar-lilac/10 border border-stellar-lilac/30 text-stellar-black hover:bg-stellar-lilac/20 rounded-full px-4 py-2 font-body text-sm transition-all"
+        style={{ opacity: isPending ? 0.6 : 1 }}
+      >
+        <span className="w-2 h-2 rounded-full bg-stellar-teal" />
+        <span className="font-mono text-xs">{shortAddress}</span>
+      </button>
+
+      {/* Disconnect modal */}
+      {showDisconnectModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          onClick={() => setShowDisconnectModal(false)}
         >
-          <div className="bg-stellar-white rounded-2xl p-6 border-2 border-stellar-lilac/30 shadow-xl">
-            <div className="mb-4">
-              <h3 className="text-2xl font-headline text-stellar-black uppercase">
-                ¿Desconectar Wallet?
-              </h3>
-            </div>
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-stellar-black/40 backdrop-blur-sm" />
+
+          {/* Modal */}
+          <div
+            className="relative bg-white rounded-2xl border border-stellar-lilac/20 shadow-2xl p-6 w-full max-w-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setShowDisconnectModal(false)}
+              className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full text-stellar-black/40 hover:text-stellar-black hover:bg-stellar-black/5 transition-colors"
+            >
+              <X size={16} />
+            </button>
+
+            <h3 className="text-xl font-headline text-stellar-black uppercase mb-4">
+              Wallet conectada
+            </h3>
+
             <div className="mb-6">
-              <p className="text-stellar-black/80 font-body mb-2">
-                Conectado como:
+              <p className="text-xs font-body uppercase tracking-widest text-stellar-black/50 mb-2">
+                Dirección
               </p>
-              <code 
-                className="block bg-stellar-warm-grey/30 px-3 py-2 rounded-lg text-stellar-black font-mono text-sm break-all border border-stellar-lilac/20"
+              <code
+                className="block bg-stellar-warm-grey/20 px-4 py-3 rounded-xl text-stellar-black font-mono text-xs border border-stellar-lilac/10"
                 style={{ lineBreak: "anywhere" }}
               >
                 {address}
               </code>
             </div>
-            <Modal.Footer itemAlignment="stack">
-              <Button
-                size="md"
-                variant="primary"
+
+            <div className="flex flex-col gap-3">
+              <button
                 onClick={() => {
                   void disconnect().finally(() =>
                     setShowDisconnectModal(false),
                   );
                 }}
-                className="bg-red-500 hover:bg-red-600 text-white"
+                className="w-full inline-flex items-center justify-center gap-2 bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 font-semibold rounded-full py-3 px-6 transition-all font-body text-sm"
               >
+                <LogOut size={14} />
                 Desconectar
-              </Button>
-              <Button
-                size="md"
-                variant="tertiary"
-                onClick={() => {
-                  setShowDisconnectModal(false);
-                }}
-                className="bg-stellar-lilac/20 hover:bg-stellar-lilac/30 text-stellar-black"
+              </button>
+              <button
+                onClick={() => setShowDisconnectModal(false)}
+                className="w-full inline-flex items-center justify-center gap-2 bg-stellar-lilac/10 border border-stellar-lilac/20 text-stellar-black hover:bg-stellar-lilac/20 rounded-full py-3 px-6 transition-all font-body text-sm"
               >
                 Cancelar
-              </Button>
-            </Modal.Footer>
+              </button>
+            </div>
           </div>
-        </Modal>
-      </div>
-
-      {/* Profile - only shown on mobile, hidden on desktop since UserInfo shows the address */}
-      <div className="md:hidden">
-        <Profile
-          publicAddress={address}
-          size="md"
-          isShort
-          onClick={() => setShowDisconnectModal(true)}
-        />
-      </div>
-      
-      {/* Disconnect button for desktop - hidden on mobile */}
-      <Button
-        variant="tertiary"
-        size="sm"
-        onClick={() => setShowDisconnectModal(true)}
-        className="hidden md:flex"
-        title="Disconnect wallet"
-      >
-        Disconnect
-      </Button>
-    </div>
+        </div>
+      )}
+    </>
   );
 };
