@@ -1,0 +1,23 @@
+{
+  "name": "spot-monorepo",
+  "private": true,
+  "workspaces": ["packages/*", "frontend"],
+  "scripts": {
+    "dev": "npm run dev --workspace=frontend",
+    "start": "npm run start --workspace=frontend",
+    "build": "npm run build --workspace=frontend",
+    "lint": "npm run lint --workspace=frontend",
+    "format": "prettier . --write",
+    "install:contracts": "npm install --workspace=packages && npm run build --workspace=packages",
+    "install:backend": "cd backend && npm install",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.3",
+    "prettier": "3.6.2"
+  },
+  "lint-staged": {
+    "**/*": ["eslint --fix --no-warn-ignored", "prettier --write --ignore-unknown"]
+  }
+}

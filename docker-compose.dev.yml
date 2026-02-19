@@ -1,17 +1,94 @@
 services:
-  spot-dev:
-    image: node:22-alpine
+  scaffold:
+    build:
+      context: .
+      dockerfile: scaffold.Dockerfile
     working_dir: /app
+    volumes:
+      - ./contracts:/app/contracts
+      - ./packages:/app/packages
+      - ./frontend/src/contracts:/app/frontend/src/contracts
+      - ./Cargo.toml:/app/Cargo.toml
+      - ./Cargo.lock:/app/Cargo.lock
+      - ./environments.toml:/app/environments.toml
+      - ./rust-toolchain.toml:/app/rust-toolchain.toml
+      - ./package.json:/app/package.json
+      - ./frontend/package.json:/app/frontend/package.json
+      - cargo_registry:/usr/local/cargo/registry
+      - cargo_target:/app/target
+    command: sh -c "npm install --ignore-scripts 2>/dev/null; stellar-scaffold watch --build-clients"
+    environment:
+      - STELLAR_SCAFFOLD_ENV=development
+
+  frontend:
+    image: node:22-alpine
+    working_dir: /app/frontend
     ports:
       - "5173:5173"
     volumes:
-      - ./blockotitos:/app
-      - spot_node_modules:/app/node_modules
-    command: sh -c "npm install --ignore-scripts && npx vite --host 0.0.0.0"
+      - ./frontend:/app/frontend
+      - ./packages:/app/packages
+      - ./package.json:/app/package.json
+      - frontend_modules:/app/frontend/node_modules
+      - root_modules:/app/node_modules
+    command: sh -c "cd /app && npm install --ignore-scripts && cd frontend && npx vite --host 0.0.0.0"
+    depends_on:
+      - scaffold
     environment:
       - PUBLIC_STELLAR_NETWORK=TESTNET
       - VITE_BACKEND_URL=http://localhost:4000
       - VITE_SPOT_CONTRACT_ID=CC3XATHZKTV7WGEBR337JAH3UTAMQTK7VPPSDSAKHA4KGVOCJPF6P3VF
 
+  backend:
+    image: node:22-alpine
+    working_dir: /app
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./backend:/app
+      - backend_modules:/app/node_modules
+    command: sh -c "npm install && node --watch src/server.js"
+    environment:
+      - PORT=4000
+      - MOCK_MODE=true
+      - DATABASE_URL=postgresql://spot:spot_secret@postgres:5432/spot
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - MINIO_ACCESS_KEY=spot_minio
+      - MINIO_SECRET_KEY=spot_minio_secret
+      - MINIO_BUCKET=spot-images
+    depends_on:
+      - postgres
+      - minio
+
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=spot
+      - POSTGRES_PASSWORD=spot_secret
+      - POSTGRES_DB=spot
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    environment:
+      - MINIO_ROOT_USER=spot_minio
+      - MINIO_ROOT_PASSWORD=spot_minio_secret
+    command: server /data --console-address ":9001"
+
 volumes:
-  spot_node_modules:
+  frontend_modules:
+  root_modules:
+  backend_modules:
+  cargo_registry:
+  cargo_target:
+  postgres_data:
+  minio_data:

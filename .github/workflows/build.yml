@@ -25,20 +25,17 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      # Add the wasm32v1-none target for building contracts
       - run: rustup target add wasm32v1-none
       - run: sudo apt-get update && sudo apt-get install -y libudev-dev libdbus-1-dev pkg-config
-      # Install binstall to quickly install stellar-scaffold-cli
       - name: Install cargo-binstall
         uses: cargo-bins/cargo-binstall@main
-      # Check for stellar-scaffold-cli binary and install if not present
       - name: Check for stellar-scaffold binary
         run: |
           if ! command -v stellar-scaffold &> /dev/null; then
             echo "stellar-scaffold not found, installing..."
             cargo binstall stellar-scaffold-cli
           else
-            echo "stellar-scaffold already installed. Clear cache to force reinstall."
+            echo "stellar-scaffold already installed."
           fi
       - run: npm ci
       - run: npm run lint
@@ -47,18 +44,18 @@ jobs:
         run: STELLAR_SCAFFOLD_ENV=development stellar-scaffold build --build-clients 2>&1 | tee build_clients.log
       - name: Check client generation summary
         run: |
-          # Extract the number after "Failed: "
           FAILED=$(grep -Eo "Failed: [0-9]+" build_clients.log | awk '{print $2}')
           if [ -z "$FAILED" ]; then
-            echo "Could not find 'Failed: N' in build_clients.log, all clients succeeded."
+            echo "All clients succeeded."
             exit 0
           fi
           if [ "$FAILED" -gt 0 ]; then
-            echo "Client generation summary check failed: Failed: $FAILED"
-            echo "Check the \"Build with Scaffold\" step logs."
+            echo "Client generation failed: $FAILED"
             exit 1
           fi
       - run: npm run install:contracts
       - run: npm run build
-      - name: Run tests
-        run: npm test --if-present
+      - name: Run frontend tests
+        run: npm test --if-present --workspace=frontend
+      - name: Run backend tests
+        run: cd backend && npm ci && npm test

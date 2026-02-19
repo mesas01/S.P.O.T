@@ -1,9 +1,54 @@
-# Cursor IDE files
+# Stellar/Soroban/Rust
+target
+.soroban
+.config
+test_snapshots
+
+# Build output
+dist
+dist-ssr
+
+# Dependencies
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Local uploads
+backend/uploads
+
+# Temp local files
+*.local.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Generated contract clients
+packages/*
+!packages/.gitkeep
+
+# Generated contract client imports
+frontend/src/contracts/*
+!frontend/src/contracts/util.ts
+
+# IDE
+.idea/
+.vscode/
 .cursor/
 .cursorignore
 .cursorrules
+*.swp
+*.swo
+*~
 
-# AI and ML related files
+# AI
 *.ai
 *.mlmodel
 .ai/
@@ -11,32 +56,10 @@
 .copilot/
 .github/copilot/
 
-# IDE and editor files
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-.DS_Store
-
-# Node modules (if not already ignored)
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Build outputs
-dist/
-build/
-*.log
-*.cache
-
 # Environment files
 .env
 .env.local
 .env.*.local
 
-# OS files
-Thumbs.db
-.DS_Store
-
+# Build cache
+*.cache

@@ -1,0 +1,59 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        - VITE_BACKEND_URL=${VITE_BACKEND_URL:-http://localhost:8080}
+        - VITE_SPOT_CONTRACT_ID=${VITE_SPOT_CONTRACT_ID}
+        - PUBLIC_STELLAR_NETWORK=${PUBLIC_STELLAR_NETWORK:-TESTNET}
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    env_file:
+      - backend/.env
+    environment:
+      - DATABASE_URL=postgresql://spot:spot_secret@postgres:5432/spot
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - MINIO_ACCESS_KEY=spot_minio
+      - MINIO_SECRET_KEY=spot_minio_secret
+      - MINIO_BUCKET=spot-images
+    depends_on:
+      - postgres
+      - minio
+
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=spot
+      - POSTGRES_PASSWORD=spot_secret
+      - POSTGRES_DB=spot
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    environment:
+      - MINIO_ROOT_USER=spot_minio
+      - MINIO_ROOT_PASSWORD=spot_minio_secret
+    command: server /data --console-address ":9001"
+
+volumes:
+  postgres_data:
+  minio_data:
