@@ -8,21 +8,19 @@ jobs:
   deploy-production:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment: production
     steps:
       - name: Trigger Production Deployment
         run: |
-          curl -s -X GET \
+          curl -sf -X GET \
             -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" \
             "${{ secrets.COOLIFY_WEBHOOK_URL }}"
 
   deploy-development:
     if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
-    environment: development
     steps:
       - name: Trigger Development Deployment
         run: |
-          curl -s -X GET \
+          curl -sf -X GET \
             -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" \
             "${{ secrets.COOLIFY_WEBHOOK_URL_DEV }}"
