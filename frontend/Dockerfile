@@ -3,7 +3,7 @@ WORKDIR /app
 
 COPY frontend/package.json frontend/package-lock.json ./
 
-RUN npm ci
+RUN npm ci --ignore-scripts
 
 COPY frontend/src ./src
 COPY frontend/public ./public
