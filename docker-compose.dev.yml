@@ -8,6 +8,7 @@ services:
       - ./contracts:/app/contracts
       - ./packages:/app/packages
       - ./frontend/src/contracts:/app/frontend/src/contracts
+      - ./Makefile:/app/Makefile
       - ./Cargo.toml:/app/Cargo.toml
       - ./Cargo.lock:/app/Cargo.lock
       - ./environments.toml:/app/environments.toml
@@ -16,6 +17,7 @@ services:
       - ./frontend/package.json:/app/frontend/package.json
       - cargo_registry:/usr/local/cargo/registry
       - cargo_target:/app/target
+      - stellar_config:/root/.config/stellar
     command: sh -c "npm install --ignore-scripts 2>/dev/null; stellar-scaffold watch --build-clients"
     environment:
       - STELLAR_SCAFFOLD_ENV=development
@@ -90,5 +92,6 @@ volumes:
   backend_modules:
   cargo_registry:
   cargo_target:
+  stellar_config:
   postgres_data:
   minio_data:
