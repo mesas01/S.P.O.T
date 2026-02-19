@@ -11,6 +11,9 @@ services:
         - PUBLIC_STELLAR_HORIZON_URL=${PUBLIC_STELLAR_HORIZON_URL:-}
     expose:
       - "80"
+    networks:
+      - default
+      - coolify
     depends_on:
       backend:
         condition: service_started
@@ -75,6 +78,11 @@ services:
       - MINIO_ROOT_USER=${MINIO_ACCESS_KEY:-spot_minio}
       - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY:-spot_minio_secret}
     command: server /data --console-address ":9001"
+
+networks:
+  default:
+  coolify:
+    external: true
 
 volumes:
   postgres_data:
