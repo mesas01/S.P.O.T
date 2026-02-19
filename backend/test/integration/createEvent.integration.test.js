@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import request from "supertest";
 import dotenv from "dotenv";
 import { Keypair } from "@stellar/stellar-sdk";
+import { generateEventImage } from "../helpers/generateImage.js";
 
 dotenv.config({ path: process.env.ENV_PATH || undefined });
 
@@ -55,6 +56,7 @@ let server;
 let baseUrl;
 let creatorReadyForRevocation;
 let lastCreatedEventId;
+let eventImage;
 
 const HEX_HASH_REGEX = /^[0-9a-f]{64}$/i;
 const BASE64_REGEX = /^[A-Za-z0-9+/=]+$/;
@@ -74,6 +76,8 @@ test.before(async () => {
     });
     server.once("error", reject);
   });
+
+  eventImage = await generateEventImage("SPOT Integration Test");
 });
 
 test.after(async () => {
@@ -108,23 +112,18 @@ test(
 
     const eventCountBefore = await fetchEventCount();
 
-    const payload = {
-      creator: process.env.INTEGRATION_CREATOR_ADDRESS || expectedAdminAddress,
-      eventName: `Integration Event ${new Date().toISOString()}`,
-      eventDate,
-      location: "Bogotá",
-      description: "Integration test event",
-      maxPoaps: 10,
-      claimStart,
-      claimEnd,
-      metadataUri:
-        process.env.INTEGRATION_METADATA_URI || "https://example.com/metadata.json",
-      imageUrl: process.env.INTEGRATION_IMAGE_URL || "https://example.com/image.png",
-    };
-
     const response = await request(baseUrl)
       .post("/events/create")
-      .send(payload)
+      .field("creator", process.env.INTEGRATION_CREATOR_ADDRESS || expectedAdminAddress)
+      .field("eventName", `Integration Event ${new Date().toISOString()}`)
+      .field("eventDate", String(eventDate))
+      .field("location", "Bogotá")
+      .field("description", "Integration test event")
+      .field("maxPoaps", "10")
+      .field("claimStart", String(claimStart))
+      .field("claimEnd", String(claimEnd))
+      .field("metadataUri", process.env.INTEGRATION_METADATA_URI || "https://example.com/metadata.json")
+      .attach("image", eventImage, "event-poster.png")
       .timeout({ deadline: 180_000, response: 180_000 });
 
     assert.equal(response.statusCode, 200);
@@ -132,6 +131,7 @@ test(
     assert.equal(response.body.rpcResponse.status, "PENDING");
     assert.ok(response.body.signedEnvelope);
     assert.match(response.body.signedEnvelope, BASE64_REGEX);
+    assert.ok(response.body.imageUrl, "Should return uploaded image URL");
 
     const eventCountAfter = await fetchEventCount();
     assert.equal(eventCountAfter, eventCountBefore + 1);

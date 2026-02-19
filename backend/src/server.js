@@ -19,9 +19,27 @@ import {
   hasClaimedEvent,
   getUserPoapTokenId,
 } from "./soroban.js";
+import { ensureBucket } from "./lib/minio.js";
+import {
+  createEventRecord,
+  createClaimRecord,
+  incrementMintedCount,
+  upsertCreatorApproval,
+  revokeCreator as revokeCreatorDb,
+  logTransaction,
+  getAllEvents,
+  getClaimerEvents,
+  getCachedMintedCount,
+} from "./services/db.js";
+import { uploadImage } from "./services/storage.js";
 
 // Cargar variables de entorno
 dotenv.config();
+
+// BigInt JSON serialization support
+BigInt.prototype.toJSON = function () {
+  return Number(this);
+};
 
 // Definición de variables globales
 const {
@@ -230,9 +248,18 @@ app.post("/creators/approve", async (req, res) => {
       contractId: CONTRACT_ID,
     });
     await logTx({ action: "approve_creator", status: "success", txHash: result.txHash, payload, rpcResponse: result.rpcResponse, signedEnvelope: result.envelopeXdr });
+
+    try {
+      await upsertCreatorApproval({ address: creator, paymentReference, txHash: result.txHash });
+      await logTransaction({ action: "approve_creator", status: "success", txHash: result.txHash, payload });
+    } catch (dbErr) {
+      console.warn("DB write failed (approve_creator), data will reconcile:", dbErr.message);
+    }
+
     res.json({ txHash: result.txHash, rpcResponse: result.rpcResponse, signedEnvelope: result.envelopeXdr });
   } catch (error) {
     await logTx({ action: "approve_creator", status: "error", error: error.message || String(error), payload });
+    try { await logTransaction({ action: "approve_creator", status: "error", error: error.message || String(error), payload }); } catch (_) {}
     res.status(500).json({ error: error.message || String(error) });
   }
 });
@@ -260,9 +287,18 @@ app.post("/creators/revoke", async (req, res) => {
       contractId: CONTRACT_ID,
     });
     await logTx({ action: "revoke_creator", status: "success", txHash: result.txHash, payload, rpcResponse: result.rpcResponse, signedEnvelope: result.envelopeXdr });
+
+    try {
+      await revokeCreatorDb({ address: creator, txHash: result.txHash });
+      await logTransaction({ action: "revoke_creator", status: "success", txHash: result.txHash, payload });
+    } catch (dbErr) {
+      console.warn("DB write failed (revoke_creator), data will reconcile:", dbErr.message);
+    }
+
     res.json({ txHash: result.txHash, rpcResponse: result.rpcResponse, signedEnvelope: result.envelopeXdr });
   } catch (error) {
     await logTx({ action: "revoke_creator", status: "error", error: error.message || String(error), payload });
+    try { await logTransaction({ action: "revoke_creator", status: "error", error: error.message || String(error), payload }); } catch (_) {}
     res.status(500).json({ error: error.message || String(error) });
   }
 });
@@ -303,8 +339,23 @@ app.post("/events/create", upload.single("image"), async (req, res) => {
   };
 
   let finalImageUrl = (imageUrlField || "").toString().trim();
+  let imageId = null;
+
+  // Upload to MinIO if file provided
   if (req.file) {
-    finalImageUrl = buildImageUrl(req, req.file);
+    try {
+      const minioResult = await uploadImage(req.file);
+      if (minioResult) {
+        finalImageUrl = minioResult.publicUrl;
+        imageId = minioResult.imageId;
+      } else {
+        // MinIO not available (mock mode), fallback to local
+        finalImageUrl = buildImageUrl(req, req.file);
+      }
+    } catch (uploadErr) {
+      console.warn("MinIO upload failed, falling back to local:", uploadErr.message);
+      finalImageUrl = buildImageUrl(req, req.file);
+    }
   }
 
   const cleanupAndRespond = async (status, payload) => {
@@ -358,7 +409,7 @@ app.post("/events/create", upload.single("image"), async (req, res) => {
       metadataUri,
       imageUrl: finalImageUrl,
     });
-    
+
     let eventId;
     try {
       eventId = await getEventCount({
@@ -370,12 +421,38 @@ app.post("/events/create", upload.single("image"), async (req, res) => {
     } catch (countError) {
       console.warn("Unable to fetch event count after creation:", countError);
     }
-    
+
     await logTx({ action: "create_event", status: "success", txHash: result.txHash, payload: { ...payload, eventId }, rpcResponse: result.rpcResponse, signedEnvelope: result.envelopeXdr });
+
+    // Write to DB after successful on-chain tx
+    if (eventId != null) {
+      try {
+        await createEventRecord({
+          eventId,
+          creator,
+          eventName,
+          eventDate: numericFields.eventDate,
+          location,
+          description,
+          maxPoaps: numericFields.maxPoaps,
+          claimStart: numericFields.claimStart,
+          claimEnd: numericFields.claimEnd,
+          metadataUri,
+          imageUrl: finalImageUrl,
+          txHash: result.txHash,
+          imageId,
+        });
+        await logTransaction({ action: "create_event", status: "success", txHash: result.txHash, payload: { ...payload, eventId } });
+      } catch (dbErr) {
+        console.warn("DB write failed (create_event), data will reconcile:", dbErr.message);
+      }
+    }
+
     res.json({ txHash: result.txHash, rpcResponse: result.rpcResponse, signedEnvelope: result.envelopeXdr, eventId, imageUrl: finalImageUrl });
   } catch (error) {
     await cleanupUploadedFile(req.file);
     await logTx({ action: "create_event", status: "error", error: error.message || String(error), payload });
+    try { await logTransaction({ action: "create_event", status: "error", error: error.message || String(error), payload }); } catch (_) {}
     res.status(500).json({ error: error.message || String(error) });
   }
 });
@@ -387,6 +464,17 @@ app.get("/events/:eventId/minted-count", async (req, res) => {
   }
 
   if (isMock) return res.json({ mintedCount: 0 });
+
+  // Try DB cache first
+  try {
+    const cached = await getCachedMintedCount(eventId);
+    if (cached != null) {
+      return res.json({ mintedCount: cached });
+    }
+  } catch (dbErr) {
+    console.warn("DB read failed (minted-count), falling back to RPC:", dbErr.message);
+  }
+
   if (!ADMIN_SECRET) return res.status(500).json({ error: "Admin credentials not configured" });
 
   try {
@@ -435,9 +523,19 @@ app.post("/events/claim", async (req, res) => {
       eventId: numericEventId,
     });
     await logTx({ action: "claim_poap", status: "success", txHash: result.txHash, payload, rpcResponse: result.rpcResponse, signedEnvelope: result.envelopeXdr });
+
+    try {
+      await createClaimRecord({ eventId: numericEventId, claimer, txHash: result.txHash });
+      await incrementMintedCount(numericEventId);
+      await logTransaction({ action: "claim_poap", status: "success", txHash: result.txHash, payload });
+    } catch (dbErr) {
+      console.warn("DB write failed (claim_poap), data will reconcile:", dbErr.message);
+    }
+
     res.json({ txHash: result.txHash, rpcResponse: result.rpcResponse, signedEnvelope: result.envelopeXdr });
   } catch (error) {
     await logTx({ action: "claim_poap", status: "error", error: error.message || String(error), payload });
+    try { await logTransaction({ action: "claim_poap", status: "error", error: error.message || String(error), payload }); } catch (_) {}
     res.status(500).json({ error: error.message || String(error) });
   }
 });
@@ -481,8 +579,35 @@ app.get("/contract/event-count", async (_req, res) => {
 app.get("/events/onchain", async (req, res) => {
   if (isMock) return res.json({ events: [] });
 
-  const creatorFilter = (req.query.creator || "").toString().toLowerCase();
+  const creatorFilter = (req.query.creator || "").toString().trim();
 
+  // Try DB first
+  try {
+    const dbEvents = await getAllEvents({
+      creator: creatorFilter || undefined,
+    });
+    if (dbEvents && dbEvents.length > 0) {
+      const events = dbEvents.map((e) => ({
+        eventId: e.eventId,
+        name: e.eventName,
+        date: e.eventDate,
+        location: e.location,
+        description: e.description,
+        maxSpots: e.maxPoaps,
+        claimStart: e.claimStart,
+        claimEnd: e.claimEnd,
+        metadataUri: e.metadataUri,
+        imageUrl: e.imageUrl,
+        creator: e.creator,
+        mintedCount: e.mintedCount,
+      }));
+      return res.json({ events });
+    }
+  } catch (dbErr) {
+    console.warn("DB read failed (events/onchain), falling back to RPC:", dbErr.message);
+  }
+
+  // Fallback to RPC
   try {
     const eventIds = await getAllEventIds({
       rpcUrl: RPC_URL,
@@ -511,7 +636,7 @@ app.get("/events/onchain", async (req, res) => {
           }),
         ]);
 
-        if (creatorFilter && details.creator.toLowerCase() !== creatorFilter) {
+        if (creatorFilter && details.creator.toLowerCase() !== creatorFilter.toLowerCase()) {
           continue;
         }
 
@@ -544,6 +669,33 @@ app.get("/claimers/:claimer/events", async (req, res) => {
   const claimer = (req.params.claimer || "").toString().trim();
   if (!claimer) return res.status(400).json({ error: "claimer is required" });
   if (isMock) return res.json({ events: [] });
+
+  // Try DB first
+  try {
+    const dbEvents = await getClaimerEvents(claimer);
+    if (dbEvents && dbEvents.length > 0) {
+      const events = dbEvents.map((e) => ({
+        eventId: e.eventId,
+        name: e.eventName,
+        date: e.eventDate,
+        location: e.location,
+        description: e.description,
+        maxSpots: e.maxPoaps,
+        claimStart: e.claimStart,
+        claimEnd: e.claimEnd,
+        metadataUri: e.metadataUri,
+        imageUrl: e.imageUrl,
+        creator: e.creator,
+        mintedCount: e.mintedCount,
+        tokenId: e.tokenId,
+      }));
+      return res.json({ events });
+    }
+  } catch (dbErr) {
+    console.warn("DB read failed (claimer events), falling back to RPC:", dbErr.message);
+  }
+
+  // Fallback to RPC
   if (!ADMIN_SECRET) return res.status(500).json({ error: "Admin credentials not configured" });
 
   try {
@@ -632,6 +784,12 @@ function normalizePort(value) {
 
 export function startServer(customPort) {
   const port = normalizePort(typeof customPort !== "undefined" ? customPort : PORT);
+
+  // Initialize MinIO bucket (non-blocking)
+  ensureBucket().catch((err) => {
+    console.warn("MinIO bucket init failed (will retry on first upload):", err.message);
+  });
+
   // Escuchar en 0.0.0.0 es vital para Docker/Cloud Run
   const server = app.listen(port, "0.0.0.0", () => {
     console.log(`SPOT admin backend listening on port ${port} 🚀`);

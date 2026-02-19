@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  eventId     Int      @unique
+  creator     String
+  eventName   String
+  eventDate   BigInt
+  location    String
+  description String
+  maxPoaps    Int
+  claimStart  BigInt
+  claimEnd    BigInt
+  metadataUri String
+  imageUrl    String
+  mintedCount Int      @default(0)
+  txHash      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  claims      Claim[]
+  image       Image?   @relation(fields: [imageId], references: [id])
+  imageId     Int?     @unique
+
+  @@index([creator])
+  @@map("events")
+}
+
+model Claim {
+  id        Int      @id @default(autoincrement())
+  eventId   Int
+  claimer   String
+  tokenId   Int?
+  txHash    String?
+  createdAt DateTime @default(now())
+  event     Event    @relation(fields: [eventId], references: [eventId])
+
+  @@unique([eventId, claimer])
+  @@index([claimer])
+  @@map("claims")
+}
+
+model Creator {
+  id               Int           @id @default(autoincrement())
+  address          String        @unique
+  status           CreatorStatus @default(APPROVED)
+  paymentReference String?
+  txHash           String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@map("creators")
+}
+
+enum CreatorStatus {
+  APPROVED
+  REVOKED
+}
+
+model Transaction {
+  id        Int      @id @default(autoincrement())
+  action    String
+  status    String
+  txHash    String?
+  payload   Json?
+  error     String?
+  createdAt DateTime @default(now())
+
+  @@index([action])
+  @@index([txHash])
+  @@map("transactions")
+}
+
+model Image {
+  id           Int      @id @default(autoincrement())
+  bucket       String
+  key          String
+  originalName String
+  mimeType     String
+  size         Int
+  publicUrl    String
+  createdAt    DateTime @default(now())
+  event        Event?
+
+  @@unique([bucket, key])
+  @@map("images")
+}

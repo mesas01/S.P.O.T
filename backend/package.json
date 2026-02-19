@@ -8,17 +8,26 @@
     "start": "node ./src/server.js",
     "test": "npm run test:unit",
     "test:unit": "cross-env NODE_ENV=test MOCK_MODE=true LOG_FILE=./logs/backend.test.log node --test",
-    "test:integration": "cross-env NODE_ENV=test RUN_INTEGRATION_TESTS=true LOG_FILE=./logs/backend.integration.log node --test \"./test/integration/*.test.js\""
+    "test:integration": "cross-env NODE_ENV=test RUN_INTEGRATION_TESTS=true LOG_FILE=./logs/backend.integration.log node --test --test-concurrency 1 \"./test/integration/*.test.js\"",
+    "db:migrate": "npx prisma migrate deploy",
+    "db:migrate:dev": "npx prisma migrate dev",
+    "db:generate": "npx prisma generate",
+    "db:studio": "npx prisma studio",
+    "db:seed": "node prisma/seed.js"
   },
   "dependencies": {
+    "@prisma/client": "^6.4.1",
     "@stellar/stellar-sdk": "^12.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "minio": "^8.0.5",
     "multer": "^2.0.2"
   },
   "devDependencies": {
+    "@google/generative-ai": "^0.21.0",
     "cross-env": "^7.0.3",
+    "prisma": "^6.4.1",
     "supertest": "^6.3.4"
   }
 }

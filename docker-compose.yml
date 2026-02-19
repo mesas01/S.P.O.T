@@ -42,6 +42,7 @@ services:
       - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-spot_minio}
       - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-spot_minio_secret}
       - MINIO_BUCKET=${MINIO_BUCKET:-spot-images}
+      - MINIO_PUBLIC_URL=${MINIO_PUBLIC_URL:-}
     depends_on:
       postgres:
         condition: service_healthy
