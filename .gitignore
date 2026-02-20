@@ -60,6 +60,7 @@ frontend/src/contracts/*
 .env
 .env.local
 .env.*.local
+.env.integration
 
 # Build cache
 *.cache
