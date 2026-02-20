@@ -1,5 +1,5 @@
 const envBaseUrl = import.meta.env.VITE_BACKEND_URL;
-const backendBaseUrl = (envBaseUrl || "http://localhost:4000").replace(/\/$/, "");
+const backendBaseUrl = (envBaseUrl ?? "").replace(/\/$/, "");
 
 const defaultHeaders = {
   "Content-Type": "application/json",
