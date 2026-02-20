@@ -50,7 +50,7 @@ const SpotCard: React.FC<SpotCardProps> = ({ spot, onClick }) => {
           alt={spot.name}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           onError={(e) => {
-            e.currentTarget.src = "https://via.placeholder.com/400x300?text=SPOT";
+            e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' fill='%23e5e7eb'%3E%3Crect width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-size='14' font-family='sans-serif'%3ESPOT%3C/text%3E%3C/svg%3E";
           }}
         />
 

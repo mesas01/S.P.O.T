@@ -96,7 +96,7 @@ const CreateEvent: React.FC = () => {
     setDistributionMethods((prev) => ({ ...prev, [method]: !prev[method] }));
   };
 
-  const placeholderImage = "https://via.placeholder.com/300";
+  const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' fill='%23e5e7eb'%3E%3Crect width='300' height='300'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-size='14' font-family='sans-serif'%3ESPOT%3C/text%3E%3C/svg%3E";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

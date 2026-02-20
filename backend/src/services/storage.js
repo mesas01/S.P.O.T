@@ -10,7 +10,12 @@ const MINIO_PUBLIC_URL = process.env.MINIO_PUBLIC_URL || "";
  */
 function buildPublicUrl(key) {
   if (MINIO_PUBLIC_URL) {
-    return `${MINIO_PUBLIC_URL.replace(/\/$/, "")}/${BUCKET}/${key}`;
+    const base = MINIO_PUBLIC_URL.replace(/\/$/, "");
+    // Relative paths (e.g. "/images") skip the bucket — nginx already maps to it
+    if (base.startsWith("/")) {
+      return `${base}/${key}`;
+    }
+    return `${base}/${BUCKET}/${key}`;
   }
   const endpoint = process.env.MINIO_ENDPOINT || "localhost";
   const port = process.env.MINIO_PORT || "9000";
