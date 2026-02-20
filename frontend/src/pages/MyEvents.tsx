@@ -608,6 +608,7 @@ const MyEvents: React.FC = () => {
                       {event.imageUrl && (
                         <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden border border-stellar-lilac/20 flex-shrink-0 bg-stellar-warm-grey/20">
                           {event.imageUrl.startsWith("http") ||
+                          event.imageUrl.startsWith("/uploads/") ||
                           event.imageUrl.startsWith("/images/") ||
                           event.imageUrl.startsWith("data:") ? (
                             <img
