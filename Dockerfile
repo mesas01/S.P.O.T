@@ -34,10 +34,14 @@ RUN apk add --no-cache nginx supervisor
 # Copy frontend build
 COPY --from=frontend-builder /app/dist /usr/share/nginx/html
 
-# Copy nginx config (proxy to localhost instead of backend service)
+# Copy nginx config: rewrite for single-container mode
+# - nginx listens on 8080 (Coolify/Traefik routes here)
+# - backend runs on 3000 (internal only)
+# - MinIO proxy replaced with backend local file serving
 COPY frontend/nginx.conf /etc/nginx/http.d/default.conf
-RUN sed -i 's|http://backend:8080|http://127.0.0.1:8080|g' /etc/nginx/http.d/default.conf && \
-    sed -i 's|proxy_pass http://minio:9000/spot-images/;|proxy_pass http://127.0.0.1:8080/uploads/;|g' /etc/nginx/http.d/default.conf
+RUN sed -i 's|listen 80;|listen 8080;|g' /etc/nginx/http.d/default.conf && \
+    sed -i 's|http://backend:8080|http://127.0.0.1:3000|g' /etc/nginx/http.d/default.conf && \
+    sed -i 's|proxy_pass http://minio:9000/spot-images/;|proxy_pass http://127.0.0.1:3000/uploads/;|g' /etc/nginx/http.d/default.conf
 
 # Copy backend
 WORKDIR /app
@@ -52,8 +56,8 @@ RUN mkdir -p /app/uploads
 RUN mkdir -p /etc/supervisor.d
 RUN printf '[supervisord]\nnodaemon=true\nlogfile=/dev/stdout\nlogfile_maxbytes=0\n\n[program:nginx]\ncommand=nginx -g "daemon off;"\nautostart=true\nautorestart=true\nstdout_logfile=/dev/stdout\nstdout_logfile_maxbytes=0\nstderr_logfile=/dev/stderr\nstderr_logfile_maxbytes=0\n\n[program:backend]\ncommand=node /app/src/server.js\nautostart=true\nautorestart=true\ndirectory=/app\nstdout_logfile=/dev/stdout\nstdout_logfile_maxbytes=0\nstderr_logfile=/dev/stderr\nstderr_logfile_maxbytes=0\n' > /etc/supervisord.conf
 
-EXPOSE 80
+EXPOSE 8080
 
-ENV PORT=8080 NODE_ENV=production
+ENV PORT=3000 NODE_ENV=production
 
 CMD ["supervisord", "-c", "/etc/supervisord.conf"]
