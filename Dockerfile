@@ -45,6 +45,9 @@ COPY --from=backend-builder /app/node_modules ./node_modules
 COPY backend/src ./src
 COPY backend/package.json ./
 
+# Create uploads directory for local file storage fallback
+RUN mkdir -p /app/uploads
+
 # Supervisor config to run both nginx and backend
 RUN mkdir -p /etc/supervisor.d
 RUN printf '[supervisord]\nnodaemon=true\nlogfile=/dev/stdout\nlogfile_maxbytes=0\n\n[program:nginx]\ncommand=nginx -g "daemon off;"\nautostart=true\nautorestart=true\nstdout_logfile=/dev/stdout\nstdout_logfile_maxbytes=0\nstderr_logfile=/dev/stderr\nstderr_logfile_maxbytes=0\n\n[program:backend]\ncommand=node /app/src/server.js\nautostart=true\nautorestart=true\ndirectory=/app\nstdout_logfile=/dev/stdout\nstdout_logfile_maxbytes=0\nstderr_logfile=/dev/stderr\nstderr_logfile_maxbytes=0\n' > /etc/supervisord.conf

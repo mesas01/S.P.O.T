@@ -7,12 +7,16 @@ const isMock =
 let prisma = null;
 
 if (!isMock) {
-  prisma = new PrismaClient({
-    log:
-      process.env.NODE_ENV === "production"
-        ? ["error"]
-        : ["query", "error", "warn"],
-  });
+  try {
+    prisma = new PrismaClient({
+      log:
+        process.env.NODE_ENV === "production"
+          ? ["error"]
+          : ["query", "error", "warn"],
+    });
+  } catch (err) {
+    console.warn("Prisma client init failed (DB features disabled):", err.message);
+  }
 }
 
 export default prisma;
