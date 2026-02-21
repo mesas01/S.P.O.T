@@ -18,11 +18,13 @@ ARG PUBLIC_STELLAR_HORIZON_URL
 
 RUN npx tsc -b && npx vite build
 
-# Stage 2: Install backend deps
+# Stage 2: Install backend deps + generate Prisma client
 FROM node:22-alpine AS backend-builder
 WORKDIR /app
 COPY backend/package.json backend/package-lock.json ./
 RUN npm ci --omit=dev
+COPY backend/prisma ./prisma
+RUN npx prisma generate
 
 # Stage 3: Final image with nginx + node
 FROM node:22-alpine
@@ -34,7 +36,8 @@ COPY --from=frontend-builder /app/dist /usr/share/nginx/html
 
 # Copy nginx config (proxy to localhost instead of backend service)
 COPY frontend/nginx.conf /etc/nginx/http.d/default.conf
-RUN sed -i 's|http://backend:8080|http://127.0.0.1:8080|g' /etc/nginx/http.d/default.conf
+RUN sed -i 's|http://backend:8080|http://127.0.0.1:8080|g' /etc/nginx/http.d/default.conf && \
+    sed -i 's|proxy_pass http://minio:9000/spot-images/;|proxy_pass http://127.0.0.1:8080/uploads/;|g' /etc/nginx/http.d/default.conf
 
 # Copy backend
 WORKDIR /app
