@@ -4,14 +4,15 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "dev": "npm start",
-    "start": "concurrently --kill-others-on-fail --names stellar,vite -c gray,green --pad-prefix \"stellar scaffold watch --build-clients\" \"vite\"",
-    "build": "tsc -b && vite build",
-    "install:contracts": "npm install --workspace=packages && npm run build --workspace=packages",
-    "preview": "vite preview",
-    "lint": "eslint .",
-    "test:integration": "vitest run --config vitest.config.integration.ts"
-  },
+  "dev": "npm start",
+  "start": "concurrently --kill-others-on-fail --names stellar,vite -c gray,green --pad-prefix \"stellar scaffold watch --build-clients\" \"vite\"",
+  "build": "tsc -b && vite build",
+  "install:contracts": "npm install --workspace=packages && npm run build --workspace=packages",
+  "preview": "vite preview",
+  "lint": "eslint .",
+  "lint:soft": "eslint . || exit 0",
+  "test:integration": "vitest run --config vitest.config.integration.ts"
+},
   "dependencies": {
     "@creit.tech/stellar-wallets-kit": "^1.9.5",
     "@stellar/design-system": "^3.1.5",

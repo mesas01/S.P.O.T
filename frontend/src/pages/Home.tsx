@@ -33,7 +33,7 @@ import {
 import { useScrollReveal } from "../hooks/useScrollReveal";
 
 // ─── Static data ────────────────────────────────────────────────────────────
-
+//aaaaaaaaaaaaaaaaaaaa
 const features = [
   {
     icon: QrCode,
@@ -279,9 +279,7 @@ const Home: React.FC = () => {
     <div className="bg-stellar-white min-h-screen overflow-hidden">
       {/* Background decorative glow elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div
-          className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-stellar-gold/10 blur-[120px] animate-pulse-glow"
-        />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-stellar-gold/10 blur-[120px] animate-pulse-glow" />
         <div
           className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-stellar-lilac/10 blur-[100px] animate-pulse-glow"
           style={{ animationDelay: "1.5s" }}
@@ -299,7 +297,6 @@ const Home: React.FC = () => {
         <section className="relative min-h-[90vh] flex items-center overflow-hidden pt-8 pb-16">
           <div className="mx-auto max-w-7xl px-6 w-full">
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-
               {/* Left: Content */}
               <div className="animate-fade-up">
                 {/* Eyebrow badge */}

@@ -1,4 +1,10 @@
-type ClipboardValue = Record<string, unknown> | string | number | boolean | null | undefined;
+type ClipboardValue =
+  | Record<string, unknown>
+  | string
+  | number
+  | boolean
+  | null
+  | undefined;
 
 const stringify = (payload: ClipboardValue): string => {
   if (payload === undefined || payload === null) {
@@ -17,7 +23,7 @@ const stringify = (payload: ClipboardValue): string => {
     return JSON.stringify(payload, null, 2);
   } catch (error) {
     console.error("Error serializando payload para clipboard:", error);
-    return String(payload);
+    return JSON.stringify(payload);
   }
 };
 
@@ -47,5 +53,3 @@ export const buildTxDetail = (
     generatedAt: new Date().toISOString(),
   });
 };
-
-

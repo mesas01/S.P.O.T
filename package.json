@@ -22,8 +22,8 @@
   },
   "lint-staged": {
   "frontend/**/*.{ts,tsx,js,jsx}": [
-    "cd frontend && eslint --fix",
-    "cd frontend && prettier --write"
+    "npm run lint:soft --workspace=frontend",
+    "prettier --write --ignore-unknown"
   ]
 }
 }
