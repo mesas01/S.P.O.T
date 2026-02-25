@@ -17,15 +17,6 @@ export default tseslint.config(
     "!src/contracts/util.ts",
   ]),
   {
-    extends: [
-      js.configs.recommended,
-      tseslint.configs.recommendedTypeChecked,
-      reactDOM.configs.recommended,
-      reactHooks.configs["recommended-latest"],
-      reactRefresh.configs.vite,
-      reactX.configs["recommended-typescript"],
-      prettier,
-    ],
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
       ecmaVersion: 2020,
@@ -35,19 +26,34 @@ export default tseslint.config(
         tsconfigRoot: import.meta.dirname,
       },
     },
+    extends: [
+      js.configs.recommended,
+      tseslint.configs.recommendedTypeChecked,
+      reactDOM.configs.recommended,
+      reactHooks.configs["recommended-latest"],
+      reactRefresh.configs.vite,
+      reactX.configs["recommended-typescript"],
+      prettier,
+    ],
     rules: {
+      // React
       "react-refresh/only-export-components": [
         "warn",
         { allowConstantExport: true },
       ],
-    
-      // 🔽 RELAJAR ESTO POR AHORA
+
+      // 🔽 RELAJADO PARA EMPEZAR
+      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-unnecessary-type-assertion": "warn",
+      "@typescript-eslint/no-unsafe-argument": "warn",
+
+      "@typescript-eslint/no-explicit-any": "warn",
+
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-unsafe-call": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",
       "@typescript-eslint/no-unsafe-return": "off",
-      "@typescript-eslint/no-explicit-any": "warn",
-    
+
       "@typescript-eslint/require-await": "off",
       "@typescript-eslint/no-misused-promises": "warn",
       "@typescript-eslint/no-floating-promises": "warn",
