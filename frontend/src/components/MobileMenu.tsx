@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 import ConnectAccount from "./ConnectAccount";
 import UserInfo from "./UserInfo";
 import { createPortal } from "react-dom";
-import { Zap, CalendarDays, Plus, User, Menu, X } from "lucide-react";
+import { Zap, CalendarDays, Plus, User, Menu, X, Users } from "lucide-react";
 
 const MobileMenu: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -30,6 +30,13 @@ const MobileMenu: React.FC = () => {
       Icon: CalendarDays,
       activeColor: "bg-stellar-lilac/20 text-stellar-black shadow-md",
       hoverColor: "bg-stellar-warm-grey/30 hover:bg-stellar-lilac/10 text-stellar-black",
+    },
+    {
+      to: "/events",
+      label: "Eventos",
+      Icon: Users,
+      activeColor: "bg-stellar-teal/20 text-stellar-black shadow-md",
+      hoverColor: "bg-stellar-warm-grey/30 hover:bg-stellar-teal/10 text-stellar-black",
     },
     {
       to: "/create-event",

@@ -6,6 +6,7 @@ import { Routes, Route, Outlet, NavLink, Link } from "react-router-dom";
 import { Plus, Zap, User } from "lucide-react";
 import spotLogo from "./images/Recurso_1.svg";
 import Home from "./pages/Home";
+import Events from "./pages/Events";
 import Mint from "./pages/Mint";
 import CreateEvent from "./pages/CreateEvent";
 import Profile from "./pages/Profile";
@@ -74,6 +75,19 @@ const AppLayout: React.FC = () => {
                   }`}>
                     Mis Eventos
                     <span className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-lilac transition-all duration-300 ${
+                      isActive ? "w-full" : "w-0 group-hover:w-full"
+                    }`} />
+                  </span>
+                )}
+              </NavLink>
+
+              <NavLink to="/events" className="no-underline group">
+                {({ isActive }) => (
+                  <span className={`relative text-sm font-semibold font-body transition-colors duration-200 ${
+                    isActive ? "text-stellar-black" : "text-stellar-black/60 hover:text-stellar-black"
+                  }`}>
+                    Eventos
+                    <span className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-teal transition-all duration-300 ${
                       isActive ? "w-full" : "w-0 group-hover:w-full"
                     }`} />
                   </span>
@@ -175,6 +189,7 @@ const AppLayout: React.FC = () => {
                   { to: "/mint", label: "Reclamar SPOT" },
                   { to: "/create-event", label: "Crear Evento" },
                   { to: "/my-events", label: "Mis Eventos" },
+                  { to: "/events", label: "Eventos" },
                   { to: "/profile", label: "Perfil" },
                 ].map(({ to, label }) => (
                   <li key={to}>
@@ -257,6 +272,7 @@ function App() {
       <Route element={<AppLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/mint" element={<Mint />} />
+        <Route path="/events" element={<Events />} />
         <Route path="/create-event" element={<CreateEvent />} />
         <Route path="/my-events" element={<MyEvents />} />
         <Route path="/profile" element={<Profile />} />
