@@ -76,16 +76,32 @@ fi
 
 echo "    New contract: $NEW_CONTRACT_ID"
 
-# --- Step 3: Update .env ---
-echo "==> Step 3/4: Updating .env with new contract ID..."
+# --- Step 3: Update .env (backend + frontend) ---
+echo "==> Step 3/4: Updating .env files with new contract ID..."
+FRONTEND_ENV_FILE="$BACKEND_DIR/../frontend/.env"
+
 OLD_CONTRACT_ID=$(grep -m1 '^SPOT_CONTRACT_ID=' "$ENV_FILE" | cut -d= -f2)
 
+# Update backend .env
 if [ -n "$OLD_CONTRACT_ID" ]; then
-  sed -i "s|$OLD_CONTRACT_ID|$NEW_CONTRACT_ID|g" "$ENV_FILE"
-  echo "    $OLD_CONTRACT_ID → $NEW_CONTRACT_ID"
+  sed -i "s|^SPOT_CONTRACT_ID=.*|SPOT_CONTRACT_ID=$NEW_CONTRACT_ID|" "$ENV_FILE"
+  echo "    backend/.env: $OLD_CONTRACT_ID → $NEW_CONTRACT_ID"
 else
   echo "SPOT_CONTRACT_ID=$NEW_CONTRACT_ID" >> "$ENV_FILE"
-  echo "    Added SPOT_CONTRACT_ID=$NEW_CONTRACT_ID"
+  echo "    backend/.env: Added SPOT_CONTRACT_ID=$NEW_CONTRACT_ID"
+fi
+
+# Update frontend .env
+if [ -f "$FRONTEND_ENV_FILE" ]; then
+  if grep -q '^VITE_SPOT_CONTRACT_ID=' "$FRONTEND_ENV_FILE"; then
+    sed -i "s|^VITE_SPOT_CONTRACT_ID=.*|VITE_SPOT_CONTRACT_ID=$NEW_CONTRACT_ID|" "$FRONTEND_ENV_FILE"
+    echo "    frontend/.env: Updated VITE_SPOT_CONTRACT_ID"
+  else
+    echo "VITE_SPOT_CONTRACT_ID=$NEW_CONTRACT_ID" >> "$FRONTEND_ENV_FILE"
+    echo "    frontend/.env: Added VITE_SPOT_CONTRACT_ID"
+  fi
+else
+  echo "    frontend/.env: Not found, skipping"
 fi
 
 # --- Step 4: Reset database ---
