@@ -6,6 +6,7 @@ import prisma from "../lib/prisma.js";
 export async function createEventRecord({
   eventId,
   creator,
+  communityId,
   eventName,
   eventDate,
   location,
@@ -23,6 +24,7 @@ export async function createEventRecord({
     data: {
       eventId,
       creator,
+      communityId: communityId ?? undefined,
       eventName,
       eventDate: BigInt(eventDate),
       location,
@@ -161,6 +163,7 @@ export async function createImageRecord({
 export async function upsertEventRecord({
   eventId,
   creator,
+  communityId,
   eventName,
   eventDate,
   location,
@@ -177,6 +180,7 @@ export async function upsertEventRecord({
     where: { eventId },
     update: {
       creator,
+      communityId: communityId ?? undefined,
       eventName,
       eventDate: BigInt(eventDate),
       location,
@@ -191,6 +195,7 @@ export async function upsertEventRecord({
     create: {
       eventId,
       creator,
+      communityId: communityId ?? undefined,
       eventName,
       eventDate: BigInt(eventDate),
       location,
@@ -202,5 +207,94 @@ export async function upsertEventRecord({
       imageUrl,
       mintedCount,
     },
+  });
+}
+
+/**
+ * Create a community record.
+ */
+export async function createCommunity({
+  name,
+  country,
+  description,
+  imageUrl,
+  creatorAddress,
+}) {
+  if (!prisma) return null;
+  return prisma.community.create({
+    data: { name, country, description, imageUrl, creatorAddress },
+  });
+}
+
+/**
+ * Get all communities with members.
+ */
+export async function getAllCommunities() {
+  if (!prisma) return null;
+  return prisma.community.findMany({
+    include: { members: true },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+/**
+ * Get a single community with members.
+ */
+export async function getCommunityById(id) {
+  if (!prisma) return null;
+  return prisma.community.findUnique({
+    where: { id },
+    include: { members: true },
+  });
+}
+
+/**
+ * Update a community (only by creator).
+ */
+export async function updateCommunity({ id, creatorAddress, data }) {
+  if (!prisma) return null;
+  const community = await prisma.community.findUnique({
+    where: { id },
+    select: { creatorAddress: true },
+  });
+  if (!community || community.creatorAddress !== creatorAddress) {
+    return null;
+  }
+  return prisma.community.update({
+    where: { id },
+    data,
+  });
+}
+
+/**
+ * Join a community (idempotent).
+ */
+export async function joinCommunity({ communityId, address }) {
+  if (!prisma) return null;
+  return prisma.communityMember.upsert({
+    where: { communityId_address: { communityId, address } },
+    update: {},
+    create: { communityId, address },
+  });
+}
+
+/**
+ * Leave a community.
+ */
+export async function leaveCommunity({ communityId, address }) {
+  if (!prisma) return null;
+  return prisma.communityMember.deleteMany({
+    where: { communityId, address },
+  });
+}
+
+/**
+ * Get events by community.
+ */
+export async function getEventsByCommunity(communityId) {
+  if (!prisma) return null;
+  return prisma.event.findMany({
+    where: { communityId },
+    orderBy: { eventDate: "desc" },
   });
 }

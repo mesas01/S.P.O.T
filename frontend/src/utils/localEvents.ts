@@ -16,6 +16,7 @@ export interface LocalEventData {
   imageUrl: string;
   metadataUri?: string;
   creator: string;
+  communityId?: string;
   createdAt: string;
   distributionMethods: {
     qr: boolean;
@@ -26,7 +27,7 @@ export interface LocalEventData {
   };
 }
 
-const STORAGE_KEY = 'spot_local_events';
+const STORAGE_KEY = "spot_local_events";
 
 /**
  * Obtener todos los eventos guardados localmente
@@ -37,7 +38,7 @@ export const getLocalEvents = (): LocalEventData[] => {
     if (!stored) return [];
     return JSON.parse(stored) as LocalEventData[];
   } catch (error) {
-    console.error('Error obteniendo eventos locales:', error);
+    console.error("Error obteniendo eventos locales:", error);
     return [];
   }
 };
@@ -46,7 +47,7 @@ export const getLocalEvents = (): LocalEventData[] => {
  * Guardar un nuevo evento localmente
  */
 export const saveLocalEvent = (
-  event: Omit<LocalEventData, 'id' | 'createdAt' | 'claimedSpots'>,
+  event: Omit<LocalEventData, "id" | "createdAt" | "claimedSpots">,
   options?: { id?: string; claimedSpots?: number },
 ): LocalEventData => {
   const events = getLocalEvents();
@@ -58,31 +59,38 @@ export const saveLocalEvent = (
     createdAt: new Date().toISOString(),
     claimedSpots: options?.claimedSpots ?? 0,
   };
-  
+
   events.push(newEvent);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
   // Disparar evento personalizado para actualizar otras pestañas
-  window.dispatchEvent(new Event('localStorageUpdated'));
+  window.dispatchEvent(new Event("localStorageUpdated"));
   return newEvent;
 };
 
 /**
  * Obtener eventos de un usuario específico
  */
-export const getLocalEventsByCreator = (creatorAddress: string): LocalEventData[] => {
+export const getLocalEventsByCreator = (
+  creatorAddress: string,
+): LocalEventData[] => {
   const allEvents = getLocalEvents();
-  return allEvents.filter(event => event.creator.toLowerCase() === creatorAddress.toLowerCase());
+  return allEvents.filter(
+    (event) => event.creator.toLowerCase() === creatorAddress.toLowerCase(),
+  );
 };
 
 /**
  * Actualizar un evento existente
  */
-export const updateLocalEvent = (eventId: string, updates: Partial<LocalEventData>): LocalEventData | null => {
+export const updateLocalEvent = (
+  eventId: string,
+  updates: Partial<LocalEventData>,
+): LocalEventData | null => {
   const events = getLocalEvents();
-  const index = events.findIndex(e => e.id === eventId);
-  
+  const index = events.findIndex((e) => e.id === eventId);
+
   if (index === -1) return null;
-  
+
   events[index] = { ...events[index], ...updates };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
   return events[index];
@@ -93,10 +101,10 @@ export const updateLocalEvent = (eventId: string, updates: Partial<LocalEventDat
  */
 export const deleteLocalEvent = (eventId: string): boolean => {
   const events = getLocalEvents();
-  const filtered = events.filter(e => e.id !== eventId);
-  
+  const filtered = events.filter((e) => e.id !== eventId);
+
   if (filtered.length === events.length) return false; // No se encontró el evento
-  
+
   localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
   return true;
 };
@@ -105,11 +113,11 @@ export const deleteLocalEvent = (eventId: string): boolean => {
  * Incrementar el contador de SPOTs reclamados
  */
 export const incrementClaimedSpots = (eventId: string): boolean => {
-  const event = getLocalEvents().find(e => e.id === eventId);
+  const event = getLocalEvents().find((e) => e.id === eventId);
   if (!event) return false;
-  
+
   if (event.claimedSpots >= event.maxSpots) return false;
-  
+
   updateLocalEvent(eventId, { claimedSpots: event.claimedSpots + 1 });
   return true;
 };
@@ -119,5 +127,5 @@ export const incrementClaimedSpots = (eventId: string): boolean => {
  */
 export const getLocalEventById = (eventId: string): LocalEventData | null => {
   const events = getLocalEvents();
-  return events.find(e => e.id === eventId) || null;
+  return events.find((e) => e.id === eventId) || null;
 };

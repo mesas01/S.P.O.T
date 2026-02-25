@@ -1,8 +1,8 @@
 const envBaseUrl = import.meta.env.VITE_BACKEND_URL;
-const backendBaseUrl = ((envBaseUrl && envBaseUrl.trim()) || "http://localhost:4000").replace(
-  /\/$/,
-  "",
-);
+const backendBaseUrl = (
+  (envBaseUrl && envBaseUrl.trim()) ||
+  "http://localhost:4000"
+).replace(/\/$/, "");
 
 const defaultHeaders = {
   "Content-Type": "application/json",
@@ -119,6 +119,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
 export interface CreateEventPayload {
   creator: string;
+  communityId?: number | string;
   eventName: string;
   eventDate: number;
   location: string;
@@ -151,6 +152,13 @@ export interface CreateEventResponse extends BackendTxResponse {
 export function createEventRequest(payload: CreateEventPayload) {
   const formData = new FormData();
   formData.append("creator", payload.creator);
+  if (
+    payload.communityId !== undefined &&
+    payload.communityId !== null &&
+    payload.communityId !== ""
+  ) {
+    formData.append("communityId", payload.communityId.toString());
+  }
   formData.append("eventName", payload.eventName);
   formData.append("eventDate", payload.eventDate.toString());
   formData.append("location", payload.location);
@@ -198,6 +206,7 @@ export interface OnchainEventSummary {
   metadataUri?: string;
   imageUrl: string;
   creator: string;
+  communityId?: number;
   mintedCount: number;
   tokenId?: number;
 }
@@ -229,7 +238,9 @@ export async function fetchOnchainEvents(arg?: FetchOnchainEventsArg) {
   }
 
   const queryString = query.toString();
-  const path = queryString ? `/events/onchain?${queryString}` : "/events/onchain";
+  const path = queryString
+    ? `/events/onchain?${queryString}`
+    : "/events/onchain";
 
   const response = await request<{ events: OnchainEventSummary[] }>(
     path,
@@ -254,4 +265,82 @@ export async function fetchClaimedEventsByClaimer(
   return response.events;
 }
 
+export interface CommunityMember {
+  id: number;
+  communityId: number;
+  address: string;
+  joinedAt: string;
+}
 
+export interface Community {
+  id: number;
+  name: string;
+  country: string;
+  description: string;
+  imageUrl: string;
+  creatorAddress: string;
+  createdAt: string;
+  updatedAt: string;
+  members: CommunityMember[];
+}
+
+export async function fetchCommunities() {
+  const response = await request<{ communities: Community[] }>("/communities");
+  return response.communities;
+}
+
+export async function createCommunityRequest(payload: {
+  name: string;
+  country: string;
+  description: string;
+  imageUrl: string;
+  creatorAddress: string;
+}) {
+  return request<{ community: Community }>("/communities", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function joinCommunityRequest(
+  communityId: number,
+  address: string,
+) {
+  return request<{ ok: boolean }>(`/communities/${communityId}/join`, {
+    method: "POST",
+    body: JSON.stringify({ address }),
+  });
+}
+
+export async function leaveCommunityRequest(
+  communityId: number,
+  address: string,
+) {
+  return request<{ ok: boolean }>(`/communities/${communityId}/leave`, {
+    method: "POST",
+    body: JSON.stringify({ address }),
+  });
+}
+
+export async function updateCommunityRequest(
+  communityId: number,
+  payload: {
+    creatorAddress: string;
+    name?: string;
+    country?: string;
+    description?: string;
+    imageUrl?: string;
+  },
+) {
+  return request<{ community: Community }>(`/communities/${communityId}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchCommunityEvents(communityId: number) {
+  const response = await request<{ events: OnchainEventSummary[] }>(
+    `/communities/${communityId}/events`,
+  );
+  return response.events;
+}

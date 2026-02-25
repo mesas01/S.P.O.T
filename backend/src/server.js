@@ -30,6 +30,13 @@ import {
   getAllEvents,
   getClaimerEvents,
   getCachedMintedCount,
+  createCommunity,
+  getAllCommunities,
+  getCommunityById,
+  updateCommunity,
+  joinCommunity as joinCommunityDb,
+  leaveCommunity as leaveCommunityDb,
+  getEventsByCommunity,
 } from "./services/db.js";
 import { uploadImage } from "./services/storage.js";
 
@@ -155,6 +162,145 @@ app.get("/health", (_req, res) => {
 
 // --- ENDPOINTS ---
 
+// Communities
+app.get("/communities", async (_req, res) => {
+  if (isMock) return res.json({ communities: [] });
+  try {
+    const communities = await getAllCommunities();
+    res.json({ communities: communities ?? [] });
+  } catch (error) {
+    console.error("Error fetching communities:", error);
+    res.status(500).json({ error: error.message || String(error) });
+  }
+});
+
+app.get("/communities/:id", async (req, res) => {
+  if (isMock) return res.json({ community: null });
+  const id = Number(req.params.id);
+  if (Number.isNaN(id)) {
+    return res.status(400).json({ error: "Invalid community id" });
+  }
+  try {
+    const community = await getCommunityById(id);
+    if (!community) return res.status(404).json({ error: "Community not found" });
+    res.json({ community });
+  } catch (error) {
+    console.error("Error fetching community:", error);
+    res.status(500).json({ error: error.message || String(error) });
+  }
+});
+
+app.post("/communities", async (req, res) => {
+  if (isMock) return res.json({ community: null });
+  const { name, country, description, imageUrl, creatorAddress } = req.body || {};
+  if (!name || !country || !description || !imageUrl || !creatorAddress) {
+    return res.status(400).json({ error: "name, country, description, imageUrl, creatorAddress are required" });
+  }
+  try {
+    const community = await createCommunity({
+      name,
+      country,
+      description,
+      imageUrl,
+      creatorAddress,
+    });
+    res.json({ community });
+  } catch (error) {
+    console.error("Error creating community:", error);
+    res.status(500).json({ error: error.message || String(error) });
+  }
+});
+
+app.post("/communities/:id/join", async (req, res) => {
+  if (isMock) return res.json({ ok: true });
+  const id = Number(req.params.id);
+  const { address } = req.body || {};
+  if (Number.isNaN(id) || !address) {
+    return res.status(400).json({ error: "community id and address are required" });
+  }
+  try {
+    await joinCommunityDb({ communityId: id, address });
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("Error joining community:", error);
+    res.status(500).json({ error: error.message || String(error) });
+  }
+});
+
+app.post("/communities/:id/leave", async (req, res) => {
+  if (isMock) return res.json({ ok: true });
+  const id = Number(req.params.id);
+  const { address } = req.body || {};
+  if (Number.isNaN(id) || !address) {
+    return res.status(400).json({ error: "community id and address are required" });
+  }
+  try {
+    await leaveCommunityDb({ communityId: id, address });
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("Error leaving community:", error);
+    res.status(500).json({ error: error.message || String(error) });
+  }
+});
+
+app.patch("/communities/:id", async (req, res) => {
+  if (isMock) return res.json({ community: null });
+  const id = Number(req.params.id);
+  const { creatorAddress, name, country, description, imageUrl } = req.body || {};
+  if (Number.isNaN(id) || !creatorAddress) {
+    return res.status(400).json({ error: "community id and creatorAddress are required" });
+  }
+  try {
+    const updated = await updateCommunity({
+      id,
+      creatorAddress,
+      data: {
+        ...(name ? { name } : {}),
+        ...(country ? { country } : {}),
+        ...(description ? { description } : {}),
+        ...(imageUrl ? { imageUrl } : {}),
+      },
+    });
+    if (!updated) {
+      return res.status(403).json({ error: "Not authorized to edit this community" });
+    }
+    res.json({ community: updated });
+  } catch (error) {
+    console.error("Error updating community:", error);
+    res.status(500).json({ error: error.message || String(error) });
+  }
+});
+
+app.get("/communities/:id/events", async (req, res) => {
+  if (isMock) return res.json({ events: [] });
+  const id = Number(req.params.id);
+  if (Number.isNaN(id)) {
+    return res.status(400).json({ error: "Invalid community id" });
+  }
+  try {
+    const events = await getEventsByCommunity(id);
+    const normalized = (events ?? []).map((e) => ({
+      eventId: e.eventId,
+      name: e.eventName,
+      date: e.eventDate,
+      location: e.location,
+      description: e.description,
+      maxSpots: e.maxPoaps,
+      claimStart: e.claimStart,
+      claimEnd: e.claimEnd,
+      metadataUri: e.metadataUri,
+      imageUrl: e.imageUrl,
+      creator: e.creator,
+      communityId: e.communityId ?? undefined,
+      mintedCount: e.mintedCount,
+    }));
+    res.json({ events: normalized });
+  } catch (error) {
+    console.error("Error fetching community events:", error);
+    res.status(500).json({ error: error.message || String(error) });
+  }
+});
+
 app.post("/creators/approve", async (req, res) => {
   const { creator, paymentReference } = req.body || {};
   const payload = { creator, paymentReference };
@@ -238,6 +384,7 @@ app.post("/creators/revoke", async (req, res) => {
 app.post("/events/create", upload.single("image"), async (req, res) => {
   const {
     creator,
+    communityId,
     eventName,
     eventDate,
     location,
@@ -255,9 +402,17 @@ app.post("/events/create", upload.single("image"), async (req, res) => {
     claimStart: Number(claimStart),
     claimEnd: Number(claimEnd),
   };
+  const parsedCommunityId =
+    communityId !== undefined && communityId !== null && communityId !== ""
+      ? Number(communityId)
+      : undefined;
+  if (parsedCommunityId !== undefined && Number.isNaN(parsedCommunityId)) {
+    return res.status(400).json({ error: "Invalid communityId" });
+  }
 
   const payload = {
     creator,
+    communityId: parsedCommunityId,
     eventName,
     eventDate: numericFields.eventDate,
     location,
@@ -353,6 +508,7 @@ app.post("/events/create", upload.single("image"), async (req, res) => {
         await createEventRecord({
           eventId,
           creator,
+          communityId: parsedCommunityId,
           eventName,
           eventDate: numericFields.eventDate,
           location,
@@ -530,6 +686,7 @@ app.get("/events/onchain", async (req, res) => {
           metadataUri: e.metadataUri,
           imageUrl: e.imageUrl,
           creator: e.creator,
+          communityId: e.communityId ?? undefined,
           mintedCount: e.mintedCount,
         }));
         return res.json({ events });
@@ -618,6 +775,7 @@ app.get("/claimers/:claimer/events", async (req, res) => {
         metadataUri: e.metadataUri,
         imageUrl: e.imageUrl,
         creator: e.creator,
+        communityId: e.communityId ?? undefined,
         mintedCount: e.mintedCount,
         tokenId: e.tokenId,
       }));
@@ -692,6 +850,7 @@ app.get("/claimers/:claimer/events", async (req, res) => {
           metadataUri: details.metadataUri,
           imageUrl: details.imageUrl,
           creator: details.creator,
+          communityId: undefined,
           mintedCount,
           tokenId,
         });

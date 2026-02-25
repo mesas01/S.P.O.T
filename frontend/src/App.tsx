@@ -11,6 +11,7 @@ import Mint from "./pages/Mint";
 import CreateEvent from "./pages/CreateEvent";
 import Profile from "./pages/Profile";
 import MyEvents from "./pages/MyEvents";
+import Communities from "./pages/Communities";
 
 const AppLayout: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -40,81 +41,127 @@ const AppLayout: React.FC = () => {
       >
         <div className="mx-auto max-w-7xl px-6">
           <div className="flex items-center justify-between h-16">
-
             {/* Logo */}
             <NavLink to="/" className="flex items-center gap-2 no-underline">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-stellar-gold">
-              <img 
-              src={spotLogo}
-              alt="Soto"
-              className="w-6 h-6 object-contain"
-            />
+                <img
+                  src={spotLogo}
+                  alt="Soto"
+                  className="w-6 h-6 object-contain"
+                />
               </div>
-              <span className="text-lg font-headline text-stellar-black tracking-tight">SPOT</span>
+              <span className="text-lg font-headline text-stellar-black tracking-tight">
+                SPOT
+              </span>
             </NavLink>
 
             {/* Desktop navigation */}
             <nav className="hidden md:flex items-center gap-8">
               <NavLink to="/" end className="no-underline group">
                 {({ isActive }) => (
-                  <span className={`relative text-sm font-semibold font-body transition-colors duration-200 ${
-                    isActive ? "text-stellar-black" : "text-stellar-black/60 hover:text-stellar-black"
-                  }`}>
+                  <span
+                    className={`relative text-sm font-semibold font-body transition-colors duration-200 ${
+                      isActive
+                        ? "text-stellar-black"
+                        : "text-stellar-black/60 hover:text-stellar-black"
+                    }`}
+                  >
                     Mis SPOTs
-                    <span className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-gold transition-all duration-300 ${
-                      isActive ? "w-full" : "w-0 group-hover:w-full"
-                    }`} />
+                    <span
+                      className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-gold transition-all duration-300 ${
+                        isActive ? "w-full" : "w-0 group-hover:w-full"
+                      }`}
+                    />
                   </span>
                 )}
               </NavLink>
 
               <NavLink to="/my-events" className="no-underline group">
                 {({ isActive }) => (
-                  <span className={`relative text-sm font-semibold font-body transition-colors duration-200 ${
-                    isActive ? "text-stellar-black" : "text-stellar-black/60 hover:text-stellar-black"
-                  }`}>
+                  <span
+                    className={`relative text-sm font-semibold font-body transition-colors duration-200 ${
+                      isActive
+                        ? "text-stellar-black"
+                        : "text-stellar-black/60 hover:text-stellar-black"
+                    }`}
+                  >
                     Mis Eventos
-                    <span className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-lilac transition-all duration-300 ${
-                      isActive ? "w-full" : "w-0 group-hover:w-full"
-                    }`} />
+                    <span
+                      className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-lilac transition-all duration-300 ${
+                        isActive ? "w-full" : "w-0 group-hover:w-full"
+                      }`}
+                    />
                   </span>
                 )}
               </NavLink>
 
               <NavLink to="/events" className="no-underline group">
                 {({ isActive }) => (
-                  <span className={`relative text-sm font-semibold font-body transition-colors duration-200 ${
-                    isActive ? "text-stellar-black" : "text-stellar-black/60 hover:text-stellar-black"
-                  }`}>
+                  <span
+                    className={`relative text-sm font-semibold font-body transition-colors duration-200 ${
+                      isActive
+                        ? "text-stellar-black"
+                        : "text-stellar-black/60 hover:text-stellar-black"
+                    }`}
+                  >
                     Eventos
-                    <span className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-teal transition-all duration-300 ${
-                      isActive ? "w-full" : "w-0 group-hover:w-full"
-                    }`} />
+                    <span
+                      className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-teal transition-all duration-300 ${
+                        isActive ? "w-full" : "w-0 group-hover:w-full"
+                      }`}
+                    />
+                  </span>
+                )}
+              </NavLink>
+
+              <NavLink to="/communities" className="no-underline group">
+                {({ isActive }) => (
+                  <span
+                    className={`relative text-sm font-semibold font-body transition-colors duration-200 ${
+                      isActive
+                        ? "text-stellar-black"
+                        : "text-stellar-black/60 hover:text-stellar-black"
+                    }`}
+                  >
+                    Comunidades
+                    <span
+                      className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-gold transition-all duration-300 ${
+                        isActive ? "w-full" : "w-0 group-hover:w-full"
+                      }`}
+                    />
                   </span>
                 )}
               </NavLink>
 
               <NavLink to="/create-event" className="no-underline group">
                 {({ isActive }) => (
-                  <span className={`relative inline-flex items-center gap-1 text-sm font-semibold font-body transition-colors duration-200 ${
-                    isActive ? "text-stellar-lilac" : "text-stellar-black/60 hover:text-stellar-lilac"
-                  }`}>
+                  <span
+                    className={`relative inline-flex items-center gap-1 text-sm font-semibold font-body transition-colors duration-200 ${
+                      isActive
+                        ? "text-stellar-lilac"
+                        : "text-stellar-black/60 hover:text-stellar-lilac"
+                    }`}
+                  >
                     <Plus size={14} />
                     Crear Evento
-                    <span className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-lilac transition-all duration-300 ${
-                      isActive ? "w-full" : "w-0 group-hover:w-full"
-                    }`} />
+                    <span
+                      className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-lilac transition-all duration-300 ${
+                        isActive ? "w-full" : "w-0 group-hover:w-full"
+                      }`}
+                    />
                   </span>
                 )}
               </NavLink>
 
               <NavLink to="/mint" className="no-underline">
                 {({ isActive }) => (
-                  <span className={`inline-flex items-center gap-1.5 text-sm font-semibold font-body rounded-full px-4 py-1.5 transition-all duration-200 ${
-                    isActive
-                      ? "bg-stellar-gold text-stellar-black shadow-md"
-                      : "border border-stellar-gold/50 text-stellar-black hover:bg-stellar-gold/10"
-                  }`}>
+                  <span
+                    className={`inline-flex items-center gap-1.5 text-sm font-semibold font-body rounded-full px-4 py-1.5 transition-all duration-200 ${
+                      isActive
+                        ? "bg-stellar-gold text-stellar-black shadow-md"
+                        : "border border-stellar-gold/50 text-stellar-black hover:bg-stellar-gold/10"
+                    }`}
+                  >
                     <Zap size={14} />
                     Reclamar
                   </span>
@@ -127,11 +174,13 @@ const AppLayout: React.FC = () => {
               <div className="hidden sm:block">
                 <NavLink to="/profile" className="no-underline">
                   {({ isActive }) => (
-                    <span className={`inline-flex items-center justify-center w-9 h-9 rounded-full transition-all duration-200 ${
-                      isActive
-                        ? "bg-stellar-lilac/20 text-stellar-black"
-                        : "text-stellar-black/50 hover:text-stellar-black hover:bg-stellar-black/5"
-                    }`}>
+                    <span
+                      className={`inline-flex items-center justify-center w-9 h-9 rounded-full transition-all duration-200 ${
+                        isActive
+                          ? "bg-stellar-lilac/20 text-stellar-black"
+                          : "text-stellar-black/50 hover:text-stellar-black hover:bg-stellar-black/5"
+                      }`}
+                    >
                       <User size={17} />
                     </span>
                   )}
@@ -163,15 +212,20 @@ const AppLayout: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
             {/* Brand */}
             <div>
-              <Link to="/" className="flex items-center gap-2 mb-4 no-underline">
+              <Link
+                to="/"
+                className="flex items-center gap-2 mb-4 no-underline"
+              >
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-stellar-gold">
-                <img 
-              src={spotLogo}
-              alt="Soto"
-              className="w-6 h-6 object-contain"
-            />
+                  <img
+                    src={spotLogo}
+                    alt="Soto"
+                    className="w-6 h-6 object-contain"
+                  />
                 </div>
-                <span className="text-lg font-headline text-stellar-black tracking-tight">SPOT</span>
+                <span className="text-lg font-headline text-stellar-black tracking-tight">
+                  SPOT
+                </span>
               </Link>
               <p className="text-sm text-stellar-black/60 leading-relaxed max-w-xs font-body">
                 Stellar Proof of Togetherness. Comprobantes coleccionables
@@ -190,6 +244,7 @@ const AppLayout: React.FC = () => {
                   { to: "/create-event", label: "Crear Evento" },
                   { to: "/my-events", label: "Mis Eventos" },
                   { to: "/events", label: "Eventos" },
+                  { to: "/communities", label: "Comunidades" },
                   { to: "/profile", label: "Perfil" },
                 ].map(({ to, label }) => (
                   <li key={to}>
@@ -275,6 +330,7 @@ function App() {
         <Route path="/events" element={<Events />} />
         <Route path="/create-event" element={<CreateEvent />} />
         <Route path="/my-events" element={<MyEvents />} />
+        <Route path="/communities" element={<Communities />} />
         <Route path="/profile" element={<Profile />} />
       </Route>
     </Routes>

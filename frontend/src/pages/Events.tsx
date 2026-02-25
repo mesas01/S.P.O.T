@@ -2,7 +2,12 @@ import React, { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import TldrCard from "../components/layout/TldrCard";
-import { fetchOnchainEvents, type OnchainEventSummary } from "../util/backend";
+import {
+  fetchCommunities,
+  fetchOnchainEvents,
+  type Community,
+  type OnchainEventSummary,
+} from "../util/backend";
 import {
   AlertTriangle,
   CalendarDays,
@@ -29,6 +34,7 @@ interface EventView {
   metadataUri?: string;
   imageUrl?: string;
   creator: string;
+  communityId?: number;
 }
 
 type ClaimStatus = "open" | "upcoming" | "closed" | "soldout";
@@ -87,6 +93,7 @@ const mapEventToView = (event: OnchainEventSummary): EventView => ({
   metadataUri: event.metadataUri,
   imageUrl: event.imageUrl,
   creator: event.creator,
+  communityId: event.communityId,
 });
 
 const Events: React.FC = () => {
@@ -94,6 +101,7 @@ const Events: React.FC = () => {
   const queryClient = useQueryClient();
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [communityFilter, setCommunityFilter] = useState<string>("all");
 
   const {
     data: events = [],
@@ -110,12 +118,30 @@ const Events: React.FC = () => {
     staleTime: 15000,
   });
 
+  const { data: communities = [] } = useQuery({
+    queryKey: ["communities"],
+    queryFn: fetchCommunities,
+    retry: 2,
+    staleTime: 15000,
+  });
+
+  const communityMap = useMemo(() => {
+    const map = new Map<number, Community>();
+    communities.forEach((community) => map.set(community.id, community));
+    return map;
+  }, [communities]);
+
   const eventsToDisplay = useMemo(
     () =>
       [...events]
         .map(mapEventToView)
+        .filter((event) => {
+          if (communityFilter === "all") return true;
+          if (communityFilter === "none") return !event.communityId;
+          return event.communityId?.toString() === communityFilter;
+        })
         .sort((a, b) => b.date - a.date),
-    [events],
+    [events, communityFilter],
   );
 
   const eventsError = error as Error | null;
@@ -167,6 +193,19 @@ const Events: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center gap-3 flex-shrink-0">
+              <select
+                value={communityFilter}
+                onChange={(e) => setCommunityFilter(e.target.value)}
+                className="px-4 py-2.5 rounded-full border border-stellar-black/15 bg-white text-stellar-black/70 font-body text-sm"
+              >
+                <option value="all">Todas las comunidades</option>
+                <option value="none">Sin comunidad</option>
+                {communities.map((community) => (
+                  <option key={community.id} value={community.id.toString()}>
+                    {community.name} - {community.country}
+                  </option>
+                ))}
+              </select>
               <button
                 onClick={() => navigate("/create-event")}
                 className="inline-flex items-center gap-2 bg-stellar-gold text-stellar-black px-5 py-2.5 rounded-full font-semibold font-body text-sm hover:bg-stellar-gold/90 transition-all shadow-md"
@@ -286,7 +325,10 @@ const Events: React.FC = () => {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-stellar-lilac/10">
-                            <Ticket size={24} className="text-stellar-lilac/40" />
+                            <Ticket
+                              size={24}
+                              className="text-stellar-lilac/40"
+                            />
                           </div>
                         )}
                       </div>
@@ -297,6 +339,12 @@ const Events: React.FC = () => {
                             <h2 className="text-xl md:text-2xl font-headline text-stellar-black">
                               {event.name}
                             </h2>
+                            {event.communityId &&
+                              communityMap.has(event.communityId) && (
+                                <span className="text-[11px] uppercase tracking-wide bg-stellar-gold/15 text-stellar-black font-semibold px-2 py-0.5 rounded-full inline-flex items-center">
+                                  {communityMap.get(event.communityId)?.name}
+                                </span>
+                              )}
                             <div className="flex flex-wrap gap-3 text-sm text-stellar-black/50 font-body mt-2">
                               <span className="inline-flex items-center gap-1">
                                 <CalendarDays size={13} />

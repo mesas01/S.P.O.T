@@ -3,7 +3,16 @@ import { NavLink } from "react-router-dom";
 import ConnectAccount from "./ConnectAccount";
 import UserInfo from "./UserInfo";
 import { createPortal } from "react-dom";
-import { Zap, CalendarDays, Plus, User, Menu, X, Users } from "lucide-react";
+import {
+  Zap,
+  CalendarDays,
+  Plus,
+  User,
+  Menu,
+  X,
+  Users,
+  Globe,
+} from "lucide-react";
 
 const MobileMenu: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,35 +31,48 @@ const MobileMenu: React.FC = () => {
       label: "Reclamar SPOT",
       Icon: Zap,
       activeColor: "bg-stellar-gold text-stellar-black shadow-md",
-      hoverColor: "bg-stellar-warm-grey/30 hover:bg-stellar-gold/20 text-stellar-black",
+      hoverColor:
+        "bg-stellar-warm-grey/30 hover:bg-stellar-gold/20 text-stellar-black",
     },
     {
       to: "/my-events",
       label: "Mis Eventos",
       Icon: CalendarDays,
       activeColor: "bg-stellar-lilac/20 text-stellar-black shadow-md",
-      hoverColor: "bg-stellar-warm-grey/30 hover:bg-stellar-lilac/10 text-stellar-black",
+      hoverColor:
+        "bg-stellar-warm-grey/30 hover:bg-stellar-lilac/10 text-stellar-black",
     },
     {
       to: "/events",
       label: "Eventos",
       Icon: Users,
       activeColor: "bg-stellar-teal/20 text-stellar-black shadow-md",
-      hoverColor: "bg-stellar-warm-grey/30 hover:bg-stellar-teal/10 text-stellar-black",
+      hoverColor:
+        "bg-stellar-warm-grey/30 hover:bg-stellar-teal/10 text-stellar-black",
+    },
+    {
+      to: "/communities",
+      label: "Comunidades",
+      Icon: Globe,
+      activeColor: "bg-stellar-gold/20 text-stellar-black shadow-md",
+      hoverColor:
+        "bg-stellar-warm-grey/30 hover:bg-stellar-gold/10 text-stellar-black",
     },
     {
       to: "/create-event",
       label: "Crear Evento",
       Icon: Plus,
       activeColor: "bg-stellar-lilac/20 text-stellar-black shadow-md",
-      hoverColor: "bg-stellar-warm-grey/30 hover:bg-stellar-lilac/10 text-stellar-black",
+      hoverColor:
+        "bg-stellar-warm-grey/30 hover:bg-stellar-lilac/10 text-stellar-black",
     },
     {
       to: "/profile",
       label: "Mi Perfil",
       Icon: User,
       activeColor: "bg-stellar-lilac/20 text-stellar-black shadow-md",
-      hoverColor: "bg-stellar-warm-grey/30 hover:bg-stellar-lilac/10 text-stellar-black",
+      hoverColor:
+        "bg-stellar-warm-grey/30 hover:bg-stellar-lilac/10 text-stellar-black",
     },
   ];
 
@@ -91,9 +113,13 @@ const MobileMenu: React.FC = () => {
                   <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-2">
                       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-stellar-gold">
-                        <span className="text-base font-headline text-stellar-black leading-none">S</span>
+                        <span className="text-base font-headline text-stellar-black leading-none">
+                          S
+                        </span>
                       </div>
-                      <span className="text-base font-headline text-stellar-black">SPOT</span>
+                      <span className="text-base font-headline text-stellar-black">
+                        SPOT
+                      </span>
                     </div>
                     <button
                       onClick={closeMenu}
@@ -109,25 +135,27 @@ const MobileMenu: React.FC = () => {
 
                 {/* Nav links */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-2">
-                  {navItems.map(({ to, label, Icon, activeColor, hoverColor }) => (
-                    <NavLink
-                      key={to}
-                      to={to}
-                      className="no-underline block"
-                      onClick={closeMenu}
-                    >
-                      {({ isActive }) => (
-                        <div
-                          className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-body font-semibold text-sm ${
-                            isActive ? activeColor : hoverColor
-                          }`}
-                        >
-                          <Icon size={16} />
-                          {label}
-                        </div>
-                      )}
-                    </NavLink>
-                  ))}
+                  {navItems.map(
+                    ({ to, label, Icon, activeColor, hoverColor }) => (
+                      <NavLink
+                        key={to}
+                        to={to}
+                        className="no-underline block"
+                        onClick={closeMenu}
+                      >
+                        {({ isActive }) => (
+                          <div
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-body font-semibold text-sm ${
+                              isActive ? activeColor : hoverColor
+                            }`}
+                          >
+                            <Icon size={16} />
+                            {label}
+                          </div>
+                        )}
+                      </NavLink>
+                    ),
+                  )}
 
                   {/* Wallet section */}
                   <div className="pt-6 mt-4 border-t border-stellar-lilac/15">

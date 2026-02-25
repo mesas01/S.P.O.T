@@ -3,7 +3,8 @@ import { useWallet } from "../hooks/useWallet";
 import { useNavigate } from "react-router-dom";
 import { useNotification } from "../hooks/useNotification";
 import { saveLocalEvent } from "../utils/localEvents";
-import { createEventRequest } from "../util/backend";
+import { createEventRequest, fetchCommunities } from "../util/backend";
+import { useQuery } from "@tanstack/react-query";
 import TldrCard from "../components/layout/TldrCard";
 import { buildErrorDetail, buildTxDetail } from "../utils/notificationHelpers";
 import {
@@ -37,6 +38,7 @@ const CreateEvent: React.FC = () => {
     imageFile: null as File | null,
     imagePreview: "",
     metadataUri: "",
+    communityId: "",
   });
 
   const [distributionMethods, setDistributionMethods] = useState({
@@ -55,7 +57,9 @@ const CreateEvent: React.FC = () => {
     .slice(0, 16);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -96,7 +100,8 @@ const CreateEvent: React.FC = () => {
     setDistributionMethods((prev) => ({ ...prev, [method]: !prev[method] }));
   };
 
-  const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' fill='%23e5e7eb'%3E%3Crect width='300' height='300'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-size='14' font-family='sans-serif'%3ESPOT%3C/text%3E%3C/svg%3E";
+  const placeholderImage =
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' fill='%23e5e7eb'%3E%3Crect width='300' height='300'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-size='14' font-family='sans-serif'%3ESPOT%3C/text%3E%3C/svg%3E";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,9 +139,7 @@ const CreateEvent: React.FC = () => {
       const claimStart = Math.floor(
         new Date(formData.claimStart).getTime() / 1000,
       );
-      const claimEnd = Math.floor(
-        new Date(formData.claimEnd).getTime() / 1000,
-      );
+      const claimEnd = Math.floor(new Date(formData.claimEnd).getTime() / 1000);
 
       const metadataUri =
         formData.metadataUri ||
@@ -152,8 +155,13 @@ const CreateEvent: React.FC = () => {
       setIsSubmitting(true);
 
       try {
+        const communityIdValue = formData.communityId
+          ? Number(formData.communityId)
+          : undefined;
+
         const backendPayload = {
           creator: address!,
+          communityId: communityIdValue,
           eventName: formData.eventName,
           eventDate,
           location: formData.location,
@@ -189,6 +197,7 @@ const CreateEvent: React.FC = () => {
             imageUrl: resolvedImageUrl,
             metadataUri,
             creator: address!,
+            communityId: formData.communityId || undefined,
             distributionMethods,
           },
           { id: newEventId ? newEventId.toString() : undefined },
@@ -220,6 +229,7 @@ const CreateEvent: React.FC = () => {
           imageFile: null,
           imagePreview: "",
           metadataUri: "",
+          communityId: "",
         });
         setDistributionMethods({
           qr: true,
@@ -238,8 +248,7 @@ const CreateEvent: React.FC = () => {
         showNotification({
           type: "error",
           title: "Error al crear evento",
-          message:
-            "No pudimos crear el evento. Copia el detalle para soporte.",
+          message: "No pudimos crear el evento. Copia el detalle para soporte.",
           copyText: buildErrorDetail(error),
         });
       } finally {
@@ -260,6 +269,13 @@ const CreateEvent: React.FC = () => {
     "w-full px-4 py-3 bg-white border border-stellar-black/15 rounded-xl text-stellar-black font-body text-sm placeholder:text-stellar-black/30 focus:outline-none focus:ring-2 focus:ring-stellar-lilac/30 focus:border-stellar-lilac/50 transition-colors";
   const labelClass =
     "block text-xs font-semibold font-body uppercase tracking-widest text-stellar-black/50 mb-2";
+
+  const { data: communities = [] } = useQuery({
+    queryKey: ["communities"],
+    queryFn: fetchCommunities,
+    retry: 2,
+    staleTime: 15000,
+  });
 
   const distributionMethodConfigs = [
     { key: "qr" as const, Icon: QrCode, label: "QR Code" },
@@ -541,6 +557,30 @@ const CreateEvent: React.FC = () => {
               placeholder="https://example.com/metadata.json"
               className={inputClass}
             />
+          </div>
+
+          {/* Community */}
+          <div>
+            <label htmlFor="communityId" className={labelClass}>
+              Comunidad (Opcional)
+            </label>
+            <select
+              id="communityId"
+              name="communityId"
+              value={formData.communityId}
+              onChange={handleInputChange}
+              className={`${inputClass} bg-white`}
+            >
+              <option value="">Sin comunidad</option>
+              {communities.map((community) => (
+                <option key={community.id} value={community.id}>
+                  {community.name} - {community.country}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-stellar-black/40 mt-2 font-body italic">
+              Puedes crear nuevas comunidades en la seccion Comunidades.
+            </p>
           </div>
 
           {/* Distribution Methods */}

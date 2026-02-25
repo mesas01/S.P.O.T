@@ -11,6 +11,8 @@ model Event {
   id          Int      @id @default(autoincrement())
   eventId     Int      @unique
   creator     String
+  community   Community? @relation(fields: [communityId], references: [id])
+  communityId Int?
   eventName   String
   eventDate   BigInt
   location    String
@@ -29,7 +31,37 @@ model Event {
   imageId     Int?     @unique
 
   @@index([creator])
+  @@index([communityId])
   @@map("events")
+}
+
+model Community {
+  id          Int               @id @default(autoincrement())
+  name        String
+  country     String
+  description String
+  imageUrl    String
+  creatorAddress String
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  members     CommunityMember[]
+  events      Event[]
+
+  @@index([country])
+  @@index([creatorAddress])
+  @@map("communities")
+}
+
+model CommunityMember {
+  id          Int       @id @default(autoincrement())
+  communityId Int
+  address     String
+  joinedAt    DateTime  @default(now())
+  community   Community @relation(fields: [communityId], references: [id])
+
+  @@unique([communityId, address])
+  @@index([address])
+  @@map("community_members")
 }
 
 model Claim {

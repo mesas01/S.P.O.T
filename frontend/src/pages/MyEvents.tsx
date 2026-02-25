@@ -3,9 +3,16 @@ import { useQuery } from "@tanstack/react-query";
 import { useWallet } from "../hooks/useWallet";
 import { useNavigate } from "react-router-dom";
 import { generateLinkQRCode } from "../utils/qrCode";
-import { getLocalEventsByCreator, updateLocalEvent } from "../utils/localEvents";
+import {
+  getLocalEventsByCreator,
+  updateLocalEvent,
+} from "../utils/localEvents";
 import TldrCard from "../components/layout/TldrCard";
-import { fetchMintedCount, fetchOnchainEvents } from "../util/backend";
+import {
+  fetchCommunities,
+  fetchMintedCount,
+  fetchOnchainEvents,
+} from "../util/backend";
 import { useNotification } from "../hooks/useNotification";
 import { buildErrorDetail } from "../utils/notificationHelpers";
 import ruedaGif from "../images/rueda.gif";
@@ -38,6 +45,7 @@ interface EventData {
   claimStart: string;
   claimEnd: string;
   imageUrl: string;
+  communityId?: number;
   distributionMethods: {
     qr: boolean;
     link: boolean;
@@ -145,15 +153,28 @@ const MyEvents: React.FC = () => {
   } = useQuery({
     queryKey: ["onchain-events", address],
     queryFn: ({ signal }) =>
-      fetchOnchainEvents(
-        address ? { creator: address, signal } : { signal },
-      ),
+      fetchOnchainEvents(address ? { creator: address, signal } : { signal }),
     enabled: !!address,
     retry: 2,
     retryDelay: (attempt) => Math.min(1000 * attempt, 4000),
     refetchInterval: 15000,
     staleTime: 15000,
   });
+
+  const { data: communities = [] } = useQuery({
+    queryKey: ["communities"],
+    queryFn: fetchCommunities,
+    retry: 2,
+    staleTime: 15000,
+  });
+
+  const communityMap = useMemo(() => {
+    const map = new Map<number, { id: number; name: string }>();
+    communities.forEach((community) =>
+      map.set(community.id, { id: community.id, name: community.name }),
+    );
+    return map;
+  }, [communities]);
 
   const contractEvents = useMemo(() => {
     if (!onchainEvents || onchainEvents.length === 0) return [];
@@ -178,8 +199,11 @@ const MyEvents: React.FC = () => {
           "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=80",
         distributionMethods: { ...DEFAULT_DISTRIBUTION_METHODS },
         links: { uniqueLink: buildMintLink(event.eventId) },
-        codes: { sharedCode: `SPOT-${event.eventId.toString().padStart(4, "0")}` },
+        codes: {
+          sharedCode: `SPOT-${event.eventId.toString().padStart(4, "0")}`,
+        },
         creator: event.creator,
+        communityId: event.communityId,
         source: "contract" as const,
       } satisfies EventData;
     });
@@ -224,8 +248,8 @@ const MyEvents: React.FC = () => {
   const eventsSummaryLabel = isLoadingEvents
     ? "Cargando..."
     : totalEvents === 0
-    ? "0 eventos creados"
-    : `${totalEvents} ${totalEvents === 1 ? "evento creado" : "eventos creados"}`;
+      ? "0 eventos creados"
+      : `${totalEvents} ${totalEvents === 1 ? "evento creado" : "eventos creados"}`;
   const isSyncingOnchain = !isLoadingOnchainEvents && isFetchingOnchainEvents;
 
   const handleRetry = () => {
@@ -267,12 +291,16 @@ const MyEvents: React.FC = () => {
 
       showNotification({
         type: hadErrors ? "warning" : "success",
-        title: hadErrors ? "Actualización parcial" : "Datos on-chain sincronizados",
+        title: hadErrors
+          ? "Actualización parcial"
+          : "Datos on-chain sincronizados",
         message: hadErrors
           ? "Algunos eventos no pudieron sincronizarse. Intenta nuevamente."
           : "Métricas de reclamos actualizadas.",
         copyText: hadErrors
-          ? buildErrorDetail(new Error("No se pudieron sincronizar todos los eventos."))
+          ? buildErrorDetail(
+              new Error("No se pudieron sincronizar todos los eventos."),
+            )
           : undefined,
       });
     } catch (error) {
@@ -288,10 +316,7 @@ const MyEvents: React.FC = () => {
     }
   };
 
-  const generateQRForEvent = async (
-    eventId: string,
-    uniqueLink: string,
-  ) => {
+  const generateQRForEvent = async (eventId: string, uniqueLink: string) => {
     if (qrCodes[eventId] || loadingQR[eventId]) return;
 
     setLoadingQR((prev) => ({ ...prev, [eventId]: true }));
@@ -403,8 +428,12 @@ const MyEvents: React.FC = () => {
           claimStart: event.claimStart,
           claimEnd: event.claimEnd,
           imageUrl: event.imageUrl,
-          distributionMethods:
-            event.distributionMethods || { ...DEFAULT_DISTRIBUTION_METHODS },
+          communityId: event.communityId
+            ? Number(event.communityId)
+            : undefined,
+          distributionMethods: event.distributionMethods || {
+            ...DEFAULT_DISTRIBUTION_METHODS,
+          },
           links: { uniqueLink: buildMintLink(event.id) },
           codes: { sharedCode: `SPOT-${event.id.slice(-8).toUpperCase()}` },
           creator: event.creator,
@@ -498,7 +527,9 @@ const MyEvents: React.FC = () => {
                 disabled={isRefreshingOnchain}
                 className="inline-flex items-center gap-2 border border-stellar-black/15 text-stellar-black/60 hover:text-stellar-black hover:border-stellar-black/25 px-5 py-2.5 rounded-full font-body text-sm font-semibold transition-all disabled:opacity-50"
               >
-                {isRefreshingOnchain ? "Actualizando..." : "Actualizar on-chain"}
+                {isRefreshingOnchain
+                  ? "Actualizando..."
+                  : "Actualizar on-chain"}
               </button>
             </div>
           </div>
@@ -635,6 +666,12 @@ const MyEvents: React.FC = () => {
                               <h2 className="text-xl md:text-2xl font-headline text-stellar-black">
                                 {event.name}
                               </h2>
+                              {event.communityId &&
+                                communityMap.has(event.communityId) && (
+                                  <span className="text-[11px] uppercase tracking-wide bg-stellar-gold/15 text-stellar-black font-semibold px-2 py-0.5 rounded-full">
+                                    {communityMap.get(event.communityId)?.name}
+                                  </span>
+                                )}
                               {event.source === "contract" && (
                                 <span className="text-[11px] uppercase tracking-wide bg-stellar-teal/15 text-stellar-teal font-semibold px-2 py-0.5 rounded-full">
                                   On-chain
@@ -867,10 +904,7 @@ const MyEvents: React.FC = () => {
                         {event.distributionMethods.qr && (
                           <div className="bg-stellar-white rounded-xl p-5 border border-stellar-teal/15 text-center">
                             <div className="flex items-center justify-center gap-2 mb-4">
-                              <QrCode
-                                size={16}
-                                className="text-stellar-teal"
-                              />
+                              <QrCode size={16} className="text-stellar-teal" />
                               <h3 className="font-headline text-stellar-black text-base">
                                 Código QR
                               </h3>
@@ -891,10 +925,7 @@ const MyEvents: React.FC = () => {
                                       alt="QR Code del evento"
                                       className="w-40 h-40"
                                       onError={(e) => {
-                                        console.error(
-                                          "Error cargando QR:",
-                                          e,
-                                        );
+                                        console.error("Error cargando QR:", e);
                                         e.currentTarget.src = "";
                                       }}
                                     />
