@@ -3,7 +3,7 @@ import path from "path";
 import { minioClient, BUCKET } from "../lib/minio.js";
 import { createImageRecord } from "./db.js";
 
-const MINIO_PUBLIC_URL = process.env.MINIO_PUBLIC_URL || "";
+const MINIO_PUBLIC_URL = process.env.MINIO_PUBLIC_URL;
 
 /**
  * Build the public URL for a MinIO object.
@@ -17,8 +17,8 @@ function buildPublicUrl(key) {
     }
     return `${base}/${BUCKET}/${key}`;
   }
-  const endpoint = process.env.MINIO_ENDPOINT || "localhost";
-  const port = process.env.MINIO_PORT || "9000";
+  const endpoint = process.env.MINIO_ENDPOINT;
+  const port = process.env.MINIO_PORT;
   return `http://${endpoint}:${port}/${BUCKET}/${key}`;
 }
 

@@ -3,22 +3,26 @@ import * as Minio from "minio";
 const isMock =
   (process.env.MOCK_MODE || "false").toLowerCase() === "true";
 
-const BUCKET = process.env.MINIO_BUCKET || "spot-images";
+const BUCKET = process.env.MINIO_BUCKET;
 
 /** @type {Minio.Client | null} */
 let minioClient = null;
 
 if (!isMock) {
   try {
-    const endpoint = process.env.MINIO_ENDPOINT || "localhost";
-    const port = Number(process.env.MINIO_PORT || 9000);
+    const endpoint = process.env.MINIO_ENDPOINT;
+    const port = Number(process.env.MINIO_PORT);
+
+    if (!endpoint || !port || !process.env.MINIO_ACCESS_KEY || !process.env.MINIO_SECRET_KEY || !BUCKET) {
+      throw new Error("Missing required MinIO env vars (MINIO_ENDPOINT, MINIO_PORT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET)");
+    }
 
     minioClient = new Minio.Client({
       endPoint: endpoint,
       port,
       useSSL: false,
-      accessKey: process.env.MINIO_ACCESS_KEY || "spot_minio",
-      secretKey: process.env.MINIO_SECRET_KEY || "spot_minio_secret",
+      accessKey: process.env.MINIO_ACCESS_KEY,
+      secretKey: process.env.MINIO_SECRET_KEY,
     });
   } catch (err) {
     console.warn("MinIO client init failed (image storage disabled):", err.message);

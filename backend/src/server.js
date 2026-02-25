@@ -2,8 +2,8 @@ import express from "express";
 import dotenv from "dotenv";
 import { Keypair } from "@stellar/stellar-sdk";
 import fs from "fs";
+import os from "os";
 import path from "path";
-import { fileURLToPath } from "url";
 import cors from "cors";
 import multer from "multer";
 import {
@@ -43,7 +43,7 @@ BigInt.prototype.toJSON = function () {
 
 // Definición de variables globales
 const {
-  PORT = 8080, // Google Cloud Run usa el puerto 8080 por defecto
+  PORT,
   RPC_URL,
   NETWORK_PASSPHRASE,
   ADMIN_SECRET,
@@ -55,55 +55,23 @@ const {
 const isTestEnv = process.env.NODE_ENV === "test";
 const isMock = MOCK_MODE.toLowerCase() === "true";
 const CONTRACT_ID = SPOT_CONTRACT_ID;
-const CLAIM_SIGNER_SECRET = CLAIM_PAYER_SECRET || ADMIN_SECRET;
+const CLAIM_SIGNER_SECRET = CLAIM_PAYER_SECRET;
 let ADMIN_PUBLIC_KEY;
 
-// Configuración de rutas para ES Modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// --- LÓGICA DE ALMACENAMIENTO HÍBRIDA (CLOUD vs LOCAL) ---
-// En Cloud Run (K_SERVICE existe), usamos /tmp porque el disco es de solo lectura.
-// En Local, usamos la carpeta ../uploads de siempre.
-const isCloud = process.env.K_SERVICE || false;
-const uploadsDir = isCloud 
-  ? path.join('/tmp', 'uploads') 
-  : path.resolve(__dirname, "../uploads");
-
-// Crear carpeta de uploads si no existe (con manejo de errores seguro)
+// Multer temp directory for uploads (files go to MinIO, temp is just a staging area)
+const uploadsDir = path.join(os.tmpdir(), "spot-uploads");
 try {
   if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
+    fs.mkdirSync(uploadsDir, { recursive: true });
   }
 } catch (e) {
-  console.warn("Advertencia: No se pudo crear directorio de uploads", e);
+  console.warn("Failed to create temp uploads directory:", e);
 }
 
-const uploadSizeLimit = Number(process.env.UPLOAD_MAX_BYTES || 5 * 1024 * 1024);
-
-function sanitizeFilename(filename) {
-  return filename
-    .replace(/\s+/g, "-")
-    .replace(/[^a-zA-Z0-9-.]/g, "")
-    .toLowerCase();
-}
-
-// Configuración de Multer
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname) || "";
-    const base = path.basename(file.originalname, ext) || "image";
-    const safeBase = sanitizeFilename(base) || "image";
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(null, `${uniqueSuffix}-${safeBase}${ext.toLowerCase()}`);
-  },
-});
+const uploadSizeLimit = Number(process.env.UPLOAD_MAX_BYTES) || 5 * 1024 * 1024;
 
 const upload = multer({
-  storage,
+  dest: uploadsDir,
   limits: { fileSize: uploadSizeLimit },
   fileFilter: (_req, file, cb) => {
     if (!file.mimetype.startsWith("image/")) {
@@ -114,39 +82,6 @@ const upload = multer({
   },
 });
 
-function resolveAssetBaseUrl(req) {
-  if (process.env.ASSET_BASE_URL) {
-    return process.env.ASSET_BASE_URL.replace(/\/$/, "");
-  }
-  const host = req.get("host") || "localhost";
-  const protocol = req.protocol || "http";
-  return `${protocol}://${host}`;
-}
-
-function buildImageUrl(req, file) {
-  if (!file) {
-    return "";
-  }
-  const base = resolveAssetBaseUrl(req);
-  return `${base}/uploads/${file.filename}`;
-}
-
-async function cleanupUploadedFile(file) {
-  if (!file?.path) {
-    return;
-  }
-  try {
-    await fs.promises.unlink(file.path);
-  } catch (error) {
-    if (error.code !== "ENOENT") {
-      console.warn("Failed to remove uploaded file", file.path, error.message);
-    }
-  }
-}
-
-// --- LOGGING SEGURO PARA CLOUD ---
-// Solo usamos console.log. Google Cloud captura esto automáticamente.
-// Hemos eliminado fs.appendFile porque causa errores en la nube.
 async function logTx(entry) {
   const timestamp = new Date().toISOString();
   const prefix = `[${timestamp}] ${entry.action}`;
@@ -194,12 +129,9 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "*",
+    origin: process.env.CORS_ORIGIN || "*",  // default to allow all if not set
   }),
 );
-
-// Servir estáticos (temporal en Cloud Run)
-app.use("/uploads", express.static(uploadsDir));
 
 // Manejo de errores de Multer y JSON
 app.use((err, _req, res, next) => {
@@ -348,20 +280,12 @@ app.post("/events/create", upload.single("image"), async (req, res) => {
       if (minioResult) {
         finalImageUrl = minioResult.publicUrl;
         imageId = minioResult.imageId;
-      } else {
-        // MinIO not available (mock mode), fallback to local
-        finalImageUrl = buildImageUrl(req, req.file);
       }
     } catch (uploadErr) {
-      console.warn("MinIO upload failed, falling back to local:", uploadErr.message);
-      finalImageUrl = buildImageUrl(req, req.file);
+      console.error("MinIO upload failed:", uploadErr.message);
+      return res.status(500).json({ error: "Image upload failed" });
     }
   }
-
-  const cleanupAndRespond = async (status, payload) => {
-    await cleanupUploadedFile(req.file);
-    res.status(status).json(payload);
-  };
 
   if (
     !creator ||
@@ -375,7 +299,7 @@ app.post("/events/create", upload.single("image"), async (req, res) => {
     !metadataUri ||
     !finalImageUrl
   ) {
-    return cleanupAndRespond(400, { error: "All event fields are required (image file or URL must be provided)" });
+    return res.status(400).json({ error: "All event fields are required (image file or URL must be provided)" });
   }
 
   payload.imageUrl = finalImageUrl;
@@ -389,7 +313,6 @@ app.post("/events/create", upload.single("image"), async (req, res) => {
 
   try {
     if (!ADMIN_SECRET || !ADMIN_PUBLIC_KEY) {
-      await cleanupUploadedFile(req.file);
       return res.status(500).json({ error: "Admin credentials not configured" });
     }
 
@@ -450,7 +373,6 @@ app.post("/events/create", upload.single("image"), async (req, res) => {
 
     res.json({ txHash: result.txHash, rpcResponse: result.rpcResponse, signedEnvelope: result.envelopeXdr, eventId, imageUrl: finalImageUrl });
   } catch (error) {
-    await cleanupUploadedFile(req.file);
     await logTx({ action: "create_event", status: "error", error: error.message || String(error), payload });
     try { await logTransaction({ action: "create_event", status: "error", error: error.message || String(error), payload }); } catch (_) {}
     res.status(500).json({ error: error.message || String(error) });
@@ -786,8 +708,8 @@ app.get("/claimers/:claimer/events", async (req, res) => {
 
 function normalizePort(value) {
   const portNumber = Number(value);
-  if (Number.isNaN(portNumber)) {
-    return 8080;
+  if (!portNumber || Number.isNaN(portNumber)) {
+    throw new Error("PORT env var is required and must be a number");
   }
   return portNumber;
 }
