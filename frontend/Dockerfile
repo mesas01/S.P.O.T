@@ -19,7 +19,10 @@ ARG PUBLIC_STELLAR_HORIZON_URL
 
 RUN npx tsc -b && npx vite build
 
-FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+FROM node:22-alpine
+RUN npm install -g serve
+WORKDIR /app
+COPY --from=builder /app/dist ./dist
+ENV PORT=80
 EXPOSE 80
+CMD ["sh", "-c", "serve -s dist -l $PORT"]
