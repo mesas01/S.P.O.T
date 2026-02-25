@@ -205,6 +205,7 @@ export interface OnchainEventSummary {
 export interface FetchOnchainEventsOptions {
   creator?: string;
   signal?: AbortSignal;
+  forceRpc?: boolean;
 }
 
 type FetchOnchainEventsArg = string | FetchOnchainEventsOptions | undefined;
@@ -213,14 +214,16 @@ export async function fetchOnchainEvents(arg?: FetchOnchainEventsArg) {
   let creator: string | undefined;
   let signal: AbortSignal | undefined;
 
+  const query = new URLSearchParams();
   if (typeof arg === "string") {
     creator = arg;
   } else if (typeof arg === "object" && arg !== null) {
     creator = arg.creator;
     signal = arg.signal;
+    if (arg.forceRpc) {
+      query.set("forceRpc", "1");
+    }
   }
-
-  const query = new URLSearchParams();
   if (creator) {
     query.set("creator", creator);
   }

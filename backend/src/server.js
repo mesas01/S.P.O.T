@@ -580,31 +580,41 @@ app.get("/events/onchain", async (req, res) => {
   if (isMock) return res.json({ events: [] });
 
   const creatorFilter = (req.query.creator || "").toString().trim();
+  const forceRpcRaw =
+    req.query.forceRpc ??
+    req.query.forceRPC ??
+    req.query.source ??
+    req.query.refresh;
+  const forceRpc = ["true", "1", "rpc", "chain"].includes(
+    (forceRpcRaw || "").toString().toLowerCase(),
+  );
 
   // Try DB first
-  try {
-    const dbEvents = await getAllEvents({
-      creator: creatorFilter || undefined,
-    });
-    if (dbEvents && dbEvents.length > 0) {
-      const events = dbEvents.map((e) => ({
-        eventId: e.eventId,
-        name: e.eventName,
-        date: e.eventDate,
-        location: e.location,
-        description: e.description,
-        maxSpots: e.maxPoaps,
-        claimStart: e.claimStart,
-        claimEnd: e.claimEnd,
-        metadataUri: e.metadataUri,
-        imageUrl: e.imageUrl,
-        creator: e.creator,
-        mintedCount: e.mintedCount,
-      }));
-      return res.json({ events });
+  if (!forceRpc) {
+    try {
+      const dbEvents = await getAllEvents({
+        creator: creatorFilter || undefined,
+      });
+      if (dbEvents && dbEvents.length > 0) {
+        const events = dbEvents.map((e) => ({
+          eventId: e.eventId,
+          name: e.eventName,
+          date: e.eventDate,
+          location: e.location,
+          description: e.description,
+          maxSpots: e.maxPoaps,
+          claimStart: e.claimStart,
+          claimEnd: e.claimEnd,
+          metadataUri: e.metadataUri,
+          imageUrl: e.imageUrl,
+          creator: e.creator,
+          mintedCount: e.mintedCount,
+        }));
+        return res.json({ events });
+      }
+    } catch (dbErr) {
+      console.warn("DB read failed (events/onchain), falling back to RPC:", dbErr.message);
     }
-  } catch (dbErr) {
-    console.warn("DB read failed (events/onchain), falling back to RPC:", dbErr.message);
   }
 
   // Fallback to RPC
