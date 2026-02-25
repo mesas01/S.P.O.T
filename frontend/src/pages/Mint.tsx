@@ -154,6 +154,21 @@ const Mint: React.FC = () => {
         upsertClaimedSpot(address, mapEventToClaimedSpot(match));
         return;
       }
+
+      // Fallback for dev / mock mode: persist a minimal claimed spot locally
+      if (import.meta.env.DEV) {
+        upsertClaimedSpot(address, {
+          eventId,
+          name: `SPOT #${eventId}`,
+          date: new Date().toISOString(),
+          image: "/images/events/stellarpalooza.jpg",
+          color: "from-stellar-teal/20 to-stellar-lilac/40",
+          metadataUri: undefined,
+          location: "Evento (dev)",
+          description: "SPOT reclamado en entorno de desarrollo (sin sincronizar on-chain).",
+        });
+        return;
+      }
     } catch (error) {
       if (error instanceof Error && (error.name === "AbortError" || /aborted/i.test(error.message))) {
         return;
@@ -198,6 +213,17 @@ const Mint: React.FC = () => {
     }
     setIsProcessing(true);
     try {
+      const events = await fetchOnchainEvents();
+      const exists = events.some((e) => e.eventId === eventId);
+      if (!exists) {
+        showNotification({
+          type: "error",
+          title: "Evento no encontrado en la red",
+          message:
+            "Ese evento no existe en el contrato (ID puede ser de otro entorno o creado en modo prueba). Crea el evento de nuevo con el backend real y usa el link/código nuevo.",
+        });
+        return;
+      }
       const response = await claimEventRequest({ claimer: address, eventId });
       showNotification({
         type: "success",
@@ -208,7 +234,14 @@ const Mint: React.FC = () => {
       await persistClaimedSpotLocally(eventId);
       navigate("/");
     } catch (error: any) {
-      showNotification({ type: "error", title: "Error al reclamar", message: "No se pudo completar el reclamo.", copyText: buildErrorDetail(error) });
+      const msg = error?.message ?? "";
+      const isEventNotFound =
+        /Error\(Contract,\s*#7\)|EventNotFound|NO_EVENT|event not found/i.test(msg);
+      const title = isEventNotFound ? "Evento no encontrado en la red" : "Error al reclamar";
+      const message = isEventNotFound
+        ? "Ese evento no existe en el contrato (ID puede ser de otro entorno o creado en modo prueba). Crea el evento de nuevo con el backend real y usa el link/código nuevo."
+        : "No se pudo completar el reclamo.";
+      showNotification({ type: "error", title, message, copyText: buildErrorDetail(error) });
     } finally {
       setIsProcessing(false);
     }

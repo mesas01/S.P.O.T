@@ -1,5 +1,8 @@
 const envBaseUrl = import.meta.env.VITE_BACKEND_URL;
-const backendBaseUrl = (envBaseUrl ?? "").replace(/\/$/, "");
+const backendBaseUrl = ((envBaseUrl && envBaseUrl.trim()) || "http://localhost:4000").replace(
+  /\/$/,
+  "",
+);
 
 const defaultHeaders = {
   "Content-Type": "application/json",
@@ -68,6 +71,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     }
 
     try {
+      if (import.meta.env.DEV) {
+        // High-signal debug for connection-level failures (NetworkError / Failed to fetch)
+        console.debug("[backend] request", `${backendBaseUrl}${path}`);
+      }
       const response = await fetch(`${backendBaseUrl}${path}`, {
         ...options,
         headers,
