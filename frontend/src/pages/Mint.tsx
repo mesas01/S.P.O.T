@@ -4,7 +4,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useNotification } from "../hooks/useNotification";
 import {
   claimEventRequest,
-  fetchOnchainEvents,
   fetchEventById,
   type OnchainEventSummary,
 } from "../util/backend";
