@@ -12,6 +12,7 @@ import {
   X,
   Users,
   Globe,
+  CreditCard,
 } from "lucide-react";
 
 const MobileMenu: React.FC = () => {
@@ -65,6 +66,14 @@ const MobileMenu: React.FC = () => {
       activeColor: "bg-stellar-lilac/20 text-stellar-black shadow-md",
       hoverColor:
         "bg-stellar-warm-grey/30 hover:bg-stellar-lilac/10 text-stellar-black",
+    },
+    {
+      to: "/pricing",
+      label: "Planes",
+      Icon: CreditCard,
+      activeColor: "bg-stellar-teal/20 text-stellar-black shadow-md",
+      hoverColor:
+        "bg-stellar-warm-grey/30 hover:bg-stellar-teal/10 text-stellar-black",
     },
     {
       to: "/profile",

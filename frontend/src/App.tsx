@@ -13,6 +13,7 @@ import CreateEvent from "./pages/CreateEvent";
 import Profile from "./pages/Profile";
 import MyEvents from "./pages/MyEvents";
 import Communities from "./pages/Communities";
+import Pricing from "./pages/Pricing";
 
 const AppLayout: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -157,6 +158,25 @@ const AppLayout: React.FC = () => {
                 )}
               </NavLink>
 
+              <NavLink to="/pricing" className="no-underline group">
+                {({ isActive }) => (
+                  <span
+                    className={`relative text-sm font-semibold font-body transition-colors duration-200 ${
+                      isActive
+                        ? "text-stellar-black"
+                        : "text-stellar-black/60 hover:text-stellar-black"
+                    }`}
+                  >
+                    Planes
+                    <span
+                      className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-teal transition-all duration-300 ${
+                        isActive ? "w-full" : "w-0 group-hover:w-full"
+                      }`}
+                    />
+                  </span>
+                )}
+              </NavLink>
+
               <NavLink to="/mint" className="no-underline">
                 {({ isActive }) => (
                   <span
@@ -249,6 +269,7 @@ const AppLayout: React.FC = () => {
                   { to: "/my-events", label: "Mis Eventos" },
                   { to: "/events", label: "Eventos" },
                   { to: "/communities", label: "Comunidades" },
+                  { to: "/pricing", label: "Planes" },
                   { to: "/profile", label: "Perfil" },
                 ].map(({ to, label }) => (
                   <li key={to}>
@@ -337,6 +358,7 @@ function App() {
         <Route path="/create-event" element={<CreateEvent />} />
         <Route path="/my-events" element={<MyEvents />} />
         <Route path="/communities" element={<Communities />} />
+        <Route path="/pricing" element={<Pricing />} />
         <Route path="/profile" element={<Profile />} />
       </Route>
     </Routes>
