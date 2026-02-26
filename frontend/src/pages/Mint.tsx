@@ -9,10 +9,6 @@ import {
 } from "../util/backend";
 import { connectWallet } from "../util/wallet";
 import TldrCard from "../components/layout/TldrCard";
-import {
-  mapEventToClaimedSpot,
-  upsertClaimedSpot,
-} from "../utils/claimedSpots";
 import { buildErrorDetail, buildTxDetail } from "../utils/notificationHelpers";
 import {
   QrCode,
@@ -103,7 +99,6 @@ const Mint: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [eventInfo, setEventInfo] = useState<OnchainEventSummary | null>(null);
   const [eventLoading, setEventLoading] = useState(false);
-  const claimPersistControllerRef = useRef<AbortController | null>(null);
   const actionPanelRef = useRef<HTMLDivElement | null>(null);
 
   const urlEventId = searchParams.get("event");
@@ -116,12 +111,6 @@ const Mint: React.FC = () => {
       actionPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 100);
   };
-
-  useEffect(() => {
-    return () => {
-      claimPersistControllerRef.current?.abort();
-    };
-  }, []);
 
   // Fetch event info when arriving via direct link
   useEffect(() => {
@@ -140,46 +129,6 @@ const Mint: React.FC = () => {
       });
     return () => { cancelled = true; };
   }, [hasDirectEvent, parsedEventId]);
-
-  const persistClaimedSpotLocally = async (eventId: number) => {
-    if (!address) return;
-    claimPersistControllerRef.current?.abort();
-    const controller = new AbortController();
-    claimPersistControllerRef.current = controller;
-
-    try {
-      const events = await fetchOnchainEvents({ signal: controller.signal });
-      const match = events.find((event) => event.eventId === eventId);
-      if (match) {
-        upsertClaimedSpot(address, mapEventToClaimedSpot(match));
-        return;
-      }
-
-      // Fallback for dev / mock mode: persist a minimal claimed spot locally
-      if (import.meta.env.DEV) {
-        upsertClaimedSpot(address, {
-          eventId,
-          name: `SPOT #${eventId}`,
-          date: new Date().toISOString(),
-          image: "/images/events/stellarpalooza.jpg",
-          color: "from-stellar-teal/20 to-stellar-lilac/40",
-          metadataUri: undefined,
-          location: "Evento (dev)",
-          description: "SPOT reclamado en entorno de desarrollo (sin sincronizar on-chain).",
-        });
-        return;
-      }
-    } catch (error) {
-      if (error instanceof Error && (error.name === "AbortError" || /aborted/i.test(error.message))) {
-        return;
-      }
-      console.warn("No se pudo obtener metadata del evento:", error);
-    } finally {
-      if (claimPersistControllerRef.current === controller) {
-        claimPersistControllerRef.current = null;
-      }
-    }
-  };
 
   const extractEventIdFromLink = (link: string): number | null => {
     try {
@@ -231,7 +180,6 @@ const Mint: React.FC = () => {
         message: "Tx enviada. Copia el detalle si necesitas compartirla.",
         copyText: buildTxDetail(response.txHash, { eventId, claimer: address }),
       });
-      await persistClaimedSpotLocally(eventId);
       navigate("/");
     } catch (error: any) {
       const msg = error?.message ?? "";

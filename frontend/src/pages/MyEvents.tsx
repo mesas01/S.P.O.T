@@ -1,16 +1,11 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useWallet } from "../hooks/useWallet";
 import { useNavigate } from "react-router-dom";
 import { generateLinkQRCode } from "../utils/qrCode";
-import {
-  getLocalEventsByCreator,
-  updateLocalEvent,
-} from "../utils/localEvents";
 import TldrCard from "../components/layout/TldrCard";
 import {
   fetchCommunities,
-  fetchMintedCount,
   fetchOnchainEvents,
 } from "../util/backend";
 import { useNotification } from "../hooks/useNotification";
@@ -143,8 +138,6 @@ const MyEvents: React.FC = () => {
   const [communityFilter, setCommunityFilter] = useState<string>("all");
   const { showNotification } = useNotification();
 
-  const [localEvents, setLocalEvents] = useState<EventData[]>([]);
-  const [isLoadingLocalEvents, setIsLoadingLocalEvents] = useState(false);
   const {
     data: onchainEvents = [],
     isLoading: isLoadingOnchainEvents,
@@ -210,29 +203,14 @@ const MyEvents: React.FC = () => {
     });
   }, [onchainEvents]);
 
-  const sortedContractEvents = useMemo(
-    () => sortEventsByDate(contractEvents),
-    [contractEvents],
-  );
-  const sortedLocalEvents = useMemo(
-    () => sortEventsByDate(localEvents),
-    [localEvents],
-  );
   const eventsToDisplay = useMemo(() => {
-    const eventsById = new Map<string, EventData>();
-    sortedLocalEvents.forEach((event) => eventsById.set(event.id, event));
-    sortedContractEvents.forEach((event) => eventsById.set(event.id, event));
-    const merged = Array.from(eventsById.values());
-    const filtered = merged.filter((event) => {
-      if (communityFilter === "all") return true;
-      if (communityFilter === "none") return !event.communityId;
-      return event.communityId?.toString() === communityFilter;
-    });
-    return sortEventsByDate(filtered);
-  }, [sortedContractEvents, sortedLocalEvents, communityFilter]);
+    const sorted = sortEventsByDate(contractEvents);
+    if (communityFilter === "all") return sorted;
+    if (communityFilter === "none") return sorted.filter((e) => !e.communityId);
+    return sorted.filter((e) => e.communityId?.toString() === communityFilter);
+  }, [contractEvents, communityFilter]);
 
-  const isLoadingEvents =
-    isLoadingLocalEvents || (isConnected && isLoadingOnchainEvents);
+  const isLoadingEvents = isConnected && isLoadingOnchainEvents;
 
   const eventsError = useMemo(() => {
     if (!onchainError) return null;
@@ -260,55 +238,18 @@ const MyEvents: React.FC = () => {
   const isSyncingOnchain = !isLoadingOnchainEvents && isFetchingOnchainEvents;
 
   const handleRetry = () => {
-    loadLocalEvents();
     if (address) void refetchOnchainEvents();
   };
 
   const refreshMintedCounts = async () => {
     if (isRefreshingOnchain) return;
     setIsRefreshingOnchain(true);
-    let hadErrors = false;
-
     try {
-      for (const event of localEvents) {
-        const eventIdNumber =
-          event.contractEventId ?? Number.parseInt(event.id, 10);
-        if (!eventIdNumber || Number.isNaN(eventIdNumber)) continue;
-
-        try {
-          const { mintedCount } = await fetchMintedCount(eventIdNumber);
-          setLocalEvents((prev) =>
-            prev.map((item) =>
-              item.id === event.id
-                ? { ...item, claimedSpots: mintedCount }
-                : item,
-            ),
-          );
-          updateLocalEvent(event.id, { claimedSpots: mintedCount });
-        } catch (error) {
-          hadErrors = true;
-          console.error(
-            `Error refreshing minted count for event ${eventIdNumber}:`,
-            error,
-          );
-        }
-      }
-
       await refetchOnchainEvents();
-
       showNotification({
-        type: hadErrors ? "warning" : "success",
-        title: hadErrors
-          ? "Actualización parcial"
-          : "Datos on-chain sincronizados",
-        message: hadErrors
-          ? "Algunos eventos no pudieron sincronizarse. Intenta nuevamente."
-          : "Métricas de reclamos actualizadas.",
-        copyText: hadErrors
-          ? buildErrorDetail(
-              new Error("No se pudieron sincronizar todos los eventos."),
-            )
-          : undefined,
+        type: "success",
+        title: "Datos on-chain sincronizados",
+        message: "Métricas de reclamos actualizadas.",
       });
     } catch (error) {
       console.error("Error refreshing on-chain stats:", error);
@@ -419,57 +360,6 @@ const MyEvents: React.FC = () => {
 
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
-
-  const loadLocalEvents = () => {
-    if (address) {
-      setIsLoadingLocalEvents(true);
-      try {
-        const events = getLocalEventsByCreator(address);
-        const formattedEvents: EventData[] = events.map((event) => ({
-          id: event.id,
-          name: event.name,
-          date: event.date,
-          location: event.location,
-          maxSpots: event.maxSpots,
-          claimedSpots: event.claimedSpots,
-          claimStart: event.claimStart,
-          claimEnd: event.claimEnd,
-          imageUrl: event.imageUrl,
-          communityId: event.communityId
-            ? Number(event.communityId)
-            : undefined,
-          distributionMethods: event.distributionMethods || {
-            ...DEFAULT_DISTRIBUTION_METHODS,
-          },
-          links: { uniqueLink: buildMintLink(event.id) },
-          codes: { sharedCode: `SPOT-${event.id.slice(-8).toUpperCase()}` },
-          creator: event.creator,
-          source: "local",
-        }));
-        setLocalEvents(formattedEvents);
-      } catch (error) {
-        console.error("Error cargando eventos locales:", error);
-      } finally {
-        setIsLoadingLocalEvents(false);
-      }
-    } else {
-      setLocalEvents([]);
-    }
-  };
-
-  useEffect(() => {
-    loadLocalEvents();
-  }, [address]);
-
-  useEffect(() => {
-    const handleStorageChange = () => loadLocalEvents();
-    window.addEventListener("storage", handleStorageChange);
-    window.addEventListener("localStorageUpdated", handleStorageChange);
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("localStorageUpdated", handleStorageChange);
-    };
-  }, [address]);
 
   if (!isConnected) {
     return (

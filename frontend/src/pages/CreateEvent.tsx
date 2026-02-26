@@ -2,7 +2,6 @@ import React, { useState, useRef } from "react";
 import { useWallet } from "../hooks/useWallet";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useNotification } from "../hooks/useNotification";
-import { saveLocalEvent } from "../utils/localEvents";
 import { createEventRequest, fetchCommunities } from "../util/backend";
 import { useQuery } from "@tanstack/react-query";
 import TldrCard from "../components/layout/TldrCard";
@@ -149,9 +148,6 @@ const CreateEvent: React.FC = () => {
       const imageUrlForRequest = formData.imageFile
         ? undefined
         : formData.imageUrl || placeholderImage;
-      const localPreviewFallback = formData.imageFile
-        ? formData.imagePreview || placeholderImage
-        : imageUrlForRequest || placeholderImage;
 
       setIsSubmitting(true);
 
@@ -183,37 +179,13 @@ const CreateEvent: React.FC = () => {
           );
         }
 
-        const resolvedImageUrl =
-          backendResponse.imageUrl || localPreviewFallback || placeholderImage;
-
-        const newEvent = saveLocalEvent(
-          {
-            name: formData.eventName,
-            date: formData.eventDate,
-            location: formData.location,
-            description: formData.description,
-            maxSpots: parseInt(formData.maxSpots),
-            claimStart: formData.claimStart,
-            claimEnd: formData.claimEnd,
-            imageUrl: resolvedImageUrl,
-            metadataUri,
-            creator: address!,
-            communityId: formData.communityId || undefined,
-            distributionMethods,
-          },
-          { id: newEventId ? newEventId.toString() : undefined },
-        );
-
-        console.log("Evento creado exitosamente (local):", newEvent);
-        window.dispatchEvent(new Event("localStorageUpdated"));
-
         showNotification({
           type: "success",
           title: "Evento creado",
           message:
             "Tu evento SPOT está listo. Copia el detalle si necesitas reenviar la transacción.",
           copyText: buildTxDetail(backendResponse.txHash, {
-            eventId: newEventId ?? newEvent.id,
+            eventId: newEventId,
             creator: address,
           }),
         });

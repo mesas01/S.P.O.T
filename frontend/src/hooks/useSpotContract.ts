@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { Client } from "@stellar/stellar-sdk/contract";
 import { network } from "../contracts/util";
 
-const DEFAULT_SPOT_CONTRACT_ID =
-  "CC3XATHZKTV7WGEBR337JAH3UTAMQTK7VPPSDSAKHA4KGVOCJPF6P3VF";
+const DEFAULT_SPOT_CONTRACT_ID = "";
 
 /**
  * Hook para obtener un cliente del contrato SPOT (coleccionable de asistencia)

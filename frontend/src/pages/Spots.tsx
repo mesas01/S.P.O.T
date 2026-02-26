@@ -1,15 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { Button } from "@stellar/design-system";
 import { useWallet } from "../hooks/useWallet";
+import { useQuery } from "@tanstack/react-query";
 import MonthSection from "../components/spot/MonthSection";
 import { SpotData } from "../components/spot/SpotCard";
 import { groupSpotsByMonth, getTotalSpots } from "../utils/spotGrouping";
-import {
-  getClaimedSpots,
-  mapEventToClaimedSpot,
-  mapStoredSpotToSpotData,
-  upsertClaimedSpot,
-} from "../utils/claimedSpots";
 import { fetchClaimedEventsByClaimer } from "../util/backend";
 import { connectWallet } from "../util/wallet";
 import { useNavigate } from "react-router-dom";
@@ -33,7 +28,7 @@ const mockSpots: SpotData[] = [
   },
   {
     id: 3,
-    name: "Hackathon Stellar 2024 - Segundo dÃ­a",
+    name: "Hackathon Stellar 2024 - Segundo día",
     date: "2025-10-10",
     image: "/images/events/hack+2.jpg",
     color: "from-stellar-teal/30 to-stellar-lilac/50",
@@ -44,70 +39,28 @@ const Spots: React.FC = () => {
   const { address } = useWallet();
   const navigate = useNavigate();
   const isConnected = !!address;
-  const [claimedSpots, setClaimedSpots] = useState<SpotData[]>([]);
 
-  useEffect(() => {
-    if (!address) {
-      setClaimedSpots([]);
-      return;
-    }
+  const { data: claimedEvents = [] } = useQuery({
+    queryKey: ["claimed-spots", address],
+    queryFn: ({ signal }) => fetchClaimedEventsByClaimer(address!, signal),
+    enabled: !!address,
+    staleTime: 15000,
+    refetchInterval: 30000,
+  });
 
-    let disposed = false;
-    const controller = new AbortController();
-
-    const loadClaimedSpotsFromStorage = () => {
-      const stored = getClaimedSpots(address).map(mapStoredSpotToSpotData);
-      const sorted = [...stored].sort(
+  const claimedSpots = useMemo<SpotData[]>(() => {
+    return claimedEvents
+      .map((event) => ({
+        id: `claimed-${event.eventId}`,
+        name: event.name,
+        date: new Date(event.date * 1000).toISOString(),
+        image: event.imageUrl || "/images/events/stellarpalooza.jpg",
+        color: "from-stellar-teal/20 to-stellar-lilac/40",
+      }))
+      .sort(
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
       );
-      if (!disposed) {
-        setClaimedSpots(sorted);
-      }
-    };
-
-    const syncSpotsFromBackend = async () => {
-      try {
-        const claimedEvents = await fetchClaimedEventsByClaimer(
-          address,
-          controller.signal,
-        );
-        if (!claimedEvents?.length) {
-          return;
-        }
-
-        const existing = getClaimedSpots(address);
-        const claimedAtByEventId = new Map(
-          existing.map((spot) => [spot.eventId, spot.claimedAt]),
-        );
-
-        claimedEvents.forEach((event) => {
-          const claimedAt = claimedAtByEventId.get(event.eventId);
-          upsertClaimedSpot(address, {
-            ...mapEventToClaimedSpot(event),
-            claimedAt,
-          });
-        });
-      } catch (error) {
-        if (!disposed) {
-          console.warn("No se pudieron sincronizar tus SPOTs on-chain:", error);
-        }
-      }
-    };
-
-    loadClaimedSpotsFromStorage();
-    void syncSpotsFromBackend();
-
-    const handleUpdate = () => loadClaimedSpotsFromStorage();
-    window.addEventListener("storage", handleUpdate);
-    window.addEventListener("claimedSpotsUpdated", handleUpdate);
-
-    return () => {
-      disposed = true;
-      controller.abort();
-      window.removeEventListener("storage", handleUpdate);
-      window.removeEventListener("claimedSpotsUpdated", handleUpdate);
-    };
-  }, [address]);
+  }, [claimedEvents]);
 
   const spotsToDisplay = useMemo(() => {
     if (claimedSpots.length === 0) {
@@ -128,11 +81,11 @@ const Spots: React.FC = () => {
         <div className="mx-auto max-w-7xl px-6 py-12">
           <div className="mb-10">
             <h1 className="text-3xl md:text-4xl font-headline text-stellar-black mb-3 uppercase">
-              Tu <span className="text-stellar-gold">ColecciÃ³n</span>
+              Tu <span className="text-stellar-gold">Colección</span>
             </h1>
             <p className="text-stellar-black/60 italic text-lg font-subhead">
               {totalSpots} {totalSpots === 1 ? "SPOT" : "SPOTs"} en tu
-              colecciÃ³n
+              colección
             </p>
           </div>
 
@@ -168,7 +121,7 @@ const Spots: React.FC = () => {
                   {new Date().getFullYear()}
                 </div>
                 <div className="text-base text-stellar-black/60 font-body">
-                  AÃ±o actual
+                  Año actual
                 </div>
               </div>
             </div>
@@ -219,7 +172,7 @@ const Spots: React.FC = () => {
                 Conecta tu Wallet
               </h2>
               <p className="text-stellar-black/60 max-w-lg mx-auto mb-8 text-lg font-body">
-                Conecta tu wallet de Stellar para ver tu colecciÃ³n de SPOTs y
+                Conecta tu wallet de Stellar para ver tu colección de SPOTs y
                 reclamar nuevos.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">

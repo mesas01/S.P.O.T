@@ -27,8 +27,9 @@ if [ -z "$ADMIN_SECRET" ]; then
   exit 1
 fi
 
-# --- Derive admin public key via Node.js (stellar-sdk is already installed) ---
-ADMIN_PUBLIC=$(cd "$BACKEND_DIR" && node -e "
+# --- Derive admin public key via Node.js in backend container ---
+BACKEND_CONTAINER="commitspre-backend-1"
+ADMIN_PUBLIC=$(docker exec "$BACKEND_CONTAINER" node -e "
   import('@stellar/stellar-sdk').then(m =>
     console.log(m.Keypair.fromSecret('$ADMIN_SECRET').publicKey())
   )
@@ -36,12 +37,12 @@ ADMIN_PUBLIC=$(cd "$BACKEND_DIR" && node -e "
 echo "    Admin: $ADMIN_PUBLIC"
 
 # --- Step 1: Copy WASM from scaffold ---
-echo "==> Step 1/4: Copying poap.wasm from scaffold container..."
+echo "==> Step 1/5: Copying poap.wasm from scaffold container..."
 docker cp "$SCAFFOLD_CONTAINER:$WASM_PATH" /tmp/poap.wasm
 echo "    OK"
 
 # --- Step 2: Deploy contract via temp Ubuntu container ---
-echo "==> Step 2/4: Deploying contract to testnet..."
+echo "==> Step 2/5: Deploying contract to testnet..."
 docker run --rm -d --name "$DEPLOYER_NAME" "$DEPLOYER_IMAGE" sleep 300 >/dev/null
 trap "docker rm -f $DEPLOYER_NAME >/dev/null 2>&1" EXIT
 
@@ -77,7 +78,7 @@ fi
 echo "    New contract: $NEW_CONTRACT_ID"
 
 # --- Step 3: Update .env (backend + frontend) ---
-echo "==> Step 3/4: Updating .env files with new contract ID..."
+echo "==> Step 3/5: Updating .env files with new contract ID..."
 FRONTEND_ENV_FILE="$BACKEND_DIR/../frontend/.env"
 
 OLD_CONTRACT_ID=$(grep -m1 '^SPOT_CONTRACT_ID=' "$ENV_FILE" | cut -d= -f2)
@@ -105,10 +106,16 @@ else
 fi
 
 # --- Step 4: Reset database ---
-echo "==> Step 4/4: Resetting database..."
+echo "==> Step 4/5: Resetting database..."
 BACKEND_CONTAINER="commitspre-backend-1"
 docker exec "$BACKEND_CONTAINER" sh -c "npm install --silent 2>/dev/null && npx prisma migrate reset --force --skip-generate" 2>&1 \
   | grep -vE "^(Loaded|Prisma (config|schema)|Datasource|┌|│|└|$)" || true
+
+# --- Step 5: Recreate containers to pick up new contract ID ---
+echo "==> Step 5/5: Recreating backend and frontend containers..."
+COMPOSE_FILE="$BACKEND_DIR/../docker-compose.dev.yml"
+docker compose -f "$COMPOSE_FILE" up -d backend frontend >/dev/null 2>&1
+echo "    OK"
 
 echo ""
 echo "=== Done ==="
