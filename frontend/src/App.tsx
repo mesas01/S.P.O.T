@@ -6,6 +6,7 @@ import { Routes, Route, Outlet, NavLink, Link } from "react-router-dom";
 import { Plus, Zap, User } from "lucide-react";
 import spotLogo from "./images/Recurso_1.svg";
 import Home from "./pages/Home";
+import Spots from "./pages/Spots";
 import Events from "./pages/Events";
 import Mint from "./pages/Mint";
 import CreateEvent from "./pages/CreateEvent";
@@ -42,7 +43,10 @@ const AppLayout: React.FC = () => {
         <div className="mx-auto max-w-7xl px-6">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <NavLink to="/" className="flex items-center gap-2 no-underline">
+            <NavLink
+              to="/landing"
+              className="flex items-center gap-2 no-underline"
+            >
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-stellar-gold">
                 <img
                   src={spotLogo}
@@ -57,7 +61,7 @@ const AppLayout: React.FC = () => {
 
             {/* Desktop navigation */}
             <nav className="hidden md:flex items-center gap-8">
-              <NavLink to="/" end className="no-underline group">
+              <NavLink to="/spots" className="no-underline group">
                 {({ isActive }) => (
                   <span
                     className={`relative text-sm font-semibold font-body transition-colors duration-200 ${
@@ -213,7 +217,7 @@ const AppLayout: React.FC = () => {
             {/* Brand */}
             <div>
               <Link
-                to="/"
+                to="/landing"
                 className="flex items-center gap-2 mb-4 no-underline"
               >
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-stellar-gold">
@@ -326,6 +330,8 @@ function App() {
     <Routes>
       <Route element={<AppLayout />}>
         <Route path="/" element={<Home />} />
+        <Route path="/landing" element={<Home />} />
+        <Route path="/spots" element={<Spots />} />
         <Route path="/mint" element={<Mint />} />
         <Route path="/events" element={<Events />} />
         <Route path="/create-event" element={<CreateEvent />} />
