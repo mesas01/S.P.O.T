@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useWallet } from "../hooks/useWallet";
+import { useNavigate } from "react-router-dom";
 import {
   createCommunityRequest,
   fetchCommunities,
@@ -20,6 +21,7 @@ import {
 
 const Communities: React.FC = () => {
   const { address } = useWallet();
+  const navigate = useNavigate();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -280,6 +282,9 @@ const Communities: React.FC = () => {
               const isExpanded = expandedId === communityId.toString();
               const membersCount = community.members?.length || 0;
               const events = eventsByCommunity[communityId] || [];
+              const eventsCountLabel = eventsByCommunity[communityId]
+                ? eventsByCommunity[communityId].length.toString()
+                : "—";
               const isMember =
                 !!address &&
                 community.members?.some(
@@ -322,6 +327,10 @@ const Communities: React.FC = () => {
                               <span className="inline-flex items-center gap-1">
                                 <Users size={13} />
                                 {membersCount} integrantes
+                              </span>
+                              <span className="inline-flex items-center gap-1">
+                                <CalendarDays size={13} />
+                                {eventsCountLabel} eventos
                               </span>
                             </div>
                           </div>
@@ -369,6 +378,14 @@ const Communities: React.FC = () => {
                             Conecta tu wallet para unirte.
                           </span>
                         )}
+                        <button
+                          onClick={() =>
+                            navigate(`/create-event?communityId=${communityId}`)
+                          }
+                          className="inline-flex items-center gap-2 bg-stellar-gold text-stellar-black px-4 py-2 rounded-full font-semibold font-body text-xs hover:bg-stellar-gold/90 transition-all"
+                        >
+                          Crear evento aqui
+                        </button>
                         {isCreator && (
                           <button
                             onClick={() =>

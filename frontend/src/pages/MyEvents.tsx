@@ -140,6 +140,7 @@ const MyEvents: React.FC = () => {
   const [qrCodes, setQrCodes] = useState<Record<string, string>>({});
   const [loadingQR, setLoadingQR] = useState<Record<string, boolean>>({});
   const [isRefreshingOnchain, setIsRefreshingOnchain] = useState(false);
+  const [communityFilter, setCommunityFilter] = useState<string>("all");
   const { showNotification } = useNotification();
 
   const [localEvents, setLocalEvents] = useState<EventData[]>([]);
@@ -221,8 +222,14 @@ const MyEvents: React.FC = () => {
     const eventsById = new Map<string, EventData>();
     sortedLocalEvents.forEach((event) => eventsById.set(event.id, event));
     sortedContractEvents.forEach((event) => eventsById.set(event.id, event));
-    return sortEventsByDate(Array.from(eventsById.values()));
-  }, [sortedContractEvents, sortedLocalEvents]);
+    const merged = Array.from(eventsById.values());
+    const filtered = merged.filter((event) => {
+      if (communityFilter === "all") return true;
+      if (communityFilter === "none") return !event.communityId;
+      return event.communityId?.toString() === communityFilter;
+    });
+    return sortEventsByDate(filtered);
+  }, [sortedContractEvents, sortedLocalEvents, communityFilter]);
 
   const isLoadingEvents =
     isLoadingLocalEvents || (isConnected && isLoadingOnchainEvents);
@@ -515,6 +522,19 @@ const MyEvents: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center gap-3 flex-shrink-0">
+              <select
+                value={communityFilter}
+                onChange={(e) => setCommunityFilter(e.target.value)}
+                className="px-4 py-2.5 rounded-full border border-stellar-black/15 bg-white text-stellar-black/70 font-body text-sm"
+              >
+                <option value="all">Todas las comunidades</option>
+                <option value="none">Sin comunidad</option>
+                {communities.map((community) => (
+                  <option key={community.id} value={community.id.toString()}>
+                    {community.name} - {community.country}
+                  </option>
+                ))}
+              </select>
               <button
                 onClick={() => navigate("/create-event")}
                 className="inline-flex items-center gap-2 bg-stellar-gold text-stellar-black px-5 py-2.5 rounded-full font-semibold font-body text-sm hover:bg-stellar-gold/90 transition-all shadow-md"

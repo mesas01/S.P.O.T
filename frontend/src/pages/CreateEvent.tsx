@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useWallet } from "../hooks/useWallet";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useNotification } from "../hooks/useNotification";
 import { saveLocalEvent } from "../utils/localEvents";
 import { createEventRequest, fetchCommunities } from "../util/backend";
@@ -23,6 +23,7 @@ import {
 const CreateEvent: React.FC = () => {
   const { address } = useWallet();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const isConnected = !!address;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -38,7 +39,7 @@ const CreateEvent: React.FC = () => {
     imageFile: null as File | null,
     imagePreview: "",
     metadataUri: "",
-    communityId: "",
+    communityId: searchParams.get("communityId") || "",
   });
 
   const [distributionMethods, setDistributionMethods] = useState({

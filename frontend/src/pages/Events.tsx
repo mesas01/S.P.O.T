@@ -420,6 +420,18 @@ const Events: React.FC = () => {
                         </div>
                       )}
 
+                      {event.communityId &&
+                        communityMap.has(event.communityId) && (
+                          <div className="bg-stellar-white rounded-xl p-4 border border-stellar-gold/20">
+                            <p className="text-xs text-stellar-black/40 font-body mb-1 uppercase tracking-widest">
+                              Comunidad
+                            </p>
+                            <p className="text-sm text-stellar-black/70 font-body">
+                              {communityMap.get(event.communityId)?.name}
+                            </p>
+                          </div>
+                        )}
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="bg-stellar-white rounded-xl p-4 border border-stellar-lilac/15">
                           <p className="text-xs text-stellar-black/40 font-body mb-1 uppercase tracking-widest">
