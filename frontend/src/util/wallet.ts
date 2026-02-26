@@ -5,12 +5,38 @@ import {
   WalletNetwork,
   sep43Modules,
 } from "@creit.tech/stellar-wallets-kit";
+import {
+  WalletConnectModule,
+  WalletConnectAllowedMethods,
+} from "@creit.tech/stellar-wallets-kit/modules/walletconnect.module";
+import { LobstrModule } from "@creit.tech/stellar-wallets-kit/modules/lobstr.module";
 import { Horizon } from "@stellar/stellar-sdk";
-import { networkPassphrase, stellarNetwork } from "../contracts/util";
+import {
+  networkPassphrase,
+  stellarNetwork,
+  walletConnectProjectId,
+} from "../contracts/util";
+
+const extraModules = [
+  ...(walletConnectProjectId
+    ? [
+        new WalletConnectModule({
+          projectId: walletConnectProjectId,
+          name: "SPOT",
+          description: "Stellar Proof of Togetherness",
+          url: window.location.origin,
+          icons: [],
+          method: WalletConnectAllowedMethods.SIGN,
+          network: networkPassphrase as WalletNetwork,
+        }),
+      ]
+    : []),
+  new LobstrModule(),
+];
 
 const kit: StellarWalletsKit = new StellarWalletsKit({
   network: networkPassphrase as WalletNetwork,
-  modules: sep43Modules(),
+  modules: [...sep43Modules(), ...extraModules],
 });
 
 export const connectWallet = async () => {

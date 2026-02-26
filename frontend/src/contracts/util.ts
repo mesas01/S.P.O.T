@@ -13,6 +13,7 @@ const envSchema = z.object({
   PUBLIC_STELLAR_NETWORK_PASSPHRASE: z.nativeEnum(WalletNetwork),
   PUBLIC_STELLAR_RPC_URL: z.string(),
   PUBLIC_STELLAR_HORIZON_URL: z.string(),
+  VITE_WALLETCONNECT_PROJECT_ID: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(import.meta.env);
@@ -55,6 +56,8 @@ export const labPrefix = () => {
 export const rpcUrl = env.PUBLIC_STELLAR_RPC_URL;
 
 export const horizonUrl = env.PUBLIC_STELLAR_HORIZON_URL;
+
+export const walletConnectProjectId = env.VITE_WALLETCONNECT_PROJECT_ID;
 
 const networkToId = (network: string): NetworkType => {
   switch (network) {
