@@ -1,9 +1,11 @@
 import React from "react";
 import { useWallet } from "../hooks/useWallet";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import ConnectAccount from "../components/ConnectAccount";
 import TldrCard from "../components/layout/TldrCard";
-import { Lock, Copy, Zap, Plus, LogOut } from "lucide-react";
+import { fetchCreatorProfile, type EventTier } from "../util/backend";
+import { Lock, Copy, Zap, Plus, LogOut, Crown } from "lucide-react";
 
 const Profile: React.FC = () => {
   const { address, balances, disconnect } = useWallet();
@@ -38,6 +40,25 @@ const Profile: React.FC = () => {
   };
 
   const formattedBalance = formatBalance(xlmBalance);
+
+  const { data: creatorProfile } = useQuery({
+    queryKey: ["creatorProfile", address],
+    queryFn: () => fetchCreatorProfile(address!),
+    enabled: !!address,
+    staleTime: 30000,
+  });
+
+  const tierLabels: Record<EventTier, string> = {
+    FREE: "Gratis",
+    BASIC: "Basico",
+    PREMIUM: "Premium",
+  };
+
+  const tierColors: Record<EventTier, string> = {
+    FREE: "bg-stellar-warm-grey/20 text-stellar-black/70",
+    BASIC: "bg-stellar-teal/15 text-stellar-teal",
+    PREMIUM: "bg-stellar-gold/20 text-stellar-gold",
+  };
 
   return (
     <div className="py-12 px-6">
@@ -153,6 +174,63 @@ const Profile: React.FC = () => {
                 </p>
               </div>
             </div>
+
+            {/* Creator Plan */}
+            {creatorProfile && (
+              <div className="bg-stellar-white rounded-2xl shadow-sm p-6 md:p-8 border border-stellar-lilac/15">
+                <div className="flex items-center justify-between mb-5">
+                  <h2 className="text-lg font-headline text-stellar-black">
+                    Plan de Creador
+                  </h2>
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold font-body ${tierColors[creatorProfile.tier]}`}
+                  >
+                    <Crown size={12} />
+                    {tierLabels[creatorProfile.tier]}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="bg-stellar-warm-grey/10 rounded-xl p-4 border border-stellar-black/5">
+                    <p className="text-xs font-semibold font-body uppercase tracking-widest text-stellar-black/40 mb-1">
+                      SPOTs / Evento
+                    </p>
+                    <p className="text-xl font-headline text-stellar-black">
+                      {creatorProfile.limits.maxSpotsPerEvent.toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="bg-stellar-warm-grey/10 rounded-xl p-4 border border-stellar-black/5">
+                    <p className="text-xs font-semibold font-body uppercase tracking-widest text-stellar-black/40 mb-1">
+                      Eventos Activos
+                    </p>
+                    <p className="text-xl font-headline text-stellar-black">
+                      {creatorProfile.limits.maxActiveEvents}
+                    </p>
+                  </div>
+                  <div className="bg-stellar-warm-grey/10 rounded-xl p-4 border border-stellar-black/5">
+                    <p className="text-xs font-semibold font-body uppercase tracking-widest text-stellar-black/40 mb-1">
+                      Metodos
+                    </p>
+                    <p className="text-sm font-body text-stellar-black capitalize">
+                      {creatorProfile.limits.allowedMethods.join(", ")}
+                    </p>
+                  </div>
+                </div>
+
+                {creatorProfile.status && (
+                  <div className="mt-4 flex items-center gap-2">
+                    <div
+                      className={`w-2 h-2 rounded-full ${creatorProfile.status === "APPROVED" ? "bg-stellar-teal" : "bg-red-400"}`}
+                    />
+                    <p className="text-sm font-body text-stellar-black/60">
+                      {creatorProfile.status === "APPROVED"
+                        ? "Aprobado"
+                        : "Revocado"}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Actions */}
             <div className="bg-stellar-white rounded-2xl shadow-sm p-6 md:p-8 border border-stellar-lilac/15">

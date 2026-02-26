@@ -9,6 +9,7 @@
     "test": "npm run test:unit",
     "test:unit": "cross-env NODE_ENV=test MOCK_MODE=true LOG_FILE=./logs/backend.test.log node --test",
     "test:integration": "cross-env NODE_ENV=test RUN_INTEGRATION_TESTS=true LOG_FILE=./logs/backend.integration.log node --test --test-concurrency 1 \"./test/integration/*.test.js\"",
+    "test:integration:full": "bash scripts/run-integration.sh",
     "db:migrate": "npx prisma migrate deploy",
     "db:migrate:dev": "npx prisma migrate dev",
     "db:generate": "npx prisma generate",

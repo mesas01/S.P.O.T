@@ -30,6 +30,8 @@ import {
   getAllEvents,
   getClaimerEvents,
   getCachedMintedCount,
+  getCreatorByAddress,
+  countActiveEventsByCreator,
   createCommunity,
   getAllCommunities,
   getCommunityById,
@@ -37,8 +39,10 @@ import {
   joinCommunity as joinCommunityDb,
   leaveCommunity as leaveCommunityDb,
   getEventsByCommunity,
+  getEventById,
 } from "./services/db.js";
 import { uploadImage } from "./services/storage.js";
+import { getTierLimits, getLimitsForTier } from "./services/tier.js";
 
 // Cargar variables de entorno
 dotenv.config();
@@ -160,6 +164,39 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
+app.get("/tier-limits", (_req, res) => {
+  res.json({ limits: getTierLimits() });
+});
+
+app.get("/creators/:address", async (req, res) => {
+  const address = (req.params.address || "").toString().trim();
+  if (!address) return res.status(400).json({ error: "address is required" });
+
+  if (isMock) {
+    const limits = getLimitsForTier("FREE");
+    return res.json({ creator: { address, status: null, tier: "FREE", limits } });
+  }
+
+  try {
+    const creator = await getCreatorByAddress(address);
+    const tier = creator?.tier || "FREE";
+    const limits = getLimitsForTier(tier);
+    res.json({
+      creator: {
+        address,
+        status: creator?.status || null,
+        tier,
+        limits,
+        paymentReference: creator?.paymentReference || null,
+        createdAt: creator?.createdAt || null,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching creator:", error);
+    res.status(500).json({ error: error.message || String(error) });
+  }
+});
+
 // --- ENDPOINTS ---
 
 // Communities
@@ -278,7 +315,7 @@ app.get("/communities/:id/events", async (req, res) => {
     return res.status(400).json({ error: "Invalid community id" });
   }
   try {
-    const events = await getEventsByCommunity(id);
+    const events = await getEventsByCommunity(id, { visibility: "PUBLIC" });
     const normalized = (events ?? []).map((e) => ({
       eventId: e.eventId,
       name: e.eventName,
@@ -293,6 +330,8 @@ app.get("/communities/:id/events", async (req, res) => {
       creator: e.creator,
       communityId: e.communityId ?? undefined,
       mintedCount: e.mintedCount,
+      tier: e.tier,
+      visibility: e.visibility,
     }));
     res.json({ events: normalized });
   } catch (error) {
@@ -302,11 +341,16 @@ app.get("/communities/:id/events", async (req, res) => {
 });
 
 app.post("/creators/approve", async (req, res) => {
-  const { creator, paymentReference } = req.body || {};
+  const { creator, paymentReference, tier: rawTier } = req.body || {};
   const payload = { creator, paymentReference };
-  
+
   if (!creator || !paymentReference) {
     return res.status(400).json({ error: "creator and paymentReference are required" });
+  }
+
+  const tier = rawTier ? rawTier.toString().toUpperCase() : undefined;
+  if (tier && !VALID_TIERS.includes(tier)) {
+    return res.status(400).json({ error: `Invalid tier. Must be one of: ${VALID_TIERS.join(", ")}` });
   }
 
   if (isMock) {
@@ -328,7 +372,7 @@ app.post("/creators/approve", async (req, res) => {
     await logTx({ action: "approve_creator", status: "success", txHash: result.txHash, payload, rpcResponse: result.rpcResponse, signedEnvelope: result.envelopeXdr });
 
     try {
-      await upsertCreatorApproval({ address: creator, paymentReference, txHash: result.txHash });
+      await upsertCreatorApproval({ address: creator, paymentReference, txHash: result.txHash, tier });
       await logTransaction({ action: "approve_creator", status: "success", txHash: result.txHash, payload });
     } catch (dbErr) {
       console.warn("DB write failed (approve_creator), data will reconcile:", dbErr.message);
@@ -381,6 +425,9 @@ app.post("/creators/revoke", async (req, res) => {
   }
 });
 
+const VALID_TIERS = ["FREE", "BASIC", "PREMIUM"];
+const VALID_VISIBILITIES = ["PUBLIC", "PRIVATE"];
+
 app.post("/events/create", upload.single("image"), async (req, res) => {
   const {
     creator,
@@ -394,7 +441,14 @@ app.post("/events/create", upload.single("image"), async (req, res) => {
     claimEnd,
     metadataUri,
     imageUrl: imageUrlField,
+    visibility: rawVisibility,
   } = req.body || {};
+
+  const visibility = rawVisibility ? rawVisibility.toString().toUpperCase() : "PUBLIC";
+
+  if (!VALID_VISIBILITIES.includes(visibility)) {
+    return res.status(400).json({ error: `Invalid visibility. Must be one of: ${VALID_VISIBILITIES.join(", ")}` });
+  }
 
   const numericFields = {
     eventDate: Number(eventDate),
@@ -435,6 +489,9 @@ app.post("/events/create", upload.single("image"), async (req, res) => {
       if (minioResult) {
         finalImageUrl = minioResult.publicUrl;
         imageId = minioResult.imageId;
+      } else if (isMock) {
+        // MinIO is disabled in mock mode — use a placeholder URL
+        finalImageUrl = `http://localhost/mock-uploads/${req.file.originalname}`;
       }
     } catch (uploadErr) {
       console.error("MinIO upload failed:", uploadErr.message);
@@ -459,11 +516,41 @@ app.post("/events/create", upload.single("image"), async (req, res) => {
 
   payload.imageUrl = finalImageUrl;
 
+  // Determine creator tier from DB (default FREE)
+  let creatorTier = "FREE";
+  if (!isMock) {
+    try {
+      const creatorRecord = await getCreatorByAddress(creator);
+      if (creatorRecord?.tier) creatorTier = creatorRecord.tier;
+    } catch (dbErr) {
+      console.warn("Could not fetch creator tier, defaulting to FREE:", dbErr.message);
+    }
+  }
+  const tier = creatorTier;
+  const tierLimits = getLimitsForTier(tier);
+
+  // Enforce maxSpotsPerEvent
+  if (numericFields.maxPoaps > tierLimits.maxSpotsPerEvent) {
+    return res.status(403).json({ error: `Tier ${tier} allows max ${tierLimits.maxSpotsPerEvent} SPOTs per event. Requested: ${numericFields.maxPoaps}` });
+  }
+
+  // Enforce maxActiveEvents
+  if (!isMock) {
+    try {
+      const activeCount = await countActiveEventsByCreator(creator);
+      if (activeCount >= tierLimits.maxActiveEvents) {
+        return res.status(403).json({ error: `Tier ${tier} allows max ${tierLimits.maxActiveEvents} active events. Current: ${activeCount}` });
+      }
+    } catch (dbErr) {
+      console.warn("Could not count active events, skipping limit check:", dbErr.message);
+    }
+  }
+
   if (isMock) {
     const txHash = `MOCK-EVENT-${Date.now()}`;
     const signedEnvelope = Buffer.from(`MOCK-EVENT-ENVELOPE-${Date.now()}`).toString("base64");
     await logTx({ action: "create_event", status: "success", txHash, payload, signedEnvelope });
-    return res.json({ txHash, signedEnvelope, rpcResponse: { status: "MOCK" }, imageUrl: finalImageUrl });
+    return res.json({ txHash, signedEnvelope, rpcResponse: { status: "MOCK" }, imageUrl: finalImageUrl, tier, visibility });
   }
 
   try {
@@ -520,6 +607,8 @@ app.post("/events/create", upload.single("image"), async (req, res) => {
           imageUrl: finalImageUrl,
           txHash: result.txHash,
           imageId,
+          tier,
+          visibility,
         });
         await logTransaction({ action: "create_event", status: "success", txHash: result.txHash, payload: { ...payload, eventId } });
       } catch (dbErr) {
@@ -527,7 +616,7 @@ app.post("/events/create", upload.single("image"), async (req, res) => {
       }
     }
 
-    res.json({ txHash: result.txHash, rpcResponse: result.rpcResponse, signedEnvelope: result.envelopeXdr, eventId, imageUrl: finalImageUrl });
+    res.json({ txHash: result.txHash, rpcResponse: result.rpcResponse, signedEnvelope: result.envelopeXdr, eventId, imageUrl: finalImageUrl, tier, visibility });
   } catch (error) {
     await logTx({ action: "create_event", status: "error", error: error.message || String(error), payload });
     try { await logTransaction({ action: "create_event", status: "error", error: error.message || String(error), payload }); } catch (_) {}
@@ -672,6 +761,7 @@ app.get("/events/onchain", async (req, res) => {
     try {
       const dbEvents = await getAllEvents({
         creator: creatorFilter || undefined,
+        visibility: creatorFilter ? undefined : "PUBLIC",
       });
       if (dbEvents && dbEvents.length > 0) {
         const events = dbEvents.map((e) => ({
@@ -688,6 +778,8 @@ app.get("/events/onchain", async (req, res) => {
           creator: e.creator,
           communityId: e.communityId ?? undefined,
           mintedCount: e.mintedCount,
+          tier: e.tier,
+          visibility: e.visibility,
         }));
         return res.json({ events });
       }
@@ -742,6 +834,8 @@ app.get("/events/onchain", async (req, res) => {
           imageUrl: details.imageUrl,
           creator: details.creator,
           mintedCount,
+          tier: "FREE",
+          visibility: "PUBLIC",
         });
       } catch (innerError) {
         console.error(`Failed to fetch on-chain data for event ${eventId}:`, innerError);
@@ -750,6 +844,41 @@ app.get("/events/onchain", async (req, res) => {
     res.json({ events });
   } catch (error) {
     console.error("Error fetching on-chain events:", error);
+    res.status(500).json({ error: error.message || String(error) });
+  }
+});
+
+app.get("/events/:eventId(\\d+)", async (req, res) => {
+  const eventId = Number(req.params.eventId);
+  if (Number.isNaN(eventId)) {
+    return res.status(400).json({ error: "Invalid eventId" });
+  }
+
+  if (isMock) return res.json({ event: null });
+
+  try {
+    const dbEvent = await getEventById(eventId);
+    if (!dbEvent) return res.json({ event: null });
+    const event = {
+      eventId: dbEvent.eventId,
+      name: dbEvent.eventName,
+      date: dbEvent.eventDate,
+      location: dbEvent.location,
+      description: dbEvent.description,
+      maxSpots: dbEvent.maxPoaps,
+      claimStart: dbEvent.claimStart,
+      claimEnd: dbEvent.claimEnd,
+      metadataUri: dbEvent.metadataUri,
+      imageUrl: dbEvent.imageUrl,
+      creator: dbEvent.creator,
+      communityId: dbEvent.communityId ?? undefined,
+      mintedCount: dbEvent.mintedCount,
+      tier: dbEvent.tier,
+      visibility: dbEvent.visibility,
+    };
+    res.json({ event });
+  } catch (error) {
+    console.error("Error fetching event by id:", error);
     res.status(500).json({ error: error.message || String(error) });
   }
 });
@@ -778,6 +907,8 @@ app.get("/claimers/:claimer/events", async (req, res) => {
         communityId: e.communityId ?? undefined,
         mintedCount: e.mintedCount,
         tokenId: e.tokenId,
+        tier: e.tier,
+        visibility: e.visibility,
       }));
       return res.json({ events });
     }
@@ -853,6 +984,8 @@ app.get("/claimers/:claimer/events", async (req, res) => {
           communityId: undefined,
           mintedCount,
           tokenId,
+          tier: "FREE",
+          visibility: "PUBLIC",
         });
       } catch (eventError) {
         console.error(`Failed to resolve claimed event ${eventId} for claimer ${claimer}:`, eventError);
@@ -867,7 +1000,7 @@ app.get("/claimers/:claimer/events", async (req, res) => {
 
 function normalizePort(value) {
   const portNumber = Number(value);
-  if (!portNumber || Number.isNaN(portNumber)) {
+  if (Number.isNaN(portNumber) || portNumber < 0) {
     throw new Error("PORT env var is required and must be a number");
   }
   return portNumber;

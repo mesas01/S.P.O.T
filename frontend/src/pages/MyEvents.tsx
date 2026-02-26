@@ -7,6 +7,8 @@ import TldrCard from "../components/layout/TldrCard";
 import {
   fetchCommunities,
   fetchOnchainEvents,
+  type EventTier,
+  type EventVisibility,
 } from "../util/backend";
 import { useNotification } from "../hooks/useNotification";
 import { buildErrorDetail } from "../utils/notificationHelpers";
@@ -58,6 +60,8 @@ interface EventData {
   creator?: string;
   source?: "local" | "contract";
   contractEventId?: number;
+  tier?: EventTier;
+  visibility?: EventVisibility;
 }
 
 const DEFAULT_DISTRIBUTION_METHODS = {
@@ -199,6 +203,8 @@ const MyEvents: React.FC = () => {
         creator: event.creator,
         communityId: event.communityId,
         source: "contract" as const,
+        tier: event.tier,
+        visibility: event.visibility,
       } satisfies EventData;
     });
   }, [onchainEvents]);
@@ -585,6 +591,17 @@ const MyEvents: React.FC = () => {
                               {event.source === "contract" && (
                                 <span className="text-[11px] uppercase tracking-wide bg-stellar-teal/15 text-stellar-teal font-semibold px-2 py-0.5 rounded-full">
                                   On-chain
+                                </span>
+                              )}
+                              {event.tier && event.tier !== "FREE" && (
+                                <span className="text-[11px] uppercase tracking-wide bg-stellar-lilac/15 text-stellar-lilac font-semibold px-2 py-0.5 rounded-full">
+                                  {event.tier}
+                                </span>
+                              )}
+                              {event.visibility === "PRIVATE" && (
+                                <span className="text-[11px] uppercase tracking-wide bg-stellar-black/10 text-stellar-black/70 font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                                  <Lock size={9} />
+                                  Privado
                                 </span>
                               )}
                             </div>

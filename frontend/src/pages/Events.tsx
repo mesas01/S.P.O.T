@@ -7,6 +7,8 @@ import {
   fetchOnchainEvents,
   type Community,
   type OnchainEventSummary,
+  type EventTier,
+  type EventVisibility,
 } from "../util/backend";
 import {
   AlertTriangle,
@@ -35,6 +37,8 @@ interface EventView {
   imageUrl?: string;
   creator: string;
   communityId?: number;
+  tier?: EventTier;
+  visibility?: EventVisibility;
 }
 
 type ClaimStatus = "open" | "upcoming" | "closed" | "soldout";
@@ -94,6 +98,8 @@ const mapEventToView = (event: OnchainEventSummary): EventView => ({
   imageUrl: event.imageUrl,
   creator: event.creator,
   communityId: event.communityId,
+  tier: event.tier,
+  visibility: event.visibility,
 });
 
 const Events: React.FC = () => {
@@ -345,6 +351,11 @@ const Events: React.FC = () => {
                                   {communityMap.get(event.communityId)?.name}
                                 </span>
                               )}
+                            {event.tier && event.tier !== "FREE" && (
+                              <span className="text-[11px] uppercase tracking-wide bg-stellar-lilac/15 text-stellar-lilac font-semibold px-2 py-0.5 rounded-full inline-flex items-center">
+                                {event.tier}
+                              </span>
+                            )}
                             <div className="flex flex-wrap gap-3 text-sm text-stellar-black/50 font-body mt-2">
                               <span className="inline-flex items-center gap-1">
                                 <CalendarDays size={13} />

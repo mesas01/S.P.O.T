@@ -5,6 +5,7 @@ import { useNotification } from "../hooks/useNotification";
 import {
   claimEventRequest,
   fetchOnchainEvents,
+  fetchEventById,
   type OnchainEventSummary,
 } from "../util/backend";
 import { connectWallet } from "../util/wallet";
@@ -112,16 +113,15 @@ const Mint: React.FC = () => {
     }, 100);
   };
 
-  // Fetch event info when arriving via direct link
+  // Fetch event info when arriving via direct link (uses /events/:id for direct access, works for private events)
   useEffect(() => {
     if (!hasDirectEvent) return;
     let cancelled = false;
     setEventLoading(true);
-    fetchOnchainEvents()
-      .then((events) => {
+    fetchEventById(parsedEventId!)
+      .then((event) => {
         if (cancelled) return;
-        const match = events.find((e) => e.eventId === parsedEventId);
-        if (match) setEventInfo(match);
+        if (event) setEventInfo(event);
       })
       .catch(() => {})
       .finally(() => {
@@ -162,9 +162,8 @@ const Mint: React.FC = () => {
     }
     setIsProcessing(true);
     try {
-      const events = await fetchOnchainEvents();
-      const exists = events.some((e) => e.eventId === eventId);
-      if (!exists) {
+      const event = await fetchEventById(eventId);
+      if (!event) {
         showNotification({
           type: "error",
           title: "Evento no encontrado en la red",

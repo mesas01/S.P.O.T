@@ -117,6 +117,24 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     : new Error("Backend request failed");
 }
 
+export type EventTier = "FREE" | "BASIC" | "PREMIUM";
+export type EventVisibility = "PUBLIC" | "PRIVATE";
+
+export interface TierLimits {
+  maxSpotsPerEvent: number;
+  maxActiveEvents: number;
+  allowedMethods: string[];
+}
+
+export interface CreatorProfile {
+  address: string;
+  status: string | null;
+  tier: EventTier;
+  limits: TierLimits;
+  paymentReference: string | null;
+  createdAt: string | null;
+}
+
 export interface CreateEventPayload {
   creator: string;
   communityId?: number | string;
@@ -130,6 +148,8 @@ export interface CreateEventPayload {
   metadataUri: string;
   imageUrl?: string;
   imageFile?: File | null;
+  tier?: EventTier;
+  visibility?: EventVisibility;
 }
 
 export interface ClaimEventPayload {
@@ -147,6 +167,8 @@ export interface BackendTxResponse {
 export interface CreateEventResponse extends BackendTxResponse {
   eventId?: number;
   imageUrl?: string;
+  tier?: EventTier;
+  visibility?: EventVisibility;
 }
 
 export function createEventRequest(payload: CreateEventPayload) {
@@ -172,6 +194,9 @@ export function createEventRequest(payload: CreateEventPayload) {
   }
   if (payload.imageFile) {
     formData.append("image", payload.imageFile);
+  }
+  if (payload.visibility) {
+    formData.append("visibility", payload.visibility);
   }
   return request<CreateEventResponse>("/events/create", {
     method: "POST",
@@ -209,6 +234,8 @@ export interface OnchainEventSummary {
   communityId?: number;
   mintedCount: number;
   tokenId?: number;
+  tier?: EventTier;
+  visibility?: EventVisibility;
 }
 
 export interface FetchOnchainEventsOptions {
@@ -338,9 +365,30 @@ export async function updateCommunityRequest(
   });
 }
 
+export async function fetchEventById(eventId: number) {
+  const response = await request<{ event: OnchainEventSummary | null }>(
+    `/events/${eventId}`,
+  );
+  return response.event;
+}
+
 export async function fetchCommunityEvents(communityId: number) {
   const response = await request<{ events: OnchainEventSummary[] }>(
     `/communities/${communityId}/events`,
   );
   return response.events;
+}
+
+export async function fetchTierLimits() {
+  const response = await request<{
+    limits: Record<EventTier, TierLimits>;
+  }>("/tier-limits");
+  return response.limits;
+}
+
+export async function fetchCreatorProfile(address: string) {
+  const response = await request<{ creator: CreatorProfile }>(
+    `/creators/${encodeURIComponent(address)}`,
+  );
+  return response.creator;
 }

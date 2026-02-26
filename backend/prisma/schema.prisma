@@ -29,6 +29,8 @@ model Event {
   claims      Claim[]
   image       Image?   @relation(fields: [imageId], references: [id])
   imageId     Int?     @unique
+  tier        EventTier       @default(FREE)
+  visibility  EventVisibility @default(PUBLIC)
 
   @@index([creator])
   @@index([communityId])
@@ -82,6 +84,7 @@ model Creator {
   id               Int           @id @default(autoincrement())
   address          String        @unique
   status           CreatorStatus @default(APPROVED)
+  tier             EventTier     @default(FREE)
   paymentReference String?
   txHash           String?
   createdAt        DateTime      @default(now())
@@ -93,6 +96,17 @@ model Creator {
 enum CreatorStatus {
   APPROVED
   REVOKED
+}
+
+enum EventTier {
+  FREE
+  BASIC
+  PREMIUM
+}
+
+enum EventVisibility {
+  PUBLIC
+  PRIVATE
 }
 
 model Transaction {

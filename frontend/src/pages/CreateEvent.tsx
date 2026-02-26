@@ -2,7 +2,13 @@ import React, { useState, useRef } from "react";
 import { useWallet } from "../hooks/useWallet";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useNotification } from "../hooks/useNotification";
-import { createEventRequest, fetchCommunities } from "../util/backend";
+import {
+  createEventRequest,
+  fetchCommunities,
+  fetchCreatorProfile,
+  type EventTier,
+  type EventVisibility,
+} from "../util/backend";
 import { useQuery } from "@tanstack/react-query";
 import TldrCard from "../components/layout/TldrCard";
 import { buildErrorDetail, buildTxDetail } from "../utils/notificationHelpers";
@@ -17,6 +23,7 @@ import {
   Upload,
   ArrowLeft,
   Loader2,
+  Users,
 } from "lucide-react";
 
 const CreateEvent: React.FC = () => {
@@ -39,6 +46,7 @@ const CreateEvent: React.FC = () => {
     imagePreview: "",
     metadataUri: "",
     communityId: searchParams.get("communityId") || "",
+    visibility: "PUBLIC" as EventVisibility,
   });
 
   const [distributionMethods, setDistributionMethods] = useState({
@@ -169,6 +177,7 @@ const CreateEvent: React.FC = () => {
           metadataUri,
           imageUrl: imageUrlForRequest,
           imageFile: formData.imageFile ?? undefined,
+          visibility: formData.visibility,
         };
 
         const backendResponse = await createEventRequest(backendPayload);
@@ -203,6 +212,7 @@ const CreateEvent: React.FC = () => {
           imagePreview: "",
           metadataUri: "",
           communityId: "",
+          visibility: "PUBLIC",
         });
         setDistributionMethods({
           qr: true,
@@ -249,6 +259,19 @@ const CreateEvent: React.FC = () => {
     retry: 2,
     staleTime: 15000,
   });
+
+  const { data: creatorProfile } = useQuery({
+    queryKey: ["creatorProfile", address],
+    queryFn: () => fetchCreatorProfile(address!),
+    enabled: !!address,
+    staleTime: 30000,
+  });
+
+  const tierLabels: Record<EventTier, string> = {
+    FREE: "Gratis",
+    BASIC: "Basico",
+    PREMIUM: "Premium",
+  };
 
   const distributionMethodConfigs = [
     { key: "qr" as const, Icon: QrCode, label: "QR Code" },
@@ -553,6 +576,92 @@ const CreateEvent: React.FC = () => {
             </select>
             <p className="text-xs text-stellar-black/40 mt-2 font-body italic">
               Puedes crear nuevas comunidades en la seccion Comunidades.
+            </p>
+          </div>
+
+          {/* Tier Info Banner (read-only) */}
+          {creatorProfile && (
+            <div className="bg-stellar-lilac/5 border border-stellar-lilac/20 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold font-body uppercase tracking-widest text-stellar-black/50">
+                  Tu Plan
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold font-body bg-stellar-lilac/15 text-stellar-black">
+                  {tierLabels[creatorProfile.tier]}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div>
+                  <p className="text-lg font-headline text-stellar-black">
+                    {creatorProfile.limits.maxSpotsPerEvent.toLocaleString()}
+                  </p>
+                  <p className="text-[10px] font-body text-stellar-black/40 uppercase tracking-wide">
+                    SPOTs/Evento
+                  </p>
+                </div>
+                <div>
+                  <p className="text-lg font-headline text-stellar-black">
+                    {creatorProfile.limits.maxActiveEvents}
+                  </p>
+                  <p className="text-[10px] font-body text-stellar-black/40 uppercase tracking-wide">
+                    Eventos Activos
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-body text-stellar-black capitalize">
+                    {creatorProfile.limits.allowedMethods.join(", ")}
+                  </p>
+                  <p className="text-[10px] font-body text-stellar-black/40 uppercase tracking-wide">
+                    Metodos
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Visibility */}
+          <div>
+            <label className={labelClass}>Visibilidad</label>
+            <div className="flex gap-2">
+              {(["PUBLIC", "PRIVATE"] as const).map((v) => {
+                const config: Record<
+                  EventVisibility,
+                  { label: string; Icon: typeof Users }
+                > = {
+                  PUBLIC: { label: "Público", Icon: Users },
+                  PRIVATE: { label: "Privado", Icon: Lock },
+                };
+                const { label, Icon } = config[v];
+                const isActive = formData.visibility === v;
+                return (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() =>
+                      setFormData((prev) => ({ ...prev, visibility: v }))
+                    }
+                    className={`flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold font-body transition-all ${
+                      isActive
+                        ? "bg-stellar-lilac/15 border-stellar-lilac/40 text-stellar-black"
+                        : "border-stellar-black/10 text-stellar-black/40 hover:border-stellar-black/20 hover:text-stellar-black/60"
+                    }`}
+                  >
+                    <Icon
+                      size={13}
+                      className={
+                        isActive
+                          ? "text-stellar-lilac"
+                          : "text-stellar-black/30"
+                      }
+                    />
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-xs text-stellar-black/40 mt-2 font-body italic">
+              Los eventos privados solo serán accesibles mediante link directo o
+              código QR.
             </p>
           </div>
 

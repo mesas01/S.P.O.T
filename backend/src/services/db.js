@@ -18,6 +18,8 @@ export async function createEventRecord({
   imageUrl,
   txHash,
   imageId,
+  tier,
+  visibility,
 }) {
   if (!prisma) return null;
   return prisma.event.create({
@@ -36,6 +38,8 @@ export async function createEventRecord({
       imageUrl,
       txHash,
       imageId: imageId ?? undefined,
+      tier: tier ?? undefined,
+      visibility: visibility ?? undefined,
     },
   });
 }
@@ -70,12 +74,33 @@ export async function upsertCreatorApproval({
   address,
   paymentReference,
   txHash,
+  tier,
 }) {
   if (!prisma) return null;
+  const tierData = tier ? { tier } : {};
   return prisma.creator.upsert({
     where: { address },
-    update: { status: "APPROVED", paymentReference, txHash },
-    create: { address, status: "APPROVED", paymentReference, txHash },
+    update: { status: "APPROVED", paymentReference, txHash, ...tierData },
+    create: { address, status: "APPROVED", paymentReference, txHash, ...tierData },
+  });
+}
+
+/**
+ * Get a creator by address.
+ */
+export async function getCreatorByAddress(address) {
+  if (!prisma) return null;
+  return prisma.creator.findUnique({ where: { address } });
+}
+
+/**
+ * Count active events for a creator (claimEnd > now).
+ */
+export async function countActiveEventsByCreator(address) {
+  if (!prisma) return 0;
+  const nowSeconds = BigInt(Math.floor(Date.now() / 1000));
+  return prisma.event.count({
+    where: { creator: address, claimEnd: { gt: nowSeconds } },
   });
 }
 
@@ -104,9 +129,11 @@ export async function logTransaction({ action, status, txHash, payload, error })
 /**
  * Get all events from DB, optionally filtered by creator.
  */
-export async function getAllEvents({ creator } = {}) {
+export async function getAllEvents({ creator, visibility } = {}) {
   if (!prisma) return null;
-  const where = creator ? { creator } : {};
+  const where = {};
+  if (creator) where.creator = creator;
+  if (visibility) where.visibility = visibility;
   return prisma.event.findMany({
     where,
     orderBy: { eventId: "asc" },
@@ -174,6 +201,8 @@ export async function upsertEventRecord({
   metadataUri,
   imageUrl,
   mintedCount,
+  tier,
+  visibility,
 }) {
   if (!prisma) return null;
   return prisma.event.upsert({
@@ -191,6 +220,8 @@ export async function upsertEventRecord({
       metadataUri,
       imageUrl,
       mintedCount,
+      tier: tier ?? undefined,
+      visibility: visibility ?? undefined,
     },
     create: {
       eventId,
@@ -206,6 +237,8 @@ export async function upsertEventRecord({
       metadataUri,
       imageUrl,
       mintedCount,
+      tier: tier ?? undefined,
+      visibility: visibility ?? undefined,
     },
   });
 }
@@ -291,10 +324,22 @@ export async function leaveCommunity({ communityId, address }) {
 /**
  * Get events by community.
  */
-export async function getEventsByCommunity(communityId) {
+export async function getEventsByCommunity(communityId, { visibility } = {}) {
   if (!prisma) return null;
+  const where = { communityId };
+  if (visibility) where.visibility = visibility;
   return prisma.event.findMany({
-    where: { communityId },
+    where,
     orderBy: { eventDate: "desc" },
+  });
+}
+
+/**
+ * Get a single event by eventId (ignores visibility — for direct access).
+ */
+export async function getEventById(eventId) {
+  if (!prisma) return null;
+  return prisma.event.findUnique({
+    where: { eventId },
   });
 }
