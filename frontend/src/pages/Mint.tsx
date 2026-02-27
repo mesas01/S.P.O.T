@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useWallet } from "../hooks/useWallet";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useNotification } from "../hooks/useNotification";
@@ -9,7 +10,9 @@ import {
 } from "../util/backend";
 import { connectWallet } from "../util/wallet";
 import TldrCard from "../components/layout/TldrCard";
+import QRScanner from "../components/QRScanner";
 import { buildErrorDetail, buildTxDetail } from "../utils/notificationHelpers";
+import { getDateLocale } from "../utils/dateFormat";
 import {
   QrCode,
   Link2,
@@ -24,79 +27,80 @@ import {
   Users,
 } from "lucide-react";
 
-// ─── Claim methods config ────────────────────────────────────────────────────
-
-const claimMethods = [
-  {
-    id: "qr",
-    Icon: QrCode,
-    title: "Escanear QR",
-    description: "Escanea el código QR del evento para reclamar tu SPOT al instante.",
-    color: "text-stellar-gold",
-    bg: "bg-stellar-gold/10",
-    border: "border-stellar-gold/20",
-    activeBorder: "border-stellar-gold",
-    activeBg: "bg-stellar-gold/10",
-  },
-  {
-    id: "link",
-    Icon: Link2,
-    title: "Usar Link",
-    description: "Ingresa el link único del evento para reclamar de forma remota.",
-    color: "text-stellar-lilac",
-    bg: "bg-stellar-lilac/10",
-    border: "border-stellar-lilac/20",
-    activeBorder: "border-stellar-lilac",
-    activeBg: "bg-stellar-lilac/10",
-  },
-  {
-    id: "code",
-    Icon: Hash,
-    title: "Código Compartido",
-    description: "Ingresa el código compartido por el organizador del evento.",
-    color: "text-stellar-teal",
-    bg: "bg-stellar-teal/10",
-    border: "border-stellar-teal/20",
-    activeBorder: "border-stellar-teal",
-    activeBg: "bg-stellar-teal/10",
-  },
-  {
-    id: "geolocation",
-    Icon: MapPin,
-    title: "Geolocalización",
-    description: "Verifica tu ubicación cerca del evento para validar asistencia.",
-    color: "text-stellar-gold",
-    bg: "bg-stellar-gold/10",
-    border: "border-stellar-gold/20",
-    activeBorder: "border-stellar-gold",
-    activeBg: "bg-stellar-gold/10",
-  },
-  {
-    id: "nfc",
-    Icon: Nfc,
-    title: "NFC",
-    description: "Acerca tu dispositivo al tag NFC para una experiencia táctil.",
-    color: "text-stellar-lilac",
-    bg: "bg-stellar-lilac/10",
-    border: "border-stellar-lilac/20",
-    activeBorder: "border-stellar-lilac",
-    activeBg: "bg-stellar-lilac/10",
-  },
-];
-
 // ─── Component ───────────────────────────────────────────────────────────────
 
 const Mint: React.FC = () => {
+  const { t } = useTranslation('mint');
   const { address } = useWallet();
   const isConnected = !!address;
   const navigate = useNavigate();
   const { showNotification } = useNotification();
+
+  // ─── Claim methods config (inside component to use t()) ──────────────────
+  const claimMethods = [
+    {
+      id: "qr",
+      Icon: QrCode,
+      title: t('methods.qr'),
+      description: t('methods.qrDesc'),
+      color: "text-stellar-gold",
+      bg: "bg-stellar-gold/10",
+      border: "border-stellar-gold/20",
+      activeBorder: "border-stellar-gold",
+      activeBg: "bg-stellar-gold/10",
+    },
+    {
+      id: "link",
+      Icon: Link2,
+      title: t('methods.link'),
+      description: t('methods.linkDesc'),
+      color: "text-stellar-lilac",
+      bg: "bg-stellar-lilac/10",
+      border: "border-stellar-lilac/20",
+      activeBorder: "border-stellar-lilac",
+      activeBg: "bg-stellar-lilac/10",
+    },
+    {
+      id: "code",
+      Icon: Hash,
+      title: t('methods.code'),
+      description: t('methods.codeDesc'),
+      color: "text-stellar-teal",
+      bg: "bg-stellar-teal/10",
+      border: "border-stellar-teal/20",
+      activeBorder: "border-stellar-teal",
+      activeBg: "bg-stellar-teal/10",
+    },
+    {
+      id: "geolocation",
+      Icon: MapPin,
+      title: t('methods.geolocation'),
+      description: t('methods.geolocationDesc'),
+      color: "text-stellar-gold",
+      bg: "bg-stellar-gold/10",
+      border: "border-stellar-gold/20",
+      activeBorder: "border-stellar-gold",
+      activeBg: "bg-stellar-gold/10",
+    },
+    {
+      id: "nfc",
+      Icon: Nfc,
+      title: t('methods.nfc'),
+      description: t('methods.nfcDesc'),
+      color: "text-stellar-lilac",
+      bg: "bg-stellar-lilac/10",
+      border: "border-stellar-lilac/20",
+      activeBorder: "border-stellar-lilac",
+      activeBg: "bg-stellar-lilac/10",
+    },
+  ];
 
   const [searchParams] = useSearchParams();
   const [activeMethod, setActiveMethod] = useState<string | null>(null);
   const [linkValue, setLinkValue] = useState("");
   const [codeValue, setCodeValue] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showQRScanner, setShowQRScanner] = useState(false);
   const [eventInfo, setEventInfo] = useState<OnchainEventSummary | null>(null);
   const [eventLoading, setEventLoading] = useState(false);
   const actionPanelRef = useRef<HTMLDivElement | null>(null);
@@ -156,7 +160,7 @@ const Mint: React.FC = () => {
 
   const executeClaim = async (eventId: number) => {
     if (!address) {
-      showNotification({ type: "error", title: "Wallet requerida", message: "Conecta tu wallet antes de reclamar el coleccionable" });
+      showNotification({ type: "error", title: t('notifications.walletRequired'), message: t('notifications.walletRequiredMsg') });
       return;
     }
     setIsProcessing(true);
@@ -165,17 +169,16 @@ const Mint: React.FC = () => {
       if (!event) {
         showNotification({
           type: "error",
-          title: "Evento no encontrado en la red",
-          message:
-            "Ese evento no existe en el contrato (ID puede ser de otro entorno o creado en modo prueba). Crea el evento de nuevo con el backend real y usa el link/código nuevo.",
+          title: t('notifications.eventNotFound'),
+          message: t('notifications.eventNotFoundMsg'),
         });
         return;
       }
       const response = await claimEventRequest({ claimer: address, eventId });
       showNotification({
         type: "success",
-        title: "Reclamo enviado",
-        message: "Tx enviada. Copia el detalle si necesitas compartirla.",
+        title: t('notifications.claimSent'),
+        message: t('notifications.claimSentMsg'),
         copyText: buildTxDetail(response.txHash, { eventId, claimer: address }),
       });
       navigate("/");
@@ -183,49 +186,59 @@ const Mint: React.FC = () => {
       const msg = error?.message ?? "";
       const isEventNotFound =
         /Error\(Contract,\s*#7\)|EventNotFound|NO_EVENT|event not found/i.test(msg);
-      const title = isEventNotFound ? "Evento no encontrado en la red" : "Error al reclamar";
+      const title = isEventNotFound ? t('notifications.eventNotFound') : t('notifications.claimError');
       const message = isEventNotFound
-        ? "Ese evento no existe en el contrato (ID puede ser de otro entorno o creado en modo prueba). Crea el evento de nuevo con el backend real y usa el link/código nuevo."
-        : "No se pudo completar el reclamo.";
+        ? t('notifications.eventNotFoundMsg')
+        : t('notifications.claimErrorMsg');
       showNotification({ type: "error", title, message, copyText: buildErrorDetail(error) });
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleQRScan = async () => {
-    showNotification({ type: "info", title: "Próximamente", message: "El escaneo QR enviará el reclamo automático al backend." });
+  const handleQRScan = () => {
+    setShowQRScanner(true);
+  };
+
+  const handleQRResult = async (decodedText: string) => {
+    setShowQRScanner(false);
+    const eventId = extractEventIdFromLink(decodedText);
+    if (eventId === null) {
+      showNotification({ type: "error", title: t('notifications.invalidQR'), message: t('notifications.invalidQRMsg') });
+      return;
+    }
+    await executeClaim(eventId);
   };
 
   const handleLinkClaim = async () => {
-    if (!linkValue.trim()) { alert("Por favor, ingresa un link válido"); return; }
+    if (!linkValue.trim()) { alert(t('alerts.enterValidLink')); return; }
     setIsProcessing(true);
     try {
       const eventId = extractEventIdFromLink(linkValue.trim());
       if (eventId === null) {
-        showNotification({ type: "error", title: "Link no válido", message: "No pudimos encontrar un ID de evento en el link" });
+        showNotification({ type: "error", title: t('notifications.invalidLink'), message: t('notifications.invalidLinkMsg') });
         return;
       }
       await executeClaim(eventId);
     } catch (error) {
-      showNotification({ type: "error", title: "Error al reclamar", message: "No pudimos procesar el link.", copyText: buildErrorDetail(error) });
+      showNotification({ type: "error", title: t('notifications.claimError'), message: t('notifications.linkProcessError'), copyText: buildErrorDetail(error) });
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleCodeClaim = async () => {
-    if (!codeValue.trim()) { alert("Por favor, ingresa un código válido"); return; }
+    if (!codeValue.trim()) { alert(t('alerts.enterValidCode')); return; }
     setIsProcessing(true);
     try {
       const eventId = extractEventIdFromCode(codeValue.trim());
       if (eventId === null) {
-        showNotification({ type: "error", title: "Código inválido", message: "Incluye el ID numérico del evento en el código compartido" });
+        showNotification({ type: "error", title: t('notifications.invalidCode'), message: t('notifications.invalidCodeMsg') });
         return;
       }
       await executeClaim(eventId);
     } catch (error) {
-      showNotification({ type: "error", title: "Error al reclamar", message: "No pudimos procesar el código.", copyText: buildErrorDetail(error) });
+      showNotification({ type: "error", title: t('notifications.claimError'), message: t('notifications.codeProcessError'), copyText: buildErrorDetail(error) });
     } finally {
       setIsProcessing(false);
     }
@@ -235,19 +248,19 @@ const Mint: React.FC = () => {
     setIsProcessing(true);
     try {
       if (!navigator.geolocation) {
-        showNotification({ type: "error", title: "Sin geolocalización", message: "Tu navegador no soporta geolocalización" });
+        showNotification({ type: "error", title: t('notifications.noGeolocation'), message: t('notifications.noGeolocationMsg') });
         return;
       }
       navigator.geolocation.getCurrentPosition(
         async () => {
-          showNotification({ type: "info", title: "Validación pendiente", message: "La validación por geolocalización aún no está implementada." });
+          showNotification({ type: "info", title: t('notifications.validationPending'), message: t('notifications.validationPendingMsg') });
         },
         (error) => {
-          showNotification({ type: "error", title: "Error de ubicación", message: "No pudimos obtener tu posición.", copyText: buildErrorDetail(error) });
+          showNotification({ type: "error", title: t('notifications.locationError'), message: t('notifications.locationErrorMsg'), copyText: buildErrorDetail(error) });
         },
       );
     } catch (error) {
-      showNotification({ type: "error", title: "Error al reclamar", message: "No pudimos completar la validación por geolocalización.", copyText: buildErrorDetail(error) });
+      showNotification({ type: "error", title: t('notifications.claimError'), message: t('notifications.geolocationError'), copyText: buildErrorDetail(error) });
     } finally {
       setIsProcessing(false);
     }
@@ -256,7 +269,7 @@ const Mint: React.FC = () => {
   // ── Direct link: confirmation view ────────────────────────────────────────
   if (hasDirectEvent) {
     const formatDate = (ts: number) =>
-      new Date(ts * 1000).toLocaleDateString("es", {
+      new Date(ts * 1000).toLocaleDateString(getDateLocale(), {
         day: "numeric",
         month: "long",
         year: "numeric",
@@ -272,22 +285,22 @@ const Mint: React.FC = () => {
             className="inline-flex items-center gap-2 text-sm text-stellar-black/50 hover:text-stellar-black transition-colors font-body mb-8"
           >
             <ArrowLeft size={15} />
-            Volver
+            {t('common:actions.back')}
           </button>
 
           <div className="rounded-2xl border-2 border-stellar-lilac/20 bg-white p-8 shadow-lg">
             <span className="text-xs font-body uppercase tracking-widest text-stellar-teal mb-3 block">
-              Confirmar reclamo
+              {t('confirmEyebrow')}
             </span>
             <h1 className="text-2xl md:text-3xl font-headline text-stellar-black mb-6 uppercase">
-              Reclamar SPOT
+              {t('confirmTitle')}
             </h1>
 
             {/* Event info */}
             {eventLoading ? (
               <div className="flex items-center gap-3 mb-6 text-stellar-black/50">
                 <Loader2 size={16} className="animate-spin" />
-                <span className="font-body text-sm">Cargando info del evento...</span>
+                <span className="font-body text-sm">{t('loadingEventInfo')}</span>
               </div>
             ) : eventInfo ? (
               <div className="rounded-xl border border-stellar-lilac/15 bg-stellar-lilac/5 p-5 mb-6 space-y-3">
@@ -312,7 +325,7 @@ const Mint: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Users size={14} className="text-stellar-lilac" />
-                    {eventInfo.mintedCount} / {eventInfo.maxSpots} reclamados
+                    {eventInfo.mintedCount} / {eventInfo.maxSpots} {t('common:claimed')}
                   </div>
                 </div>
                 {eventInfo.description && (
@@ -324,7 +337,7 @@ const Mint: React.FC = () => {
             ) : (
               <div className="rounded-xl border border-stellar-lilac/15 bg-stellar-lilac/5 p-5 mb-6">
                 <p className="text-sm font-body text-stellar-black/70">
-                  Evento <span className="font-semibold">#{parsedEventId}</span>
+                  {t('event')} <span className="font-semibold">#{parsedEventId}</span>
                 </p>
               </div>
             )}
@@ -334,7 +347,7 @@ const Mint: React.FC = () => {
               <div className="flex flex-col items-center gap-3 py-4">
                 <Loader2 size={32} className="animate-spin text-stellar-lilac" />
                 <p className="text-sm font-body text-stellar-black/60">
-                  Procesando tu reclamo...
+                  {t('processing')}
                 </p>
               </div>
             ) : !isConnected ? (
@@ -342,14 +355,14 @@ const Mint: React.FC = () => {
                 <div className="flex items-center gap-3 rounded-xl bg-stellar-gold/10 border border-stellar-gold/20 p-4">
                   <Lock size={18} className="text-stellar-gold flex-shrink-0" />
                   <p className="text-sm font-body text-stellar-black/70">
-                    Para reclamar tu SPOT necesitas conectar tu wallet primero.
+                    {t('connectRequired')}
                   </p>
                 </div>
                 <button
                   onClick={() => void connectWallet()}
                   className="w-full inline-flex items-center justify-center gap-2 bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3.5 px-8 shadow-md transition-all font-body text-base"
                 >
-                  Conectar Wallet
+                  {t('common:wallet.connectWallet')}
                 </button>
               </div>
             ) : (
@@ -357,7 +370,7 @@ const Mint: React.FC = () => {
                 onClick={() => executeClaim(parsedEventId!)}
                 className="w-full inline-flex items-center justify-center gap-2 bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3.5 px-8 shadow-md transition-all font-body text-base"
               >
-                Confirmar Reclamo
+                {t('confirmClaim')}
               </button>
             )}
           </div>
@@ -375,17 +388,17 @@ const Mint: React.FC = () => {
             <Lock size={28} className="text-stellar-lilac" />
           </div>
           <h2 className="text-2xl font-headline text-stellar-black mb-3 uppercase">
-            Conecta tu Wallet
+            {t('connectTitle')}
           </h2>
           <p className="text-stellar-black/60 mb-8 font-body">
-            Necesitas conectar tu wallet para reclamar un SPOT.
+            {t('connectSubtitle')}
           </p>
           <button
             onClick={() => navigate("/")}
             className="inline-flex items-center gap-2 bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full px-8 py-3 shadow-lg transition-all font-body"
           >
             <ArrowLeft size={16} />
-            Ir a Home
+            {t('common:actions.goHome')}
           </button>
         </div>
       </div>
@@ -402,18 +415,17 @@ const Mint: React.FC = () => {
           className="inline-flex items-center gap-2 text-sm text-stellar-black/50 hover:text-stellar-black transition-colors font-body mb-6"
         >
           <ArrowLeft size={15} />
-          Volver
+          {t('common:actions.back')}
         </button>
 
         <span className="text-xs font-body uppercase tracking-widest text-stellar-teal mb-3 block">
-          Métodos de reclamo
+          {t('eyebrow')}
         </span>
         <h1 className="text-3xl md:text-4xl font-headline text-stellar-black mb-3 uppercase">
-          Reclamar SPOT
+          {t('title')}
         </h1>
         <p className="text-stellar-black/60 font-body max-w-xl">
-          Decide cómo reclamar tu comprobante: QR, link, código, geolocalización
-          o NFC según el contexto del evento.
+          {t('subtitle')}
         </p>
       </div>
 
@@ -422,11 +434,11 @@ const Mint: React.FC = () => {
         <div className="mb-8">
           <TldrCard
             label=""
-            summary="Decide cómo reclamar tu comprobante: QR, link, código, geolocalización o NFC según el contexto del evento."
+            summary={t('tldr.summary')}
             bullets={[
-              { label: "QR primero", detail: "Experiencia más rápida en eventos físicos." },
-              { label: "Link único", detail: "Ideal para claims remotos con copy pragmático." },
-              { label: "Geo & NFC", detail: "Visibilidad de métodos futuros con transparencia." },
+              { label: t('tldr.qrLabel'), detail: t('tldr.qrDetail') },
+              { label: t('tldr.linkLabel'), detail: t('tldr.linkDetail') },
+              { label: t('tldr.geoLabel'), detail: t('tldr.geoDetail') },
             ]}
           />
         </div>
@@ -462,7 +474,7 @@ const Mint: React.FC = () => {
                     </p>
                     {isNfcDisabled && (
                       <p className="text-xs text-stellar-black/40 mt-1 font-body">
-                        No disponible en este dispositivo
+                        {t('methods.nfcUnavailable')}
                       </p>
                     )}
                   </div>
@@ -486,28 +498,29 @@ const Mint: React.FC = () => {
             {activeMethod === "qr" && (
               <div className="space-y-4">
                 <h3 className="text-lg font-headline text-stellar-black uppercase">
-                  Escanear código QR
+                  {t('actions.scanQR')}
                 </h3>
                 <button
                   onClick={handleQRScan}
                   disabled={isProcessing}
                   className="w-full inline-flex items-center justify-center gap-2 bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3 px-8 shadow-md transition-all font-body disabled:opacity-50"
                 >
-                  {isProcessing ? <><Loader2 size={16} className="animate-spin" /> Procesando...</> : "Abrir Cámara"}
+                  {isProcessing ? <><Loader2 size={16} className="animate-spin" /> {t('actions.processing')}</> : t('actions.openCamera')}
                 </button>
+                {showQRScanner && <QRScanner onScan={handleQRResult} onClose={() => setShowQRScanner(false)} />}
               </div>
             )}
 
             {activeMethod === "link" && (
               <div className="space-y-4">
                 <h3 className="text-lg font-headline text-stellar-black uppercase">
-                  Ingresa el link del evento
+                  {t('actions.enterLink')}
                 </h3>
                 <input
                   type="url"
                   value={linkValue}
                   onChange={(e) => setLinkValue(e.target.value)}
-                  placeholder="https://spot.example.com/event/..."
+                  placeholder={t('placeholders.linkInput')}
                   className="w-full px-5 py-3 border-2 border-stellar-lilac/40 rounded-xl bg-stellar-white text-stellar-black placeholder-stellar-black/30 focus:border-stellar-lilac focus:outline-none focus:ring-2 focus:ring-stellar-lilac/20 font-body text-sm transition-colors"
                 />
                 <button
@@ -515,7 +528,7 @@ const Mint: React.FC = () => {
                   disabled={isProcessing || !linkValue.trim()}
                   className="w-full inline-flex items-center justify-center gap-2 bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3 px-8 shadow-md transition-all font-body disabled:opacity-50"
                 >
-                  {isProcessing ? <><Loader2 size={16} className="animate-spin" /> Procesando...</> : "Reclamar SPOT"}
+                  {isProcessing ? <><Loader2 size={16} className="animate-spin" /> {t('actions.processing')}</> : t('actions.claimSpot')}
                 </button>
               </div>
             )}
@@ -523,13 +536,13 @@ const Mint: React.FC = () => {
             {activeMethod === "code" && (
               <div className="space-y-4">
                 <h3 className="text-lg font-headline text-stellar-black uppercase">
-                  Ingresa el código del evento
+                  {t('actions.enterCode')}
                 </h3>
                 <input
                   type="text"
                   value={codeValue}
                   onChange={(e) => setCodeValue(e.target.value.toUpperCase())}
-                  placeholder="Ej: HACKATHON2024"
+                  placeholder={t('placeholders.codeInput')}
                   className="w-full px-5 py-3 border-2 border-stellar-teal/40 rounded-xl bg-stellar-white text-stellar-black placeholder-stellar-black/30 focus:border-stellar-teal focus:outline-none focus:ring-2 focus:ring-stellar-teal/20 font-body text-sm uppercase tracking-widest transition-colors"
                 />
                 <button
@@ -537,7 +550,7 @@ const Mint: React.FC = () => {
                   disabled={isProcessing || !codeValue.trim()}
                   className="w-full inline-flex items-center justify-center gap-2 bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3 px-8 shadow-md transition-all font-body disabled:opacity-50"
                 >
-                  {isProcessing ? <><Loader2 size={16} className="animate-spin" /> Procesando...</> : "Reclamar SPOT"}
+                  {isProcessing ? <><Loader2 size={16} className="animate-spin" /> {t('actions.processing')}</> : t('actions.claimSpot')}
                 </button>
               </div>
             )}
@@ -545,17 +558,17 @@ const Mint: React.FC = () => {
             {activeMethod === "geolocation" && (
               <div className="space-y-4">
                 <h3 className="text-lg font-headline text-stellar-black uppercase">
-                  Verificar ubicación
+                  {t('actions.verifyLocation')}
                 </h3>
                 <p className="text-stellar-black/60 font-body text-sm">
-                  Asegúrate de estar en el lugar del evento. Usaremos tu ubicación para validar la asistencia.
+                  {t('actions.verifyLocationDesc')}
                 </p>
                 <button
                   onClick={handleGeolocation}
                   disabled={isProcessing}
                   className="w-full inline-flex items-center justify-center gap-2 bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full py-3 px-8 shadow-md transition-all font-body disabled:opacity-50"
                 >
-                  {isProcessing ? <><Loader2 size={16} className="animate-spin" /> Verificando...</> : "Verificar Ubicación"}
+                  {isProcessing ? <><Loader2 size={16} className="animate-spin" /> {t('actions.verifying')}</> : t('actions.verifyBtn')}
                 </button>
               </div>
             )}
@@ -563,10 +576,10 @@ const Mint: React.FC = () => {
             {activeMethod === "nfc" && (
               <div className="space-y-4">
                 <h3 className="text-lg font-headline text-stellar-black uppercase">
-                  Acerca tu dispositivo al tag NFC
+                  {t('actions.nfcAction')}
                 </h3>
                 <p className="text-stellar-black/60 font-body text-sm">
-                  Asegúrate de que NFC esté activado en tu dispositivo y acércalo al punto de reclamo.
+                  {t('actions.nfcActionDesc')}
                 </p>
               </div>
             )}

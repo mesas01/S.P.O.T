@@ -1,0 +1,46 @@
+{
+  "title": "Plans & Pricing",
+  "subtitle": "Choose the plan that best fits your needs. All plans include verifiable NFTs on the Stellar network.",
+  "yourPlan": "Your Plan",
+  "spotsPerEvent": "SPOTs per event",
+  "activeEvents": "active events",
+  "distributionBy": "Distribution via",
+  "verifiableNFTs": "Verifiable NFTs on Stellar",
+  "loadError": "Could not load plans. Try again later.",
+  "footerNote": "Paid plans will be available soon. Limits may change.",
+  "tierLabels": {
+    "FREE": "Free",
+    "BASIC": "Basic",
+    "PREMIUM": "Premium"
+  },
+  "tierConfig": {
+    "FREE": {
+      "price": "Free",
+      "description": "Perfect for testing the platform and small events.",
+      "ctaLabel": "Start Free"
+    },
+    "BASIC": {
+      "price": "Coming soon",
+      "description": "For creators who need more capacity and flexibility.",
+      "ctaLabel": "Coming soon"
+    },
+    "PREMIUM": {
+      "price": "Coming soon",
+      "description": "For organizations and large-scale events with all features.",
+      "ctaLabel": "Coming soon"
+    }
+  },
+  "methodLabels": {
+    "code": "Code",
+    "qr": "QR",
+    "link": "Link"
+  },
+  "tldr": {
+    "title": "Quick Summary",
+    "summary": "All plans let you create events and distribute SPOTs (attendance NFTs) on the Stellar network.",
+    "bullet1Label": "Free to start",
+    "bullet1Detail": "Create events with generous limits at no cost.",
+    "bullet2Label": "Scale when needed",
+    "bullet2Detail": "Paid plans with more capacity and distribution methods."
+  }
+}

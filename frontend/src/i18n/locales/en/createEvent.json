@@ -1,0 +1,73 @@
+{
+  "title": "Create Event",
+  "subtitle": "Fill out the form to create your SPOT event",
+  "connectTitle": "Connect your Wallet",
+  "connectSubtitle": "You need to connect your wallet to create an event.",
+  "form": {
+    "eventName": "Event Name *",
+    "eventNamePlaceholder": "E.g.: Stellar Hackathon 2024",
+    "eventDate": "Event Date *",
+    "location": "Location *",
+    "locationPlaceholder": "E.g.: Bogota, Colombia",
+    "description": "Description *",
+    "descriptionPlaceholder": "Describe your event...",
+    "maxSpots": "Max SPOTs *",
+    "maxSpotsPlaceholder": "E.g.: 100",
+    "claimStart": "Claim Start *",
+    "claimEnd": "Claim End *",
+    "eventImage": "Event Image",
+    "changeImage": "Change Image",
+    "uploadImage": "Upload Image",
+    "orImageUrl": "Or enter an image URL:",
+    "imageUrlPlaceholder": "https://example.com/image.png or /images/events/my-event.jpg",
+    "imageStorageNote": "Images will be stored temporarily. For production, permanent storage (IPFS, Firebase, etc.) will be implemented",
+    "metadataUri": "Metadata URI (Optional)",
+    "communityLabel": "Community (Optional)",
+    "noCommunity": "No community",
+    "communityNote": "You can create new communities in the Communities section.",
+    "yourPlan": "Your Plan",
+    "spotsPerEvent": "SPOTs/Event",
+    "activeEvents": "Active Events",
+    "methods": "Methods",
+    "visibility": "Visibility",
+    "public": "Public",
+    "private": "Private",
+    "privateNote": "Private events will only be accessible via direct link or QR code.",
+    "distributionMethods": "Distribution Methods",
+    "qrCode": "QR Code",
+    "uniqueLink": "Unique Link",
+    "code": "Code",
+    "geolocation": "Geolocation",
+    "nfc": "NFC",
+    "submit": "Create Event",
+    "submitting": "Creating event..."
+  },
+  "notifications": {
+    "walletNotConnected": "Wallet not connected",
+    "walletNotConnectedMsg": "Please connect your wallet first",
+    "requiredFields": "Required fields",
+    "requiredFieldsMsg": "Please fill in all required fields",
+    "eventCreated": "Event created",
+    "eventCreatedMsg": "Your SPOT event is ready. Copy the detail if you need to resend the transaction.",
+    "createError": "Error creating event",
+    "createErrorMsg": "Could not create the event. Copy the detail for support."
+  },
+  "validation": {
+    "invalidImage": "Please select a valid image file",
+    "imageTooLarge": "Image cannot be larger than 5MB"
+  },
+  "tierLabels": {
+    "FREE": "Free",
+    "BASIC": "Basic",
+    "PREMIUM": "Premium"
+  },
+  "tldr": {
+    "summary": "Before filling out the form, make sure you have art, dates, and delivery methods ready.",
+    "bullet1Label": "Visual",
+    "bullet1Detail": "Use human images and highlight key points.",
+    "bullet2Label": "Timing",
+    "bullet2Detail": "Set a clear claim window (start/end).",
+    "bullet3Label": "Methods",
+    "bullet3Detail": "Enable QR, link, code, geo, or NFC based on your audience."
+  }
+}

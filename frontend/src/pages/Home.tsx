@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useWallet } from "../hooks/useWallet";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import TldrCard from "../components/layout/TldrCard";
 import ConnectAccount from "../components/ConnectAccount";
 import {
@@ -20,108 +21,102 @@ import {
 } from "lucide-react";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 
-// ─── Static data ────────────────────────────────────────────────────────────
-//aaaaaaaaaaaaaaaaaaaa
-const features = [
-  {
-    icon: QrCode,
-    title: "Múltiples Métodos",
-    description: "Reclama SPOTs con QR, Link, Código, Geolocalización o NFC",
-    color: "text-stellar-gold",
-    border: "border-stellar-gold/20",
-    bg: "bg-stellar-gold/5",
-  },
-  {
-    icon: Link2,
-    title: "En la Blockchain",
-    description: "Tus SPOTs están guardados permanentemente en la red Stellar",
-    color: "text-stellar-teal",
-    border: "border-stellar-teal/20",
-    bg: "bg-stellar-teal/5",
-  },
-  {
-    icon: Palette,
-    title: "Personalizables",
-    description: "Crea eventos únicos con imágenes y metadata personalizada",
-    color: "text-stellar-lilac",
-    border: "border-stellar-lilac/20",
-    bg: "bg-stellar-lilac/5",
-  },
-  {
-    icon: KeyRound,
-    title: "Self-Service",
-    description:
-      "Herramientas para crear, editar y pausar eventos sin depender de desarrolladores",
-    color: "text-stellar-gold",
-    border: "border-stellar-gold/20",
-    bg: "bg-stellar-gold/5",
-  },
-  {
-    icon: MapPin,
-    title: "Geolocalización",
-    description:
-      "Verifica asistencia real con validación por ubicación y proximidad al evento",
-    color: "text-stellar-teal",
-    border: "border-stellar-teal/20",
-    bg: "bg-stellar-teal/5",
-  },
-  {
-    icon: Nfc,
-    title: "Integraciones Soroban",
-    description:
-      "Automatiza claims con contratos inteligentes listos para producción",
-    color: "text-stellar-lilac",
-    border: "border-stellar-lilac/20",
-    bg: "bg-stellar-lilac/5",
-  },
-];
-
-const steps = [
-  {
-    icon: Wallet,
-    step: "01",
-    title: "Conecta tu Wallet",
-    description:
-      "Conecta tu wallet de Stellar para acceder a la plataforma. Compatible con las principales wallets del ecosistema.",
-    color: "text-stellar-gold",
-    bg: "bg-stellar-gold/10",
-    border: "border-stellar-gold/30",
-  },
-  {
-    icon: CalendarPlus,
-    step: "02",
-    title: "Crea tu Evento",
-    description:
-      "Sube tu imagen, define cupos y programa fechas de reclamo para cada evento sin depender de desarrolladores.",
-    color: "text-stellar-lilac",
-    bg: "bg-stellar-lilac/10",
-    border: "border-stellar-lilac/30",
-  },
-  {
-    icon: QrCode,
-    step: "03",
-    title: "Distribuye SPOTs",
-    description:
-      "QR, link, código, geofence o NFC listos para usar en campo, con botones visibles que empujan la conversión.",
-    color: "text-stellar-teal",
-    bg: "bg-stellar-teal/10",
-    border: "border-stellar-teal/30",
-  },
-  {
-    icon: Award,
-    step: "04",
-    title: "Demuestra Valor",
-    description:
-      "Cada comprobante vive en Stellar: útil para reportes, patrocinios y transparencia con tu comunidad.",
-    color: "text-stellar-gold",
-    bg: "bg-stellar-gold/10",
-    border: "border-stellar-gold/30",
-  },
-];
-
 const Home: React.FC = () => {
   const { address } = useWallet();
   const navigate = useNavigate();
+  const { t } = useTranslation('home');
+
+  // ─── Static data ────────────────────────────────────────────────────────────
+
+  const features = [
+    {
+      icon: QrCode,
+      title: t('features.multipleMethods'),
+      description: t('features.multipleMethodsDesc'),
+      color: "text-stellar-gold",
+      border: "border-stellar-gold/20",
+      bg: "bg-stellar-gold/5",
+    },
+    {
+      icon: Link2,
+      title: t('features.blockchain'),
+      description: t('features.blockchainDesc'),
+      color: "text-stellar-teal",
+      border: "border-stellar-teal/20",
+      bg: "bg-stellar-teal/5",
+    },
+    {
+      icon: Palette,
+      title: t('features.customizable'),
+      description: t('features.customizableDesc'),
+      color: "text-stellar-lilac",
+      border: "border-stellar-lilac/20",
+      bg: "bg-stellar-lilac/5",
+    },
+    {
+      icon: KeyRound,
+      title: t('features.selfService'),
+      description: t('features.selfServiceDesc'),
+      color: "text-stellar-gold",
+      border: "border-stellar-gold/20",
+      bg: "bg-stellar-gold/5",
+    },
+    {
+      icon: MapPin,
+      title: t('features.geolocation'),
+      description: t('features.geolocationDesc'),
+      color: "text-stellar-teal",
+      border: "border-stellar-teal/20",
+      bg: "bg-stellar-teal/5",
+    },
+    {
+      icon: Nfc,
+      title: t('features.sorobanIntegrations'),
+      description: t('features.sorobanIntegrationsDesc'),
+      color: "text-stellar-lilac",
+      border: "border-stellar-lilac/20",
+      bg: "bg-stellar-lilac/5",
+    },
+  ];
+
+  const steps = [
+    {
+      icon: Wallet,
+      step: "01",
+      title: t('howItWorks.step1Title'),
+      description: t('howItWorks.step1Desc'),
+      color: "text-stellar-gold",
+      bg: "bg-stellar-gold/10",
+      border: "border-stellar-gold/30",
+    },
+    {
+      icon: CalendarPlus,
+      step: "02",
+      title: t('howItWorks.step2Title'),
+      description: t('howItWorks.step2Desc'),
+      color: "text-stellar-lilac",
+      bg: "bg-stellar-lilac/10",
+      border: "border-stellar-lilac/30",
+    },
+    {
+      icon: QrCode,
+      step: "03",
+      title: t('howItWorks.step3Title'),
+      description: t('howItWorks.step3Desc'),
+      color: "text-stellar-teal",
+      bg: "bg-stellar-teal/10",
+      border: "border-stellar-teal/30",
+    },
+    {
+      icon: Award,
+      step: "04",
+      title: t('howItWorks.step4Title'),
+      description: t('howItWorks.step4Desc'),
+      color: "text-stellar-gold",
+      bg: "bg-stellar-gold/10",
+      border: "border-stellar-gold/30",
+    },
+  ];
 
   const { ref: featuresRef, isVisible: featuresVisible } = useScrollReveal();
   const { ref: audiencesRef, isVisible: audiencesVisible } = useScrollReveal();
@@ -165,7 +160,7 @@ const Home: React.FC = () => {
                 <div className="inline-flex items-center gap-2 rounded-full border border-stellar-gold/30 bg-stellar-gold/10 px-4 py-1.5 mb-8">
                   <Zap size={14} className="text-stellar-gold" />
                   <span className="text-xs font-body uppercase tracking-wider text-stellar-gold">
-                    Proof of Attendance en Stellar
+                    {t('eyebrow')}
                   </span>
                 </div>
 
@@ -179,14 +174,11 @@ const Home: React.FC = () => {
 
                 <p className="text-lg md:text-xl text-stellar-black/70 max-w-xl mb-4 leading-relaxed font-body">
                   <span className="text-stellar-black font-semibold">
-                    Sabemos a quién hablamos: bancos, policymakers y builders.
+                    {t('heroDescription1')}
                   </span>
                 </p>
                 <p className="text-base md:text-lg text-stellar-black/60 max-w-xl mb-10 leading-relaxed font-body">
-                  SPOT es tu comprobante coleccionable en Stellar: diseña la
-                  pieza, define la ventana de reclamo y entrega recuerdos
-                  verificables que demuestran asistencia ante sponsors,
-                  instituciones y comunidades.
+                  {t('heroDescription2')}
                 </p>
 
                 {/* Wallet + CTAs */}
@@ -197,13 +189,13 @@ const Home: React.FC = () => {
                       onClick={() => navigate("/mint")}
                       className="inline-flex items-center justify-center gap-2 bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full px-8 py-3 shadow-lg hover:shadow-xl transition-all text-base font-body"
                     >
-                      Reclamar SPOT <ArrowRight size={18} />
+                      {t('claimSpot')} <ArrowRight size={18} />
                     </button>
                     <button
                       onClick={() => navigate("/create-event")}
                       className="inline-flex items-center justify-center gap-2 border-2 border-stellar-lilac/40 text-stellar-black hover:bg-stellar-lilac/10 font-semibold rounded-full px-8 py-3 transition-all text-base font-body"
                     >
-                      Crear Evento
+                      {t('createEvent')}
                     </button>
                   </div>
                 </div>
@@ -217,14 +209,14 @@ const Home: React.FC = () => {
                 <div className="relative">
                   <img
                     src="https://cdn.sanity.io/images/e2r40yh6/production-i18n/cdd8e585244fe22db899e5c2e463bde2793355e2-4200x3508.png?rect=0,356,4200,2797&w=506&h=337&auto=format&dpr=2"
-                    alt="Colección de badges SPOT"
+                    alt={t('heroImgAlt')}
                     className="rounded-2xl shadow-2xl shadow-stellar-gold/10 w-full"
                   />
 
                   {/* Floating stat card 1 - Total SPOTs */}
                   <div className="absolute -top-4 -left-8 bg-stellar-white/90 backdrop-blur-md border border-stellar-black/10 rounded-xl px-4 py-3 animate-float shadow-lg">
                     <p className="text-xs text-stellar-black/60 font-body uppercase tracking-wide">
-                      Total SPOTs
+                      {t('totalSpots')}
                     </p>
                     <p className="text-2xl font-headline text-stellar-gold">
                       2,847
@@ -237,7 +229,7 @@ const Home: React.FC = () => {
                     style={{ animationDelay: "2s" }}
                   >
                     <p className="text-xs text-stellar-black/60 font-body uppercase tracking-wide">
-                      Eventos activos
+                      {t('activeEvents')}
                     </p>
                     <p className="text-2xl font-headline text-stellar-lilac">
                       42
@@ -250,7 +242,7 @@ const Home: React.FC = () => {
                     style={{ animationDelay: "3.5s" }}
                   >
                     <p className="text-xs text-stellar-black/60 font-body uppercase tracking-wide">
-                      Red
+                      {t('network')}
                     </p>
                     <p className="text-sm font-headline text-stellar-teal">
                       Stellar Testnet
@@ -280,15 +272,13 @@ const Home: React.FC = () => {
                 className={`text-center mb-16 ${featuresVisible ? "animate-fade-up" : "opacity-0"}`}
               >
                 <span className="text-xs font-body uppercase tracking-widest text-stellar-gold mb-4 block">
-                  Funciones
+                  {t('features.eyebrow')}
                 </span>
                 <h2 className="text-3xl md:text-5xl font-headline text-stellar-black mb-4 uppercase">
-                  Todo lo que necesitas
+                  {t('features.title')}
                 </h2>
                 <p className="text-stellar-black/60 text-lg max-w-2xl mx-auto font-body">
-                  Configura certificados coleccionables en minutos, conecta APIs
-                  si lo necesitas y maneja registros desde el móvil o el
-                  escenario.
+                  {t('features.subtitle')}
                 </p>
               </div>
 
@@ -331,10 +321,10 @@ const Home: React.FC = () => {
                 className={`text-center mb-16 ${audiencesVisible ? "animate-fade-up" : "opacity-0"}`}
               >
                 <span className="text-xs font-body uppercase tracking-widest text-stellar-lilac mb-4 block">
-                  SPOT para cada equipo
+                  {t('audiences.eyebrow')}
                 </span>
                 <h2 className="text-3xl md:text-5xl font-headline text-stellar-black mb-4 uppercase">
-                  Dos audiencias, un producto
+                  {t('audiences.title')}
                 </h2>
               </div>
 
@@ -349,31 +339,28 @@ const Home: React.FC = () => {
                     <Hammer size={28} className="text-stellar-gold" />
                   </div>
                   <h3 className="text-2xl md:text-3xl font-headline text-stellar-black mb-3 uppercase">
-                    Organizadores & builders
+                    {t('audiences.organizers')}
                   </h3>
                   <p className="text-stellar-black/60 mb-6 leading-relaxed font-body">
-                    Configura certificados coleccionables en minutos, conecta
-                    APIs si lo necesitas y maneja registros desde el móvil o el
-                    escenario.
+                    {t('audiences.organizersDesc')}
                   </p>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
                       <span className="mt-1.5 block h-1.5 w-1.5 rounded-full bg-stellar-gold shrink-0" />
                       <span className="text-sm text-stellar-black/70 font-body">
-                        Herramientas self-service para crear, editar y pausar
-                        eventos.
+                        {t('audiences.organizersBullet1')}
                       </span>
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="mt-1.5 block h-1.5 w-1.5 rounded-full bg-stellar-gold shrink-0" />
                       <span className="text-sm text-stellar-black/70 font-body">
-                        Integraciones Soroban listas para automatizar claims.
+                        {t('audiences.organizersBullet2')}
                       </span>
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="mt-1.5 block h-1.5 w-1.5 rounded-full bg-stellar-gold shrink-0" />
                       <span className="text-sm text-stellar-black/70 font-body">
-                        Debugger disponible para equipos técnicos.
+                        {t('audiences.organizersBullet3')}
                       </span>
                     </li>
                   </ul>
@@ -389,30 +376,28 @@ const Home: React.FC = () => {
                     <Building2 size={28} className="text-stellar-lilac" />
                   </div>
                   <h3 className="text-2xl md:text-3xl font-headline text-stellar-black mb-3 uppercase">
-                    Sponsors & instituciones
+                    {t('audiences.sponsors')}
                   </h3>
                   <p className="text-stellar-black/60 mb-6 leading-relaxed font-body">
-                    Obtén reportes claros sobre asistencia verificada y comparte
-                    pruebas on-chain con aliados o reguladores.
+                    {t('audiences.sponsorsDesc')}
                   </p>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
                       <span className="mt-1.5 block h-1.5 w-1.5 rounded-full bg-stellar-lilac shrink-0" />
                       <span className="text-sm text-stellar-black/70 font-body">
-                        Métricas visibles para patrocinadores y equipo
-                        comercial.
+                        {t('audiences.sponsorsBullet1')}
                       </span>
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="mt-1.5 block h-1.5 w-1.5 rounded-full bg-stellar-lilac shrink-0" />
                       <span className="text-sm text-stellar-black/70 font-body">
-                        Evidencia inmutable hospedada en la red Stellar.
+                        {t('audiences.sponsorsBullet2')}
                       </span>
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="mt-1.5 block h-1.5 w-1.5 rounded-full bg-stellar-lilac shrink-0" />
                       <span className="text-sm text-stellar-black/70 font-body">
-                        Copys concisos para informes y aprobaciones rápidas.
+                        {t('audiences.sponsorsBullet3')}
                       </span>
                     </li>
                   </ul>
@@ -435,15 +420,13 @@ const Home: React.FC = () => {
                 className={`text-center mb-20 ${howItWorksVisible ? "animate-fade-up" : "opacity-0"}`}
               >
                 <span className="text-xs font-body uppercase tracking-widest text-stellar-teal mb-4 block">
-                  Proceso
+                  {t('howItWorks.eyebrow')}
                 </span>
                 <h2 className="text-3xl md:text-5xl font-headline text-stellar-black mb-4 uppercase">
-                  Cómo funciona
+                  {t('howItWorks.title')}
                 </h2>
                 <p className="text-stellar-black/60 text-lg max-w-2xl mx-auto font-body">
-                  SPOT convierte tus eventos en coleccionables digitales
-                  verificados. Configura arte, cupos y métricas desde un mismo
-                  panel.
+                  {t('howItWorks.subtitle')}
                 </p>
               </div>
 
@@ -498,28 +481,26 @@ const Home: React.FC = () => {
 
                 <div className="relative px-8 py-16 md:px-16 md:py-24 text-center">
                   <span className="text-xs font-body uppercase tracking-widest text-stellar-gold mb-6 block">
-                    Empieza ahora
+                    {t('cta.eyebrow')}
                   </span>
                   <h2 className="text-3xl md:text-5xl font-headline text-stellar-black mb-6 uppercase">
-                    Crea experiencias verificables
+                    {t('cta.title')}
                   </h2>
                   <p className="text-lg text-stellar-black/60 max-w-2xl mx-auto mb-10 leading-relaxed font-body">
-                    Sube tu imagen, define cupos y programa fechas de reclamo
-                    para cada evento sin depender de desarrolladores. Cada
-                    comprobante vive en Stellar.
+                    {t('cta.subtitle')}
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <button
                       onClick={() => navigate("/mint")}
                       className="inline-flex items-center justify-center gap-2 bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full px-10 py-3 shadow-lg hover:shadow-xl transition-all text-base font-body"
                     >
-                      Reclamar SPOT <ArrowRight size={18} />
+                      {t('claimSpot')} <ArrowRight size={18} />
                     </button>
                     <button
                       onClick={() => navigate("/create-event")}
                       className="inline-flex items-center justify-center gap-2 border-2 border-stellar-lilac/40 text-stellar-black hover:bg-stellar-lilac/10 font-semibold rounded-full px-10 py-3 transition-all text-base font-body"
                     >
-                      Crear Evento
+                      {t('createEvent')}
                     </button>
                   </div>
                 </div>
@@ -530,19 +511,19 @@ const Home: React.FC = () => {
           <div className="mx-auto max-w-5xl px-6 pb-12">
             <div className="relative rounded-3xl overflow-hidden border border-stellar-gold/20 bg-stellar-gold/5 p-8 md:p-10 text-center">
               <p className="text-sm font-body uppercase tracking-widest text-stellar-gold mb-3">
-                Colección
+                {t('collection.eyebrow')}
               </p>
               <h3 className="text-2xl md:text-3xl font-headline text-stellar-black mb-4 uppercase">
-                Ver mis SPOTs
+                {t('collection.title')}
               </h3>
               <p className="text-stellar-black/60 font-body mb-6">
-                Accede a tu colección personal y revisa los SPOTs reclamados.
+                {t('collection.subtitle')}
               </p>
               <button
                 onClick={() => navigate("/spots")}
                 className="inline-flex items-center justify-center gap-2 bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full px-10 py-3 shadow-lg hover:shadow-xl transition-all text-base font-body"
               >
-                Ir a Mis SPOTs
+                {t('collection.goToSpots')}
               </button>
             </div>
           </div>
@@ -551,22 +532,19 @@ const Home: React.FC = () => {
         <div className="mx-auto max-w-5xl px-6 pb-24">
           <TldrCard
             label=""
-            summary="SPOT convierte tus eventos en coleccionables digitales verificados. Configura arte, cupos y métricas desde un mismo panel."
+            summary={t('tldr.summary')}
             bullets={[
               {
-                label: "Crea experiencias",
-                detail:
-                  "Sube tu imagen, define cupos y programa fechas de reclamo para cada evento sin depender de desarrolladores.",
+                label: t('tldr.bullet1Label'),
+                detail: t('tldr.bullet1Detail'),
               },
               {
-                label: "Reclama sin fricción",
-                detail:
-                  "QR, link, código, geofence o NFC listos para usar en campo, con botones visibles que empujan la conversión.",
+                label: t('tldr.bullet2Label'),
+                detail: t('tldr.bullet2Detail'),
               },
               {
-                label: "Demuestra valor",
-                detail:
-                  "Cada comprobante vive en Stellar: útil para reportes, patrocinios y transparencia con tu comunidad.",
+                label: t('tldr.bullet3Label'),
+                detail: t('tldr.bullet3Detail'),
               },
             ]}
           />

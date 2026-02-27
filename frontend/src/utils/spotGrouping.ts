@@ -1,4 +1,5 @@
 import { SpotData } from "../components/spot/SpotCard";
+import { getDateLocale } from "./dateFormat";
 
 export interface GroupedSpots {
   [key: string]: {
@@ -19,9 +20,9 @@ export const groupSpotsByMonth = (spots: SpotData[]): GroupedSpots => {
   spots.forEach((spot) => {
     const date = new Date(spot.date);
     const year = date.getFullYear();
-    const month = date.toLocaleDateString('es-ES', { month: 'long' });
+    const month = date.toLocaleDateString(getDateLocale(), { month: 'long' });
     const key = `${year}-${date.getMonth()}`;
-    const monthLabel = month.charAt(0).toUpperCase() + month.slice(1); // Capitalizar primera letra
+    const monthLabel = month.charAt(0).toUpperCase() + month.slice(1);
 
     if (!grouped[key]) {
       grouped[key] = {

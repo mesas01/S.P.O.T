@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import "./App.module.css";
 import ConnectAccount from "./components/ConnectAccount.tsx";
 import MobileMenu from "./components/MobileMenu.tsx";
+import LanguageSwitcher from "./components/LanguageSwitcher";
 import { Routes, Route, Outlet, NavLink, Link } from "react-router-dom";
 import { Plus, Zap, User } from "lucide-react";
 import spotLogo from "./images/Recurso_1.svg";
@@ -14,9 +15,11 @@ import Profile from "./pages/Profile";
 import MyEvents from "./pages/MyEvents";
 import Communities from "./pages/Communities";
 import Pricing from "./pages/Pricing";
+import { useTranslation } from "react-i18next";
 
 const AppLayout: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
+  const { t } = useTranslation('common');
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -71,7 +74,7 @@ const AppLayout: React.FC = () => {
                         : "text-stellar-black/60 hover:text-stellar-black"
                     }`}
                   >
-                    Mis SPOTs
+                    {t('nav.mySpots')}
                     <span
                       className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-gold transition-all duration-300 ${
                         isActive ? "w-full" : "w-0 group-hover:w-full"
@@ -90,7 +93,7 @@ const AppLayout: React.FC = () => {
                         : "text-stellar-black/60 hover:text-stellar-black"
                     }`}
                   >
-                    Mis Eventos
+                    {t('nav.myEvents')}
                     <span
                       className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-lilac transition-all duration-300 ${
                         isActive ? "w-full" : "w-0 group-hover:w-full"
@@ -109,7 +112,7 @@ const AppLayout: React.FC = () => {
                         : "text-stellar-black/60 hover:text-stellar-black"
                     }`}
                   >
-                    Eventos
+                    {t('nav.events')}
                     <span
                       className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-teal transition-all duration-300 ${
                         isActive ? "w-full" : "w-0 group-hover:w-full"
@@ -128,7 +131,7 @@ const AppLayout: React.FC = () => {
                         : "text-stellar-black/60 hover:text-stellar-black"
                     }`}
                   >
-                    Comunidades
+                    {t('nav.communities')}
                     <span
                       className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-gold transition-all duration-300 ${
                         isActive ? "w-full" : "w-0 group-hover:w-full"
@@ -148,7 +151,7 @@ const AppLayout: React.FC = () => {
                     }`}
                   >
                     <Plus size={14} />
-                    Crear Evento
+                    {t('nav.createEvent')}
                     <span
                       className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-lilac transition-all duration-300 ${
                         isActive ? "w-full" : "w-0 group-hover:w-full"
@@ -167,7 +170,7 @@ const AppLayout: React.FC = () => {
                         : "text-stellar-black/60 hover:text-stellar-black"
                     }`}
                   >
-                    Planes
+                    {t('nav.pricing')}
                     <span
                       className={`absolute -bottom-1 left-0 h-0.5 bg-stellar-teal transition-all duration-300 ${
                         isActive ? "w-full" : "w-0 group-hover:w-full"
@@ -187,7 +190,7 @@ const AppLayout: React.FC = () => {
                     }`}
                   >
                     <Zap size={14} />
-                    Reclamar
+                    {t('nav.claim')}
                   </span>
                 )}
               </NavLink>
@@ -195,6 +198,10 @@ const AppLayout: React.FC = () => {
 
             {/* Right: profile + wallet + mobile menu */}
             <div className="flex items-center gap-3">
+              <div className="hidden sm:block">
+                <LanguageSwitcher />
+              </div>
+
               <div className="hidden sm:block">
                 <NavLink to="/profile" className="no-underline">
                   {({ isActive }) => (
@@ -252,25 +259,24 @@ const AppLayout: React.FC = () => {
                 </span>
               </Link>
               <p className="text-sm text-stellar-black/60 leading-relaxed max-w-xs font-body">
-                Stellar Proof of Togetherness. Comprobantes coleccionables
-                verificables en la red Stellar.
+                {t('footer.tagline')}
               </p>
             </div>
 
             {/* Producto */}
             <div>
               <h4 className="text-sm font-headline text-stellar-black uppercase tracking-wider mb-4">
-                Producto
+                {t('footer.product')}
               </h4>
               <ul className="space-y-3">
                 {[
-                  { to: "/mint", label: "Reclamar SPOT" },
-                  { to: "/create-event", label: "Crear Evento" },
-                  { to: "/my-events", label: "Mis Eventos" },
-                  { to: "/events", label: "Eventos" },
-                  { to: "/communities", label: "Comunidades" },
-                  { to: "/pricing", label: "Planes" },
-                  { to: "/profile", label: "Perfil" },
+                  { to: "/mint", label: t('footer.claimSpot') },
+                  { to: "/create-event", label: t('footer.createEvent') },
+                  { to: "/my-events", label: t('footer.myEvents') },
+                  { to: "/events", label: t('footer.events') },
+                  { to: "/communities", label: t('footer.communities') },
+                  { to: "/pricing", label: t('footer.pricing') },
+                  { to: "/profile", label: t('footer.profile') },
                 ].map(({ to, label }) => (
                   <li key={to}>
                     <Link
@@ -287,7 +293,7 @@ const AppLayout: React.FC = () => {
             {/* Ecosistema */}
             <div>
               <h4 className="text-sm font-headline text-stellar-black uppercase tracking-wider mb-4">
-                Ecosistema
+                {t('footer.ecosystem')}
               </h4>
               <ul className="space-y-3">
                 {[
@@ -312,12 +318,12 @@ const AppLayout: React.FC = () => {
             {/* Recursos */}
             <div>
               <h4 className="text-sm font-headline text-stellar-black uppercase tracking-wider mb-4">
-                Recursos
+                {t('footer.resources')}
               </h4>
               <ul className="space-y-3">
                 {[
-                  { to: "/", label: "Documentación" },
-                  { to: "/", label: "API" },
+                  { to: "/", label: t('footer.docs') },
+                  { to: "/", label: t('footer.api') },
                 ].map(({ to, label }) => (
                   <li key={label}>
                     <Link
@@ -334,10 +340,10 @@ const AppLayout: React.FC = () => {
 
           <div className="mt-16 pt-8 border-t border-stellar-black/10 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-xs text-stellar-black/50 font-body">
-              Built on Stellar Network · Testnet
+              {t('footer.builtOn')}
             </p>
             <p className="text-xs text-stellar-black/50 font-body">
-              © {new Date().getFullYear()} SPOT · Stellar Proof of Togetherness
+              {t('footer.copyright', { year: new Date().getFullYear() })}
             </p>
           </div>
         </div>

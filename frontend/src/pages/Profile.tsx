@@ -2,6 +2,7 @@ import React from "react";
 import { useWallet } from "../hooks/useWallet";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import ConnectAccount from "../components/ConnectAccount";
 import TldrCard from "../components/layout/TldrCard";
 import { fetchCreatorProfile, type EventTier } from "../util/backend";
@@ -10,6 +11,7 @@ import { Lock, Copy, Zap, Plus, LogOut, Crown } from "lucide-react";
 const Profile: React.FC = () => {
   const { address, balances, disconnect } = useWallet();
   const navigate = useNavigate();
+  const { t } = useTranslation('profile');
   const isConnected = !!address;
 
   const copyToClipboard = (text: string) => {
@@ -49,9 +51,9 @@ const Profile: React.FC = () => {
   });
 
   const tierLabels: Record<EventTier, string> = {
-    FREE: "Gratis",
-    BASIC: "Basico",
-    PREMIUM: "Premium",
+    FREE: t('tierLabels.FREE'),
+    BASIC: t('tierLabels.BASIC'),
+    PREMIUM: t('tierLabels.PREMIUM'),
   };
 
   const tierColors: Record<EventTier, string> = {
@@ -67,33 +69,31 @@ const Profile: React.FC = () => {
         <div className="mb-10">
           <div className="inline-flex items-center gap-2 bg-stellar-lilac/10 border border-stellar-lilac/20 rounded-full px-4 py-1.5 mb-4">
             <span className="text-xs font-semibold font-body uppercase tracking-widest text-stellar-lilac">
-              Cuenta
+              {t('badge')}
             </span>
           </div>
           <h1 className="text-3xl md:text-4xl font-headline text-stellar-black mb-3">
-            Mi Perfil
+            {t('title')}
           </h1>
           <p className="text-stellar-black/60 font-body">
-            Gestiona tu wallet y configuración
+            {t('subtitle')}
           </p>
           <div className="mt-6">
             <TldrCard
               label=""
-              summary="Aquí ves tu wallet Stellar conectada, balances y accesos rápidos para crear eventos o reclamar tus comprobantes."
+              summary={t('tldr.summary')}
               bullets={[
                 {
-                  label: "Wallet",
-                  detail: "Dirección visible, botón copiar y balance XLM.",
+                  label: t('tldr.bullet1Label'),
+                  detail: t('tldr.bullet1Detail'),
                 },
                 {
-                  label: "Acciones",
-                  detail:
-                    "CTA claros para ver SPOTs, crear eventos y reclamar.",
+                  label: t('tldr.bullet2Label'),
+                  detail: t('tldr.bullet2Detail'),
                 },
                 {
-                  label: "Confianza",
-                  detail:
-                    "Datos claros, estados legibles y opción para desconectar.",
+                  label: t('tldr.bullet3Label'),
+                  detail: t('tldr.bullet3Detail'),
                 },
               ]}
             />
@@ -108,10 +108,10 @@ const Profile: React.FC = () => {
               </div>
             </div>
             <h2 className="text-2xl font-headline text-stellar-black mb-3">
-              Conecta tu Wallet
+              {t('connectTitle')}
             </h2>
             <p className="text-stellar-black/60 font-body max-w-sm mx-auto mb-8">
-              Conecta tu wallet de Stellar para ver tu información y balance.
+              {t('connectSubtitle')}
             </p>
             <ConnectAccount />
           </div>
@@ -120,13 +120,13 @@ const Profile: React.FC = () => {
             {/* Wallet Info */}
             <div className="bg-stellar-white rounded-2xl shadow-sm p-6 md:p-8 border border-stellar-lilac/15">
               <h2 className="text-lg font-headline text-stellar-black mb-6">
-                Información de Wallet
+                {t('walletInfo')}
               </h2>
 
               {/* Address */}
               <div className="mb-6">
                 <label className="block text-xs font-semibold font-body uppercase tracking-widest text-stellar-black/40 mb-2">
-                  Dirección
+                  {t('address')}
                 </label>
                 <div className="flex items-center gap-3">
                   <div className="flex-1 bg-stellar-warm-grey/20 rounded-xl p-3 border border-stellar-lilac/15 min-w-0">
@@ -139,7 +139,7 @@ const Profile: React.FC = () => {
                     className="flex-shrink-0 inline-flex items-center gap-2 border border-stellar-black/15 text-stellar-black/60 hover:text-stellar-black hover:border-stellar-black/25 px-4 py-2.5 rounded-xl font-body text-sm font-semibold transition-all"
                   >
                     <Copy size={13} />
-                    Copiar
+                    {t('common:actions.copy')}
                   </button>
                 </div>
               </div>
@@ -147,7 +147,7 @@ const Profile: React.FC = () => {
               {/* Balance */}
               <div>
                 <label className="block text-xs font-semibold font-body uppercase tracking-widest text-stellar-black/40 mb-2">
-                  Balance
+                  {t('balance')}
                 </label>
                 <div className="bg-gradient-to-br from-stellar-gold/15 to-stellar-lilac/15 rounded-xl p-4 border border-stellar-gold/25">
                   <div className="flex items-center justify-between">
@@ -165,7 +165,7 @@ const Profile: React.FC = () => {
             {/* Network */}
             <div className="bg-stellar-white rounded-2xl shadow-sm p-6 md:p-8 border border-stellar-teal/15">
               <h2 className="text-lg font-headline text-stellar-black mb-3">
-                Red
+                {t('network')}
               </h2>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-stellar-teal" />
@@ -180,7 +180,7 @@ const Profile: React.FC = () => {
               <div className="bg-stellar-white rounded-2xl shadow-sm p-6 md:p-8 border border-stellar-lilac/15">
                 <div className="flex items-center justify-between mb-5">
                   <h2 className="text-lg font-headline text-stellar-black">
-                    Plan de Creador
+                    {t('creatorPlan')}
                   </h2>
                   <span
                     className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold font-body ${tierColors[creatorProfile.tier]}`}
@@ -193,7 +193,7 @@ const Profile: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="bg-stellar-warm-grey/10 rounded-xl p-4 border border-stellar-black/5">
                     <p className="text-xs font-semibold font-body uppercase tracking-widest text-stellar-black/40 mb-1">
-                      SPOTs / Evento
+                      {t('spotsPerEvent')}
                     </p>
                     <p className="text-xl font-headline text-stellar-black">
                       {creatorProfile.limits.maxSpotsPerEvent.toLocaleString()}
@@ -201,7 +201,7 @@ const Profile: React.FC = () => {
                   </div>
                   <div className="bg-stellar-warm-grey/10 rounded-xl p-4 border border-stellar-black/5">
                     <p className="text-xs font-semibold font-body uppercase tracking-widest text-stellar-black/40 mb-1">
-                      Eventos Activos
+                      {t('activeEvents')}
                     </p>
                     <p className="text-xl font-headline text-stellar-black">
                       {creatorProfile.limits.maxActiveEvents}
@@ -209,7 +209,7 @@ const Profile: React.FC = () => {
                   </div>
                   <div className="bg-stellar-warm-grey/10 rounded-xl p-4 border border-stellar-black/5">
                     <p className="text-xs font-semibold font-body uppercase tracking-widest text-stellar-black/40 mb-1">
-                      Metodos
+                      {t('methods')}
                     </p>
                     <p className="text-sm font-body text-stellar-black capitalize">
                       {creatorProfile.limits.allowedMethods.join(", ")}
@@ -224,8 +224,8 @@ const Profile: React.FC = () => {
                     />
                     <p className="text-sm font-body text-stellar-black/60">
                       {creatorProfile.status === "APPROVED"
-                        ? "Aprobado"
-                        : "Revocado"}
+                        ? t('common:status.approved')
+                        : t('common:status.revoked')}
                     </p>
                   </div>
                 )}
@@ -235,28 +235,28 @@ const Profile: React.FC = () => {
             {/* Actions */}
             <div className="bg-stellar-white rounded-2xl shadow-sm p-6 md:p-8 border border-stellar-lilac/15">
               <h2 className="text-lg font-headline text-stellar-black mb-5">
-                Acciones
+                {t('actions')}
               </h2>
               <div className="space-y-3">
                 <button
                   onClick={() => navigate("/")}
                   className="w-full inline-flex items-center justify-center gap-2 bg-stellar-gold text-stellar-black px-8 py-3.5 rounded-full font-semibold font-body hover:bg-stellar-gold/90 transition-all shadow-md hover:shadow-lg"
                 >
-                  Ver Mis SPOTs
+                  {t('viewSpots')}
                 </button>
                 <button
                   onClick={() => navigate("/create-event")}
                   className="w-full inline-flex items-center justify-center gap-2 bg-stellar-lilac/20 text-stellar-black px-8 py-3.5 rounded-full font-semibold font-body hover:bg-stellar-lilac/30 transition-all"
                 >
                   <Plus size={15} />
-                  Crear Evento
+                  {t('createEvent')}
                 </button>
                 <button
                   onClick={() => navigate("/mint")}
                   className="w-full inline-flex items-center justify-center gap-2 border border-stellar-teal/30 text-stellar-teal px-8 py-3.5 rounded-full font-semibold font-body hover:bg-stellar-teal/10 transition-all"
                 >
                   <Zap size={15} />
-                  Reclamar SPOT
+                  {t('claimSpot')}
                 </button>
               </div>
             </div>
@@ -270,7 +270,7 @@ const Profile: React.FC = () => {
                 className="inline-flex items-center gap-2 text-sm text-red-500 hover:text-red-600 font-body font-semibold transition-colors px-4 py-2 rounded-lg hover:bg-red-50"
               >
                 <LogOut size={14} />
-                Desconectar Wallet
+                {t('disconnectWallet')}
               </button>
             </div>
           </div>

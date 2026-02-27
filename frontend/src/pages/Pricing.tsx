@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   fetchTierLimits,
   fetchCreatorProfile,
@@ -10,70 +11,41 @@ import { useWallet } from "../hooks/useWallet";
 import TldrCard from "../components/layout/TldrCard";
 import { Check, Crown, Sparkles, Star, Loader2 } from "lucide-react";
 
-const tierLabels: Record<EventTier, string> = {
-  FREE: "Gratis",
-  BASIC: "Basico",
-  PREMIUM: "Premium",
-};
-
-const tierConfig: Record<
+const tierStyleConfig: Record<
   EventTier,
   {
-    price: string;
-    description: string;
     Icon: typeof Star;
     accentColor: string;
     badgeBg: string;
     borderColor: string;
-    ctaLabel: string;
     ctaStyle: string;
   }
 > = {
   FREE: {
-    price: "Gratis",
-    description: "Perfecto para probar la plataforma y eventos pequenos.",
     Icon: Star,
     accentColor: "text-stellar-teal",
     badgeBg: "bg-stellar-teal/15 text-stellar-teal",
     borderColor: "border-stellar-teal/20",
-    ctaLabel: "Empezar Gratis",
     ctaStyle:
       "bg-stellar-teal/10 text-stellar-teal hover:bg-stellar-teal/20 border border-stellar-teal/30",
   },
   BASIC: {
-    price: "Proximamente",
-    description: "Para creadores que necesitan mas capacidad y flexibilidad.",
     Icon: Crown,
     accentColor: "text-stellar-lilac",
     badgeBg: "bg-stellar-lilac/15 text-stellar-lilac",
     borderColor: "border-stellar-lilac/30",
-    ctaLabel: "Proximamente",
     ctaStyle:
       "bg-stellar-lilac/10 text-stellar-lilac hover:bg-stellar-lilac/20 border border-stellar-lilac/30",
   },
   PREMIUM: {
-    price: "Proximamente",
-    description:
-      "Para organizaciones y eventos a gran escala con todas las funciones.",
     Icon: Sparkles,
     accentColor: "text-stellar-gold",
     badgeBg: "bg-stellar-gold/15 text-stellar-black",
     borderColor: "border-stellar-gold/30",
-    ctaLabel: "Proximamente",
     ctaStyle:
       "bg-stellar-gold/10 text-stellar-black hover:bg-stellar-gold/20 border border-stellar-gold/30",
   },
 };
-
-const methodLabels: Record<string, string> = {
-  code: "Codigo",
-  qr: "QR",
-  link: "Link",
-};
-
-function formatMethods(methods: string[]): string[] {
-  return methods.map((m) => methodLabels[m] || m);
-}
 
 function TierCard({
   tier,
@@ -84,8 +56,19 @@ function TierCard({
   limits: TierLimits;
   isCurrent: boolean;
 }) {
-  const config = tierConfig[tier];
+  const { t } = useTranslation("pricing");
+  const config = tierStyleConfig[tier];
   const { Icon } = config;
+
+  const methodLabels: Record<string, string> = {
+    code: t("methodLabels.code"),
+    qr: t("methodLabels.qr"),
+    link: t("methodLabels.link"),
+  };
+
+  function formatMethods(methods: string[]): string[] {
+    return methods.map((m) => methodLabels[m] || m);
+  }
 
   return (
     <div
@@ -97,7 +80,7 @@ function TierCard({
     >
       {isCurrent && (
         <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-[10px] font-semibold font-body uppercase tracking-widest bg-stellar-lilac text-white">
-          Tu Plan
+          {t("yourPlan")}
         </span>
       )}
 
@@ -110,17 +93,17 @@ function TierCard({
         </div>
         <div>
           <h3 className="text-lg font-headline text-stellar-black">
-            {tierLabels[tier]}
+            {t(`tierLabels.${tier}`)}
           </h3>
           <p className={`text-sm font-semibold font-body ${config.accentColor}`}>
-            {config.price}
+            {t(`tierConfig.${tier}.price`)}
           </p>
         </div>
       </div>
 
       {/* Description */}
       <p className="text-sm text-stellar-black/60 font-body mb-6">
-        {config.description}
+        {t(`tierConfig.${tier}.description`)}
       </p>
 
       {/* Features */}
@@ -134,7 +117,7 @@ function TierCard({
             <span className="font-semibold">
               {limits.maxSpotsPerEvent.toLocaleString()}
             </span>{" "}
-            SPOTs por evento
+            {t("spotsPerEvent")}
           </span>
         </li>
         <li className="flex items-start gap-2.5">
@@ -144,7 +127,7 @@ function TierCard({
           />
           <span className="text-sm font-body text-stellar-black">
             <span className="font-semibold">{limits.maxActiveEvents}</span>{" "}
-            eventos activos
+            {t("activeEvents")}
           </span>
         </li>
         <li className="flex items-start gap-2.5">
@@ -153,7 +136,7 @@ function TierCard({
             className={`mt-0.5 flex-shrink-0 ${config.accentColor}`}
           />
           <span className="text-sm font-body text-stellar-black">
-            Distribucion por{" "}
+            {t("distributionBy")}{" "}
             <span className="font-semibold">
               {formatMethods(limits.allowedMethods).join(", ")}
             </span>
@@ -165,7 +148,7 @@ function TierCard({
             className={`mt-0.5 flex-shrink-0 ${config.accentColor}`}
           />
           <span className="text-sm font-body text-stellar-black">
-            NFTs verificables en Stellar
+            {t("verifiableNFTs")}
           </span>
         </li>
       </ul>
@@ -176,14 +159,14 @@ function TierCard({
           to="/create-event"
           className={`no-underline block text-center py-2.5 px-4 rounded-xl text-sm font-semibold font-body transition-colors ${config.ctaStyle}`}
         >
-          {config.ctaLabel}
+          {t(`tierConfig.${tier}.ctaLabel`)}
         </Link>
       ) : (
         <button
           disabled
           className="py-2.5 px-4 rounded-xl text-sm font-semibold font-body bg-stellar-black/5 text-stellar-black/40 cursor-not-allowed"
         >
-          {config.ctaLabel}
+          {t(`tierConfig.${tier}.ctaLabel`)}
         </button>
       )}
     </div>
@@ -191,6 +174,7 @@ function TierCard({
 }
 
 export default function Pricing() {
+  const { t } = useTranslation("pricing");
   const { address } = useWallet();
 
   const {
@@ -217,28 +201,25 @@ export default function Pricing() {
       {/* Page Header */}
       <div className="text-center mb-12">
         <h1 className="text-3xl md:text-4xl font-headline text-stellar-black mb-3">
-          Planes y Precios
+          {t("title")}
         </h1>
         <p className="text-base text-stellar-black/60 font-body max-w-xl mx-auto">
-          Elige el plan que mejor se adapte a tus necesidades. Todos los planes
-          incluyen NFTs verificables en la red Stellar.
+          {t("subtitle")}
         </p>
       </div>
 
       {/* TL;DR */}
       <TldrCard
-        title="Resumen Rapido"
-        summary="Todos los planes te permiten crear eventos y distribuir SPOTs (NFTs de asistencia) en la red Stellar."
+        title={t("tldr.title")}
+        summary={t("tldr.summary")}
         bullets={[
           {
-            label: "Gratis para empezar",
-            detail:
-              "Crea eventos con limites generosos sin necesidad de pago.",
+            label: t("tldr.bullet1Label"),
+            detail: t("tldr.bullet1Detail"),
           },
           {
-            label: "Escala cuando lo necesites",
-            detail:
-              "Planes de pago con mas capacidad y metodos de distribucion.",
+            label: t("tldr.bullet2Label"),
+            detail: t("tldr.bullet2Detail"),
           },
         ]}
         className="mb-12"
@@ -255,7 +236,7 @@ export default function Pricing() {
       ) : isError || !tierLimits ? (
         <div className="text-center py-20">
           <p className="text-sm text-stellar-black/50 font-body">
-            No se pudieron cargar los planes. Intenta de nuevo mas tarde.
+            {t("loadError")}
           </p>
         </div>
       ) : (
@@ -273,8 +254,7 @@ export default function Pricing() {
 
       {/* Footer note */}
       <p className="text-center text-xs text-stellar-black/40 font-body mt-10">
-        Los planes de pago estaran disponibles proximamente. Los limites pueden
-        cambiar.
+        {t("footerNote")}
       </p>
     </section>
   );

@@ -1,0 +1,34 @@
+{
+  "badge": "Account",
+  "title": "My Profile",
+  "subtitle": "Manage your wallet and settings",
+  "connectTitle": "Connect your Wallet",
+  "connectSubtitle": "Connect your Stellar wallet to view your information and balance.",
+  "walletInfo": "Wallet Information",
+  "address": "Address",
+  "balance": "Balance",
+  "network": "Network",
+  "creatorPlan": "Creator Plan",
+  "spotsPerEvent": "SPOTs / Event",
+  "activeEvents": "Active Events",
+  "methods": "Methods",
+  "actions": "Actions",
+  "viewSpots": "View My SPOTs",
+  "createEvent": "Create Event",
+  "claimSpot": "Claim SPOT",
+  "disconnectWallet": "Disconnect Wallet",
+  "tierLabels": {
+    "FREE": "Free",
+    "BASIC": "Basic",
+    "PREMIUM": "Premium"
+  },
+  "tldr": {
+    "summary": "Here you can see your connected Stellar wallet, balances, and quick actions to create events or claim your proofs.",
+    "bullet1Label": "Wallet",
+    "bullet1Detail": "Visible address, copy button, and XLM balance.",
+    "bullet2Label": "Actions",
+    "bullet2Detail": "Clear CTAs to view SPOTs, create events, and claim.",
+    "bullet3Label": "Trust",
+    "bullet3Detail": "Clear data, readable states, and option to disconnect."
+  }
+}

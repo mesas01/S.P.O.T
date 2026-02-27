@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import ConnectAccount from "./ConnectAccount";
 import UserInfo from "./UserInfo";
+import LanguageSwitcher from "./LanguageSwitcher";
 import { createPortal } from "react-dom";
 import {
   Zap,
@@ -16,6 +18,7 @@ import {
 } from "lucide-react";
 
 const MobileMenu: React.FC = () => {
+  const { t } = useTranslation('common');
   const [isOpen, setIsOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -29,7 +32,7 @@ const MobileMenu: React.FC = () => {
   const navItems = [
     {
       to: "/mint",
-      label: "Reclamar SPOT",
+      label: t('mobileMenu.claimSpot'),
       Icon: Zap,
       activeColor: "bg-stellar-gold text-stellar-black shadow-md",
       hoverColor:
@@ -37,7 +40,7 @@ const MobileMenu: React.FC = () => {
     },
     {
       to: "/my-events",
-      label: "Mis Eventos",
+      label: t('mobileMenu.myEvents'),
       Icon: CalendarDays,
       activeColor: "bg-stellar-lilac/20 text-stellar-black shadow-md",
       hoverColor:
@@ -45,7 +48,7 @@ const MobileMenu: React.FC = () => {
     },
     {
       to: "/events",
-      label: "Eventos",
+      label: t('mobileMenu.events'),
       Icon: Users,
       activeColor: "bg-stellar-teal/20 text-stellar-black shadow-md",
       hoverColor:
@@ -53,7 +56,7 @@ const MobileMenu: React.FC = () => {
     },
     {
       to: "/communities",
-      label: "Comunidades",
+      label: t('mobileMenu.communities'),
       Icon: Globe,
       activeColor: "bg-stellar-gold/20 text-stellar-black shadow-md",
       hoverColor:
@@ -61,7 +64,7 @@ const MobileMenu: React.FC = () => {
     },
     {
       to: "/create-event",
-      label: "Crear Evento",
+      label: t('mobileMenu.createEvent'),
       Icon: Plus,
       activeColor: "bg-stellar-lilac/20 text-stellar-black shadow-md",
       hoverColor:
@@ -69,7 +72,7 @@ const MobileMenu: React.FC = () => {
     },
     {
       to: "/pricing",
-      label: "Planes",
+      label: t('mobileMenu.pricing'),
       Icon: CreditCard,
       activeColor: "bg-stellar-teal/20 text-stellar-black shadow-md",
       hoverColor:
@@ -77,7 +80,7 @@ const MobileMenu: React.FC = () => {
     },
     {
       to: "/profile",
-      label: "Mi Perfil",
+      label: t('mobileMenu.myProfile'),
       Icon: User,
       activeColor: "bg-stellar-lilac/20 text-stellar-black shadow-md",
       hoverColor:
@@ -91,7 +94,7 @@ const MobileMenu: React.FC = () => {
       <button
         onClick={toggleMenu}
         className="p-2 rounded-lg text-stellar-black/60 hover:text-stellar-black hover:bg-stellar-black/5 transition-colors"
-        aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
+        aria-label={isOpen ? t('mobileMenu.closeMenu') : t('mobileMenu.openMenu')}
       >
         <Menu size={20} />
       </button>
@@ -114,7 +117,7 @@ const MobileMenu: React.FC = () => {
               }`}
               role="dialog"
               aria-modal="true"
-              aria-label="Menú principal"
+              aria-label={t('mobileMenu.mainMenu')}
             >
               <div className="flex flex-col h-full">
                 {/* Drawer header */}
@@ -133,7 +136,7 @@ const MobileMenu: React.FC = () => {
                     <button
                       onClick={closeMenu}
                       className="p-2 rounded-lg text-stellar-black/50 hover:text-stellar-black hover:bg-stellar-black/5 transition-colors"
-                      aria-label="Cerrar menú"
+                      aria-label={t('mobileMenu.closeMenu')}
                     >
                       <X size={18} />
                     </button>
@@ -166,10 +169,12 @@ const MobileMenu: React.FC = () => {
                     ),
                   )}
 
+                  <LanguageSwitcher />
+
                   {/* Wallet section */}
                   <div className="pt-6 mt-4 border-t border-stellar-lilac/15">
                     <p className="text-xs font-body uppercase tracking-widest text-stellar-black/50 mb-4">
-                      Wallet
+                      {t('wallet.walletSection')}
                     </p>
                     <ConnectAccount />
                   </div>

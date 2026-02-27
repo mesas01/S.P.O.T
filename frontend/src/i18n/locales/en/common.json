@@ -1,0 +1,93 @@
+{
+  "nav": {
+    "mySpots": "My SPOTs",
+    "myEvents": "My Events",
+    "events": "Events",
+    "communities": "Communities",
+    "createEvent": "Create Event",
+    "pricing": "Plans",
+    "claim": "Claim"
+  },
+  "footer": {
+    "tagline": "Stellar Proof of Togetherness. Verifiable collectible proofs on the Stellar network.",
+    "product": "Product",
+    "claimSpot": "Claim SPOT",
+    "createEvent": "Create Event",
+    "myEvents": "My Events",
+    "events": "Events",
+    "communities": "Communities",
+    "pricing": "Plans",
+    "profile": "Profile",
+    "ecosystem": "Ecosystem",
+    "resources": "Resources",
+    "docs": "Documentation",
+    "api": "API",
+    "builtOn": "Built on Stellar Network · Testnet",
+    "copyright": "© {{year}} SPOT · Stellar Proof of Togetherness"
+  },
+  "wallet": {
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "loading": "Loading...",
+    "connected": "Wallet connected",
+    "address": "Address",
+    "cancel": "Cancel",
+    "connectPrompt": "Connect your Wallet",
+    "connectWallet": "Connect Wallet",
+    "walletSection": "Wallet"
+  },
+  "mobileMenu": {
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "mainMenu": "Main menu",
+    "claimSpot": "Claim SPOT",
+    "myEvents": "My Events",
+    "events": "Events",
+    "communities": "Communities",
+    "createEvent": "Create Event",
+    "pricing": "Plans",
+    "myProfile": "My Profile"
+  },
+  "userInfo": {
+    "username": "SPOT User",
+    "notConnected": "Not connected"
+  },
+  "notification": {
+    "copied": "Copied",
+    "copyDetail": "Copy detail"
+  },
+  "status": {
+    "open": "Claimable",
+    "active": "Active",
+    "upcoming": "Upcoming",
+    "closed": "Closed",
+    "soldout": "Sold out",
+    "private": "Private",
+    "onchain": "On-chain",
+    "registered": "Registered",
+    "approved": "Approved",
+    "revoked": "Revoked"
+  },
+  "actions": {
+    "back": "Back",
+    "retry": "Retry",
+    "goHome": "Go to Home",
+    "copy": "Copy",
+    "save": "Save",
+    "cancel": "Cancel",
+    "refresh": "Refresh on-chain",
+    "refreshing": "Refreshing...",
+    "syncing": "Syncing...",
+    "loadingGeneric": "Loading..."
+  },
+  "errors": {
+    "unexpected": "An unexpected error occurred.",
+    "backendConnection": "Could not connect to the backend. Check that it is running and try again.",
+    "backendTimeout": "The backend took too long to respond. Try again in a few seconds."
+  },
+  "claimed": "claimed",
+  "completed": "completed",
+  "noLocation": "No location",
+  "connectWalletNeeded": "You need to connect your wallet to view your events.",
+  "connectWalletForInfo": "Connect your Stellar wallet to view your information and balance."
+}

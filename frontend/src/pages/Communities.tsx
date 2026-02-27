@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useWallet } from "../hooks/useWallet";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { getDateLocale } from "../utils/dateFormat";
 import {
   createCommunityRequest,
   fetchCommunities,
@@ -22,6 +24,7 @@ import {
 const Communities: React.FC = () => {
   const { address } = useWallet();
   const navigate = useNavigate();
+  const { t } = useTranslation("communities");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -146,15 +149,14 @@ const Communities: React.FC = () => {
           <div>
             <div className="inline-flex items-center gap-2 bg-stellar-teal/10 border border-stellar-teal/20 rounded-full px-4 py-1.5 mb-3">
               <span className="text-xs font-semibold font-body uppercase tracking-widest text-stellar-teal">
-                Comunidades
+                {t("badge")}
               </span>
             </div>
             <h1 className="text-3xl md:text-4xl font-headline text-stellar-black mb-2">
-              Comunidades Globales
+              {t("title")}
             </h1>
             <p className="text-stellar-black/60 font-body max-w-2xl">
-              Explora y conecta con comunidades en todo el mundo. Crea la tuya y
-              comparte eventos con el ecosistema.
+              {t("subtitle")}
             </p>
           </div>
           <button
@@ -162,7 +164,7 @@ const Communities: React.FC = () => {
             className="inline-flex items-center gap-2 bg-stellar-gold text-stellar-black px-5 py-2.5 rounded-full font-semibold font-body text-sm hover:bg-stellar-gold/90 transition-all shadow-md"
           >
             <Plus size={14} />
-            Crear Comunidad
+            {t("createCommunity")}
           </button>
         </div>
 
@@ -173,13 +175,13 @@ const Communities: React.FC = () => {
           >
             {!address && (
               <div className="mb-4 rounded-xl border border-stellar-gold/30 bg-stellar-gold/10 px-4 py-3 text-sm text-stellar-black/70 font-body">
-                Conecta tu wallet para crear una comunidad.
+                {t("connectToCreate")}
               </div>
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold font-body uppercase tracking-widest text-stellar-black/50 mb-2">
-                  Nombre
+                  {t("form.name")}
                 </label>
                 <input
                   value={formData.name}
@@ -187,14 +189,14 @@ const Communities: React.FC = () => {
                     setFormData((prev) => ({ ...prev, name: e.target.value }))
                   }
                   className="w-full px-4 py-3 bg-white border border-stellar-black/15 rounded-xl text-stellar-black font-body text-sm focus:outline-none focus:ring-2 focus:ring-stellar-lilac/30"
-                  placeholder="Stellar Colombia"
+                  placeholder={t("form.namePlaceholder")}
                   disabled={!address}
                   required
                 />
               </div>
               <div>
                 <label className="block text-xs font-semibold font-body uppercase tracking-widest text-stellar-black/50 mb-2">
-                  Pais
+                  {t("form.country")}
                 </label>
                 <input
                   value={formData.country}
@@ -205,7 +207,7 @@ const Communities: React.FC = () => {
                     }))
                   }
                   className="w-full px-4 py-3 bg-white border border-stellar-black/15 rounded-xl text-stellar-black font-body text-sm focus:outline-none focus:ring-2 focus:ring-stellar-lilac/30"
-                  placeholder="Colombia"
+                  placeholder={t("form.countryPlaceholder")}
                   disabled={!address}
                   required
                 />
@@ -213,7 +215,7 @@ const Communities: React.FC = () => {
             </div>
             <div className="mt-4">
               <label className="block text-xs font-semibold font-body uppercase tracking-widest text-stellar-black/50 mb-2">
-                Descripcion
+                {t("form.description")}
               </label>
               <textarea
                 value={formData.description}
@@ -225,14 +227,14 @@ const Communities: React.FC = () => {
                 }
                 className="w-full px-4 py-3 bg-white border border-stellar-black/15 rounded-xl text-stellar-black font-body text-sm focus:outline-none focus:ring-2 focus:ring-stellar-lilac/30 resize-none"
                 rows={3}
-                placeholder="Cuenta que hace la comunidad y que la mueve."
+                placeholder={t("form.descriptionPlaceholder")}
                 disabled={!address}
                 required
               />
             </div>
             <div className="mt-4">
               <label className="block text-xs font-semibold font-body uppercase tracking-widest text-stellar-black/50 mb-2">
-                Imagen (opcional)
+                {t("form.image")}
               </label>
               <input
                 value={formData.imageUrl}
@@ -240,7 +242,7 @@ const Communities: React.FC = () => {
                   setFormData((prev) => ({ ...prev, imageUrl: e.target.value }))
                 }
                 className="w-full px-4 py-3 bg-white border border-stellar-black/15 rounded-xl text-stellar-black font-body text-sm focus:outline-none focus:ring-2 focus:ring-stellar-lilac/30"
-                placeholder="https://example.com/imagen.jpg"
+                placeholder={t("form.imagePlaceholder")}
                 disabled={!address}
               />
             </div>
@@ -250,14 +252,14 @@ const Communities: React.FC = () => {
                 disabled={!address}
                 className="inline-flex items-center gap-2 bg-stellar-lilac text-white px-5 py-2.5 rounded-full font-semibold font-body text-sm hover:bg-stellar-lilac/90 transition-all shadow-md"
               >
-                Guardar Comunidad
+                {t("form.save")}
               </button>
               <button
                 type="button"
                 onClick={() => setIsCreating(false)}
                 className="inline-flex items-center gap-2 border border-stellar-black/15 text-stellar-black/60 px-5 py-2.5 rounded-full font-semibold font-body text-sm hover:text-stellar-black hover:border-stellar-black/30 transition-all"
               >
-                Cancelar
+                {t("form.cancel")}
               </button>
             </div>
           </form>
@@ -267,13 +269,13 @@ const Communities: React.FC = () => {
           {isLoadingCommunities ? (
             <div className="bg-stellar-white rounded-2xl shadow-sm border border-stellar-lilac/15 p-8 text-center">
               <p className="text-stellar-black/60 font-body">
-                Cargando comunidades...
+                {t("loading")}
               </p>
             </div>
           ) : communities.length === 0 ? (
             <div className="bg-stellar-white rounded-2xl shadow-sm border border-stellar-lilac/15 p-8 text-center">
               <p className="text-stellar-black/60 font-body">
-                Aun no hay comunidades. Crea la primera.
+                {t("empty")}
               </p>
             </div>
           ) : (
@@ -326,11 +328,11 @@ const Communities: React.FC = () => {
                               </span>
                               <span className="inline-flex items-center gap-1">
                                 <Users size={13} />
-                                {membersCount} integrantes
+                                {membersCount} {t("members")}
                               </span>
                               <span className="inline-flex items-center gap-1">
                                 <CalendarDays size={13} />
-                                {eventsCountLabel} eventos
+                                {eventsCountLabel} {t("events")}
                               </span>
                             </div>
                           </div>
@@ -371,11 +373,11 @@ const Communities: React.FC = () => {
                               : "bg-stellar-teal text-white hover:bg-stellar-teal/90"
                           } ${address ? "" : "opacity-50 cursor-not-allowed"}`}
                         >
-                          {isMember ? "Salir" : "Unirme"}
+                          {isMember ? t("leave") : t("join")}
                         </button>
                         {!address && (
                           <span className="text-xs text-stellar-black/40 font-body">
-                            Conecta tu wallet para unirte.
+                            {t("connectToJoin")}
                           </span>
                         )}
                         <button
@@ -384,7 +386,7 @@ const Communities: React.FC = () => {
                           }
                           className="inline-flex items-center gap-2 bg-stellar-gold text-stellar-black px-4 py-2 rounded-full font-semibold font-body text-xs hover:bg-stellar-gold/90 transition-all"
                         >
-                          Crear evento aqui
+                          {t("createEventHere")}
                         </button>
                         {isCreator && (
                           <button
@@ -402,8 +404,8 @@ const Communities: React.FC = () => {
                             className="inline-flex items-center gap-2 border border-stellar-black/15 text-stellar-black/70 px-4 py-2 rounded-full font-semibold font-body text-xs hover:text-stellar-black hover:border-stellar-black/30 transition-all"
                           >
                             {editingId === communityId
-                              ? "Cancelar edicion"
-                              : "Editar comunidad"}
+                              ? t("cancelEdit")
+                              : t("editCommunity")}
                           </button>
                         )}
                       </div>
@@ -411,12 +413,12 @@ const Communities: React.FC = () => {
                       {isCreator && editingId === communityId && (
                         <div className="bg-stellar-white rounded-xl p-4 border border-stellar-lilac/15">
                           <h3 className="text-xs font-semibold uppercase tracking-widest text-stellar-black/50 font-body mb-3">
-                            Editar comunidad
+                            {t("editTitle")}
                           </h3>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                               <label className="block text-xs font-semibold font-body uppercase tracking-widest text-stellar-black/50 mb-2">
-                                Nombre
+                                {t("form.name")}
                               </label>
                               <input
                                 value={editForm.name}
@@ -431,7 +433,7 @@ const Communities: React.FC = () => {
                             </div>
                             <div>
                               <label className="block text-xs font-semibold font-body uppercase tracking-widest text-stellar-black/50 mb-2">
-                                Pais
+                                {t("form.country")}
                               </label>
                               <input
                                 value={editForm.country}
@@ -447,7 +449,7 @@ const Communities: React.FC = () => {
                           </div>
                           <div className="mt-3">
                             <label className="block text-xs font-semibold font-body uppercase tracking-widest text-stellar-black/50 mb-2">
-                              Descripcion
+                              {t("form.description")}
                             </label>
                             <textarea
                               value={editForm.description}
@@ -463,7 +465,7 @@ const Communities: React.FC = () => {
                           </div>
                           <div className="mt-3">
                             <label className="block text-xs font-semibold font-body uppercase tracking-widest text-stellar-black/50 mb-2">
-                              Imagen
+                              {t("editImage")}
                             </label>
                             <input
                               value={editForm.imageUrl}
@@ -481,13 +483,13 @@ const Communities: React.FC = () => {
                               onClick={() => handleUpdateCommunity(communityId)}
                               className="inline-flex items-center gap-2 bg-stellar-teal text-white px-4 py-2 rounded-full font-semibold font-body text-xs hover:bg-stellar-teal/90 transition-all"
                             >
-                              Guardar cambios
+                              {t("saveChanges")}
                             </button>
                             <button
                               onClick={cancelEditing}
                               className="inline-flex items-center gap-2 border border-stellar-black/15 text-stellar-black/60 px-4 py-2 rounded-full font-semibold font-body text-xs hover:text-stellar-black hover:border-stellar-black/30 transition-all"
                             >
-                              Cancelar
+                              {t("form.cancel")}
                             </button>
                           </div>
                         </div>
@@ -495,11 +497,11 @@ const Communities: React.FC = () => {
 
                       <div className="bg-stellar-white rounded-xl p-4 border border-stellar-lilac/15">
                         <h3 className="text-xs font-semibold uppercase tracking-widest text-stellar-black/50 font-body mb-3">
-                          Integrantes
+                          {t("membersSection")}
                         </h3>
                         {membersCount === 0 ? (
                           <p className="text-sm text-stellar-black/50 font-body">
-                            Aun no hay integrantes registrados.
+                            {t("noMembers")}
                           </p>
                         ) : (
                           <div className="flex flex-wrap gap-2">
@@ -518,15 +520,15 @@ const Communities: React.FC = () => {
 
                       <div className="bg-stellar-white rounded-xl p-4 border border-stellar-teal/15">
                         <h3 className="text-xs font-semibold uppercase tracking-widest text-stellar-black/50 font-body mb-3">
-                          Eventos de la comunidad
+                          {t("communityEvents")}
                         </h3>
                         {loadingEvents[communityId] ? (
                           <p className="text-sm text-stellar-black/50 font-body">
-                            Cargando eventos...
+                            {t("loadingEvents")}
                           </p>
                         ) : events.length === 0 ? (
                           <p className="text-sm text-stellar-black/50 font-body">
-                            Sin eventos asociados aun.
+                            {t("noEvents")}
                           </p>
                         ) : (
                           <div className="space-y-2">
@@ -542,12 +544,12 @@ const Communities: React.FC = () => {
                                   <p className="text-xs text-stellar-black/50 font-body flex items-center gap-1">
                                     <CalendarDays size={11} />
                                     {new Date(event.date).toLocaleDateString(
-                                      "es-ES",
+                                      getDateLocale(),
                                     )}
                                   </p>
                                 </div>
                                 <span className="text-[11px] uppercase tracking-wide bg-stellar-teal/15 text-stellar-teal font-semibold px-2 py-0.5 rounded-full">
-                                  Registrado
+                                  {t("common:status.registered")}
                                 </span>
                               </div>
                             ))}

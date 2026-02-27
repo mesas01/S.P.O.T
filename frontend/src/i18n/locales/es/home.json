@@ -1,0 +1,75 @@
+{
+  "eyebrow": "Proof of Attendance en Stellar",
+  "heroDescription1": "Sabemos a quién hablamos: bancos, policymakers y builders.",
+  "heroDescription2": "SPOT es tu comprobante coleccionable en Stellar: diseña la pieza, define la ventana de reclamo y entrega recuerdos verificables que demuestran asistencia ante sponsors, instituciones y comunidades.",
+  "claimSpot": "Reclamar SPOT",
+  "createEvent": "Crear Evento",
+  "heroImgAlt": "Colección de badges SPOT",
+  "totalSpots": "Total SPOTs",
+  "activeEvents": "Eventos activos",
+  "network": "Red",
+  "features": {
+    "eyebrow": "Funciones",
+    "title": "Todo lo que necesitas",
+    "subtitle": "Configura certificados coleccionables en minutos, conecta APIs si lo necesitas y maneja registros desde el móvil o el escenario.",
+    "multipleMethods": "Múltiples Métodos",
+    "multipleMethodsDesc": "Reclama SPOTs con QR, Link, Código, Geolocalización o NFC",
+    "blockchain": "En la Blockchain",
+    "blockchainDesc": "Tus SPOTs están guardados permanentemente en la red Stellar",
+    "customizable": "Personalizables",
+    "customizableDesc": "Crea eventos únicos con imágenes y metadata personalizada",
+    "selfService": "Self-Service",
+    "selfServiceDesc": "Herramientas para crear, editar y pausar eventos sin depender de desarrolladores",
+    "geolocation": "Geolocalización",
+    "geolocationDesc": "Verifica asistencia real con validación por ubicación y proximidad al evento",
+    "sorobanIntegrations": "Integraciones Soroban",
+    "sorobanIntegrationsDesc": "Automatiza claims con contratos inteligentes listos para producción"
+  },
+  "audiences": {
+    "eyebrow": "SPOT para cada equipo",
+    "title": "Dos audiencias, un producto",
+    "organizers": "Organizadores & builders",
+    "organizersDesc": "Configura certificados coleccionables en minutos, conecta APIs si lo necesitas y maneja registros desde el móvil o el escenario.",
+    "organizersBullet1": "Herramientas self-service para crear, editar y pausar eventos.",
+    "organizersBullet2": "Integraciones Soroban listas para automatizar claims.",
+    "organizersBullet3": "Debugger disponible para equipos técnicos.",
+    "sponsors": "Sponsors & instituciones",
+    "sponsorsDesc": "Obtén reportes claros sobre asistencia verificada y comparte pruebas on-chain con aliados o reguladores.",
+    "sponsorsBullet1": "Métricas visibles para patrocinadores y equipo comercial.",
+    "sponsorsBullet2": "Evidencia inmutable hospedada en la red Stellar.",
+    "sponsorsBullet3": "Copys concisos para informes y aprobaciones rápidas."
+  },
+  "howItWorks": {
+    "eyebrow": "Proceso",
+    "title": "Cómo funciona",
+    "subtitle": "SPOT convierte tus eventos en coleccionables digitales verificados. Configura arte, cupos y métricas desde un mismo panel.",
+    "step1Title": "Conecta tu Wallet",
+    "step1Desc": "Conecta tu wallet de Stellar para acceder a la plataforma. Compatible con las principales wallets del ecosistema.",
+    "step2Title": "Crea tu Evento",
+    "step2Desc": "Sube tu imagen, define cupos y programa fechas de reclamo para cada evento sin depender de desarrolladores.",
+    "step3Title": "Distribuye SPOTs",
+    "step3Desc": "QR, link, código, geofence o NFC listos para usar en campo, con botones visibles que empujan la conversión.",
+    "step4Title": "Demuestra Valor",
+    "step4Desc": "Cada comprobante vive en Stellar: útil para reportes, patrocinios y transparencia con tu comunidad."
+  },
+  "cta": {
+    "eyebrow": "Empieza ahora",
+    "title": "Crea experiencias verificables",
+    "subtitle": "Sube tu imagen, define cupos y programa fechas de reclamo para cada evento sin depender de desarrolladores. Cada comprobante vive en Stellar."
+  },
+  "collection": {
+    "eyebrow": "Colección",
+    "title": "Ver mis SPOTs",
+    "subtitle": "Accede a tu colección personal y revisa los SPOTs reclamados.",
+    "goToSpots": "Ir a Mis SPOTs"
+  },
+  "tldr": {
+    "summary": "SPOT convierte tus eventos en coleccionables digitales verificados. Configura arte, cupos y métricas desde un mismo panel.",
+    "bullet1Label": "Crea experiencias",
+    "bullet1Detail": "Sube tu imagen, define cupos y programa fechas de reclamo para cada evento sin depender de desarrolladores.",
+    "bullet2Label": "Reclama sin fricción",
+    "bullet2Detail": "QR, link, código, geofence o NFC listos para usar en campo, con botones visibles que empujan la conversión.",
+    "bullet3Label": "Demuestra valor",
+    "bullet3Detail": "Cada comprobante vive en Stellar: útil para reportes, patrocinios y transparencia con tu comunidad."
+  }
+}

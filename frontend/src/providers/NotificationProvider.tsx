@@ -8,6 +8,7 @@ import React, {
   useRef,
 } from "react";
 import { Notification as StellarNotification } from "@stellar/design-system";
+import { useTranslation } from "react-i18next";
 import "./NotificationProvider.css"; // Import CSS for sliding effect
 
 type NotificationType =
@@ -45,6 +46,8 @@ const EXIT_ANIMATION_MS = 900;
 export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
+  const { t } = useTranslation('common');
+
   const [notifications, setNotifications] = useState<NotificationMessage[]>([]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [pausedIds, setPausedIds] = useState<string[]>([]);
@@ -201,7 +204,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
                     className="notification-copy-btn"
                     onClick={() => handleCopy(notification.id, notification.copyText!)}
                   >
-                    {copiedId === notification.id ? "Copiado" : "Copiar detalle"}
+                    {copiedId === notification.id ? t('notification.copied') : t('notification.copyDetail')}
                   </button>
                 )}
               </div>
@@ -245,4 +248,3 @@ function filterOut(
 
 export { NotificationContext };
 export type { NotificationContextType };
-

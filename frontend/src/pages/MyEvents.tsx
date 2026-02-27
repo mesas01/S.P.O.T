@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { getDateLocale } from "../utils/dateFormat";
 import { useWallet } from "../hooks/useWallet";
 import { useNavigate } from "react-router-dom";
 import { generateLinkQRCode } from "../utils/qrCode";
@@ -94,37 +96,6 @@ const getAppOrigin = () =>
 const buildMintLink = (eventId: string | number) =>
   `${getAppOrigin()}/mint?event=${eventId}`;
 
-const getClaimStatus = (
-  event: EventData,
-): {
-  status: ClaimStatus;
-  label: string;
-} => {
-  const claimed = event.claimedSpots || 0;
-  const max = event.maxSpots || 0;
-  if (max > 0 && claimed >= max) {
-    return { status: "soldout", label: "Agotado" };
-  }
-
-  const now = Date.now();
-  const start = new Date(event.claimStart).getTime();
-  const end = new Date(event.claimEnd).getTime();
-
-  if (!Number.isFinite(start) || !Number.isFinite(end)) {
-    return { status: "open", label: "Activo" };
-  }
-
-  if (now < start) {
-    return { status: "upcoming", label: "Pendiente" };
-  }
-
-  if (now > end) {
-    return { status: "closed", label: "Cerrado" };
-  }
-
-  return { status: "open", label: "Reclamable" };
-};
-
 const sortEventsByDate = (events: EventData[]) =>
   [...events].sort(
     (a, b) =>
@@ -132,6 +103,7 @@ const sortEventsByDate = (events: EventData[]) =>
   );
 
 const MyEvents: React.FC = () => {
+  const { t } = useTranslation(['events', 'common']);
   const { address } = useWallet();
   const navigate = useNavigate();
   const isConnected = !!address;
@@ -141,6 +113,37 @@ const MyEvents: React.FC = () => {
   const [isRefreshingOnchain, setIsRefreshingOnchain] = useState(false);
   const [communityFilter, setCommunityFilter] = useState<string>("all");
   const { showNotification } = useNotification();
+
+  const getClaimStatus = (
+    event: EventData,
+  ): {
+    status: ClaimStatus;
+    label: string;
+  } => {
+    const claimed = event.claimedSpots || 0;
+    const max = event.maxSpots || 0;
+    if (max > 0 && claimed >= max) {
+      return { status: "soldout", label: t('common:status.soldout') };
+    }
+
+    const now = Date.now();
+    const start = new Date(event.claimStart).getTime();
+    const end = new Date(event.claimEnd).getTime();
+
+    if (!Number.isFinite(start) || !Number.isFinite(end)) {
+      return { status: "open", label: t('common:status.active') };
+    }
+
+    if (now < start) {
+      return { status: "upcoming", label: t('common:status.upcoming') };
+    }
+
+    if (now > end) {
+      return { status: "closed", label: t('common:status.closed') };
+    }
+
+    return { status: "open", label: t('common:status.open') };
+  };
 
   const {
     data: onchainEvents = [],
@@ -187,7 +190,7 @@ const MyEvents: React.FC = () => {
         contractEventId: event.eventId,
         name: event.name,
         date: toIso(event.date),
-        location: event.location || "Sin ubicación",
+        location: event.location || t('common:noLocation'),
         maxSpots: event.maxSpots,
         claimedSpots: event.mintedCount,
         claimStart: toIso(event.claimStart),
@@ -207,7 +210,7 @@ const MyEvents: React.FC = () => {
         visibility: event.visibility,
       } satisfies EventData;
     });
-  }, [onchainEvents]);
+  }, [onchainEvents, t]);
 
   const eventsToDisplay = useMemo(() => {
     const sorted = sortEventsByDate(contractEvents);
@@ -229,18 +232,16 @@ const MyEvents: React.FC = () => {
   const eventsErrorMessage = useMemo(() => {
     if (!eventsError) return "";
     if (/Failed to fetch|NetworkError/i.test(eventsError.message || ""))
-      return "No pudimos conectar con el backend. Verifica que esté encendido e inténtalo nuevamente.";
+      return t('common:errors.backendConnection');
     if (/timeout/i.test(eventsError.message || ""))
-      return "El backend tardó demasiado en responder. Reintenta en unos segundos.";
-    return eventsError.message || "Ocurrió un error inesperado.";
-  }, [eventsError]);
+      return t('common:errors.backendTimeout');
+    return eventsError.message || t('common:errors.unexpected');
+  }, [eventsError, t]);
 
   const totalEvents = eventsToDisplay.length;
   const eventsSummaryLabel = isLoadingEvents
-    ? "Cargando..."
-    : totalEvents === 0
-      ? "0 eventos creados"
-      : `${totalEvents} ${totalEvents === 1 ? "evento creado" : "eventos creados"}`;
+    ? t('common:actions.loadingGeneric')
+    : t('myEvents.eventsCount', { count: totalEvents });
   const isSyncingOnchain = !isLoadingOnchainEvents && isFetchingOnchainEvents;
 
   const handleRetry = () => {
@@ -254,15 +255,15 @@ const MyEvents: React.FC = () => {
       await refetchOnchainEvents();
       showNotification({
         type: "success",
-        title: "Datos on-chain sincronizados",
-        message: "Métricas de reclamos actualizadas.",
+        title: t('myEvents.onchainSynced'),
+        message: t('myEvents.onchainSyncedMsg'),
       });
     } catch (error) {
       console.error("Error refreshing on-chain stats:", error);
       showNotification({
         type: "error",
-        title: "Error al actualizar",
-        message: "No pudimos sincronizar los reclamos. Intenta nuevamente.",
+        title: t('myEvents.onchainSyncError'),
+        message: t('myEvents.onchainSyncErrorMsg'),
         copyText: buildErrorDetail(error),
       });
     } finally {
@@ -339,8 +340,8 @@ const MyEvents: React.FC = () => {
     if (!success) {
       showNotification({
         type: "error",
-        title: "No se pudo copiar",
-        message: "Copia manualmente el texto seleccionado.",
+        title: t('myEvents.copyError'),
+        message: t('myEvents.copyErrorMsg'),
       });
       return;
     }
@@ -355,7 +356,7 @@ const MyEvents: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("es-ES", {
+    return new Date(dateString).toLocaleDateString(getDateLocale(), {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -377,16 +378,16 @@ const MyEvents: React.FC = () => {
             </div>
           </div>
           <h2 className="text-2xl font-headline text-stellar-black mb-3">
-            Conecta tu Wallet
+            {t('myEvents.connectTitle')}
           </h2>
           <p className="text-stellar-black/60 font-body mb-8">
-            Necesitas conectar tu wallet para ver tus eventos.
+            {t('myEvents.connectSubtitle')}
           </p>
           <button
             onClick={() => navigate("/")}
             className="inline-flex items-center gap-2 bg-stellar-gold text-stellar-black px-8 py-3 rounded-full font-semibold font-body hover:bg-stellar-gold/90 transition-all shadow-md"
           >
-            Ir a Home
+            {t('common:actions.goHome')}
           </button>
         </div>
       </div>
@@ -402,17 +403,17 @@ const MyEvents: React.FC = () => {
             <div>
               <div className="inline-flex items-center gap-2 bg-stellar-lilac/10 border border-stellar-lilac/20 rounded-full px-4 py-1.5 mb-3">
                 <span className="text-xs font-semibold font-body uppercase tracking-widest text-stellar-lilac">
-                  Gestión
+                  {t('myEvents.badge')}
                 </span>
               </div>
               <h1 className="text-3xl md:text-4xl font-headline text-stellar-black mb-2">
-                Mis Eventos
+                {t('myEvents.title')}
               </h1>
               <p className="text-stellar-black/60 font-body flex items-center gap-2">
                 {eventsSummaryLabel}
                 {isSyncingOnchain && (
                   <span className="text-xs text-stellar-black/40 animate-pulse">
-                    Sincronizando...
+                    {t('common:actions.syncing')}
                   </span>
                 )}
               </p>
@@ -423,8 +424,8 @@ const MyEvents: React.FC = () => {
                 onChange={(e) => setCommunityFilter(e.target.value)}
                 className="px-4 py-2.5 rounded-full border border-stellar-black/15 bg-white text-stellar-black/70 font-body text-sm"
               >
-                <option value="all">Todas las comunidades</option>
-                <option value="none">Sin comunidad</option>
+                <option value="all">{t('allCommunities')}</option>
+                <option value="none">{t('noCommunity')}</option>
                 {communities.map((community) => (
                   <option key={community.id} value={community.id.toString()}>
                     {community.name} - {community.country}
@@ -436,7 +437,7 @@ const MyEvents: React.FC = () => {
                 className="inline-flex items-center gap-2 bg-stellar-gold text-stellar-black px-5 py-2.5 rounded-full font-semibold font-body text-sm hover:bg-stellar-gold/90 transition-all shadow-md"
               >
                 <Plus size={14} />
-                Crear Evento
+                {t('createEvent')}
               </button>
               <button
                 onClick={refreshMintedCounts}
@@ -444,27 +445,27 @@ const MyEvents: React.FC = () => {
                 className="inline-flex items-center gap-2 border border-stellar-black/15 text-stellar-black/60 hover:text-stellar-black hover:border-stellar-black/25 px-5 py-2.5 rounded-full font-body text-sm font-semibold transition-all disabled:opacity-50"
               >
                 {isRefreshingOnchain
-                  ? "Actualizando..."
-                  : "Actualizar on-chain"}
+                  ? t('common:actions.refreshing')
+                  : t('common:actions.refresh')}
               </button>
             </div>
           </div>
 
           <TldrCard
             label=""
-            summary="Esta vista resume el estado de tus SPOTs."
+            summary={t('myEvents.tldr.summary')}
             bullets={[
               {
-                label: "Visibilidad",
-                detail: "Cards con highlights y métricas claras.",
+                label: t('myEvents.tldr.bullet1Label'),
+                detail: t('myEvents.tldr.bullet1Detail'),
               },
               {
-                label: "Distribución",
-                detail: "QR, links y códigos al alcance.",
+                label: t('myEvents.tldr.bullet2Label'),
+                detail: t('myEvents.tldr.bullet2Detail'),
               },
               {
-                label: "Narrativa",
-                detail: "Copy directo para sponsors y equipo.",
+                label: t('myEvents.tldr.bullet3Label'),
+                detail: t('myEvents.tldr.bullet3Detail'),
               },
             ]}
           />
@@ -476,15 +477,15 @@ const MyEvents: React.FC = () => {
             <div className="mb-6 flex justify-center">
               <img
                 src={ruedaGif}
-                alt="Cargando..."
+                alt={t('myEvents.loading')}
                 className="w-24 h-24 object-contain"
               />
             </div>
             <h2 className="text-2xl font-headline text-stellar-black mb-3">
-              Cargando eventos...
+              {t('myEvents.loading')}
             </h2>
             <p className="text-stellar-black/60 font-body max-w-md mx-auto">
-              Obteniendo tus eventos...
+              {t('myEvents.loadingSubtitle')}
             </p>
           </div>
         ) : eventsError ? (
@@ -495,16 +496,16 @@ const MyEvents: React.FC = () => {
               </div>
             </div>
             <h2 className="text-2xl font-headline text-stellar-black mb-3">
-              No pudimos cargar tus eventos
+              {t('myEvents.errorTitle')}
             </h2>
             <p className="text-stellar-black/60 font-body max-w-xl mx-auto mb-8">
-              {eventsErrorMessage || "Intenta nuevamente en unos segundos."}
+              {eventsErrorMessage || t('common:errors.unexpected')}
             </p>
             <button
               onClick={handleRetry}
               className="inline-flex items-center gap-2 bg-stellar-gold text-stellar-black px-8 py-3 rounded-full font-semibold font-body hover:bg-stellar-gold/90 transition-all shadow-md"
             >
-              Reintentar
+              {t('common:actions.retry')}
             </button>
           </div>
         ) : eventsToDisplay.length === 0 ? (
@@ -515,18 +516,17 @@ const MyEvents: React.FC = () => {
               </div>
             </div>
             <h2 className="text-2xl font-headline text-stellar-black mb-3">
-              Aún no has creado eventos
+              {t('myEvents.emptyTitle')}
             </h2>
             <p className="text-stellar-black/60 font-body max-w-md mx-auto mb-8">
-              Crea tu primer evento para comenzar a distribuir SPOTs a los
-              asistentes.
+              {t('myEvents.emptySubtitle')}
             </p>
             <button
               onClick={() => navigate("/create-event")}
               className="inline-flex items-center gap-2 bg-stellar-gold text-stellar-black px-8 py-3 rounded-full font-semibold font-body hover:bg-stellar-gold/90 transition-all shadow-md"
             >
               <Plus size={14} />
-              Crear mi Primer Evento
+              {t('myEvents.createFirstEvent')}
             </button>
           </div>
         ) : (
@@ -601,7 +601,7 @@ const MyEvents: React.FC = () => {
                               {event.visibility === "PRIVATE" && (
                                 <span className="text-[11px] uppercase tracking-wide bg-stellar-black/10 text-stellar-black/70 font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1">
                                   <Lock size={9} />
-                                  Privado
+                                  {t('common:status.private')}
                                 </span>
                               )}
                             </div>
@@ -609,7 +609,7 @@ const MyEvents: React.FC = () => {
                               <span className="inline-flex items-center gap-1">
                                 <CalendarDays size={13} />
                                 {new Date(event.date).toLocaleDateString(
-                                  "es-ES",
+                                  getDateLocale(),
                                   {
                                     day: "numeric",
                                     month: "short",
@@ -640,11 +640,11 @@ const MyEvents: React.FC = () => {
                               {event.claimedSpots}/{event.maxSpots}
                             </span>
                             <span className="text-xs text-stellar-black/50">
-                              reclamados
+                              {t('common:claimed')}
                             </span>
                           </div>
                           <span className="text-xs text-stellar-black/40 font-body">
-                            {mintedPercentage}% completado
+                            {mintedPercentage}% {t('common:completed')}
                           </span>
                           <div
                             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${CLAIM_STATUS_STYLES[claimStatus.status]}`}
@@ -664,7 +664,7 @@ const MyEvents: React.FC = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="bg-stellar-white rounded-xl p-4 border border-stellar-lilac/15">
                           <p className="text-xs text-stellar-black/40 font-body mb-1 uppercase tracking-widest">
-                            Inicio
+                            {t('myEvents.start')}
                           </p>
                           <p className="text-stellar-black font-body text-sm">
                             {formatDate(event.claimStart)}
@@ -672,7 +672,7 @@ const MyEvents: React.FC = () => {
                         </div>
                         <div className="bg-stellar-white rounded-xl p-4 border border-stellar-lilac/15">
                           <p className="text-xs text-stellar-black/40 font-body mb-1 uppercase tracking-widest">
-                            Fin
+                            {t('myEvents.end')}
                           </p>
                           <p className="text-stellar-black font-body text-sm">
                             {formatDate(event.claimEnd)}
@@ -680,7 +680,7 @@ const MyEvents: React.FC = () => {
                         </div>
                       </div>
                       <p className="text-xs text-stellar-black/50 font-body">
-                        Estado del claim:{" "}
+                        {t('myEvents.claimStatus')}{" "}
                         <span className="font-semibold">
                           {claimStatus.label}
                         </span>
@@ -690,7 +690,7 @@ const MyEvents: React.FC = () => {
                       {/* Distribution methods */}
                       <div>
                         <h3 className="text-xs font-semibold uppercase tracking-widest text-stellar-black/50 font-body mb-3">
-                          Métodos Activos
+                          {t('myEvents.activeMethods')}
                         </h3>
                         <div className="flex flex-wrap gap-2">
                           {event.distributionMethods.qr && (
@@ -708,7 +708,7 @@ const MyEvents: React.FC = () => {
                           {event.distributionMethods.code && (
                             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stellar-teal/15 text-stellar-black rounded-full text-xs font-semibold font-body border border-stellar-teal/25">
                               <Hash size={11} />
-                              Código
+                              {t('myEvents.code')}
                             </span>
                           )}
                           {event.distributionMethods.geolocation && (
@@ -737,7 +737,7 @@ const MyEvents: React.FC = () => {
                                 className="text-stellar-lilac flex-shrink-0"
                               />
                               <h3 className="font-headline text-stellar-black text-base">
-                                Link Único
+                                {t('myEvents.uniqueLink')}
                               </h3>
                             </div>
                             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -763,12 +763,12 @@ const MyEvents: React.FC = () => {
                                 {copiedLink === event.id ? (
                                   <>
                                     <Check size={13} />
-                                    Copiado
+                                    {t('common:notification.copied')}
                                   </>
                                 ) : (
                                   <>
                                     <Copy size={13} />
-                                    Copiar
+                                    {t('common:actions.copy')}
                                   </>
                                 )}
                               </button>
@@ -785,7 +785,7 @@ const MyEvents: React.FC = () => {
                                 className="text-stellar-gold flex-shrink-0"
                               />
                               <h3 className="font-headline text-stellar-black text-base">
-                                Código Compartido
+                                {t('myEvents.sharedCode')}
                               </h3>
                             </div>
                             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -811,18 +811,18 @@ const MyEvents: React.FC = () => {
                                 {copiedCode === event.id ? (
                                   <>
                                     <Check size={13} />
-                                    Copiado
+                                    {t('common:notification.copied')}
                                   </>
                                 ) : (
                                   <>
                                     <Copy size={13} />
-                                    Copiar
+                                    {t('common:actions.copy')}
                                   </>
                                 )}
                               </button>
                             </div>
                             <p className="text-xs text-stellar-black/40 mt-3 text-center font-body italic">
-                              Comparte este código con los asistentes
+                              {t('myEvents.shareCodeHint')}
                             </p>
                           </div>
                         )}
@@ -833,14 +833,14 @@ const MyEvents: React.FC = () => {
                             <div className="flex items-center justify-center gap-2 mb-4">
                               <QrCode size={16} className="text-stellar-teal" />
                               <h3 className="font-headline text-stellar-black text-base">
-                                Código QR
+                                {t('myEvents.qrCode')}
                               </h3>
                             </div>
                             {loadingQR[event.id] ? (
                               <div className="flex justify-center items-center py-8 gap-3">
                                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-stellar-teal" />
                                 <p className="text-stellar-black/50 font-body text-sm">
-                                  Generando QR...
+                                  {t('myEvents.generatingQR')}
                                 </p>
                               </div>
                             ) : qrCodes[event.id] ? (
@@ -859,7 +859,7 @@ const MyEvents: React.FC = () => {
                                   </div>
                                 </div>
                                 <p className="text-xs text-stellar-black/40 font-body italic mb-2">
-                                  Escanea para reclamar tu SPOT
+                                  {t('myEvents.scanToClaimQR')}
                                 </p>
                                 {event.links.uniqueLink && (
                                   <p className="text-xs text-stellar-black/30 font-body font-mono break-all px-4">
@@ -870,8 +870,7 @@ const MyEvents: React.FC = () => {
                             ) : (
                               <div className="py-8">
                                 <p className="text-stellar-black/40 font-body text-sm">
-                                  No se pudo generar el código QR. Por favor,
-                                  intenta nuevamente.
+                                  {t('myEvents.qrError')}
                                 </p>
                               </div>
                             )}

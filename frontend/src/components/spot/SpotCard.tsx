@@ -1,5 +1,6 @@
 import React from "react";
 import { Text } from "@stellar/design-system";
+import { getDateLocale } from "../../utils/dateFormat";
 
 export interface SpotData {
   id: string | number;
@@ -25,7 +26,7 @@ const SpotCard: React.FC<SpotCardProps> = ({ spot, onClick }) => {
   // Format date
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("es-ES", {
+    return date.toLocaleDateString(getDateLocale(), {
       day: "numeric",
       month: "short",
       year: "numeric",

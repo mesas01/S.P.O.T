@@ -8,6 +8,7 @@ import { groupSpotsByMonth, getTotalSpots } from "../utils/spotGrouping";
 import { fetchClaimedEventsByClaimer } from "../util/backend";
 import { connectWallet } from "../util/wallet";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const mockSpots: SpotData[] = [
   {
@@ -38,6 +39,7 @@ const mockSpots: SpotData[] = [
 const Spots: React.FC = () => {
   const { address } = useWallet();
   const navigate = useNavigate();
+  const { t } = useTranslation('spots');
   const isConnected = !!address;
 
   const { data: claimedEvents = [] } = useQuery({
@@ -81,11 +83,13 @@ const Spots: React.FC = () => {
         <div className="mx-auto max-w-7xl px-6 py-12">
           <div className="mb-10">
             <h1 className="text-3xl md:text-4xl font-headline text-stellar-black mb-3 uppercase">
-              Tu <span className="text-stellar-gold">Colección</span>
+              {t('collectionTitle')}{" "}
+              <span className="text-stellar-gold">
+                {t('collectionHighlight')}
+              </span>
             </h1>
             <p className="text-stellar-black/60 italic text-lg font-subhead">
-              {totalSpots} {totalSpots === 1 ? "SPOT" : "SPOTs"} en tu
-              colección
+              {t('spotsCount', { count: totalSpots })}
             </p>
           </div>
 
@@ -97,7 +101,7 @@ const Spots: React.FC = () => {
                   {totalSpots}
                 </div>
                 <div className="text-base text-stellar-black/60 font-body">
-                  Total SPOTs
+                  {t('totalSpots')}
                 </div>
               </div>
             </div>
@@ -109,7 +113,7 @@ const Spots: React.FC = () => {
                   {Object.keys(groupedSpots).length}
                 </div>
                 <div className="text-base text-stellar-black/60 font-body">
-                  Meses activos
+                  {t('activeMonths')}
                 </div>
               </div>
             </div>
@@ -121,7 +125,7 @@ const Spots: React.FC = () => {
                   {new Date().getFullYear()}
                 </div>
                 <div className="text-base text-stellar-black/60 font-body">
-                  Año actual
+                  {t('currentYear')}
                 </div>
               </div>
             </div>
@@ -131,7 +135,7 @@ const Spots: React.FC = () => {
             {Object.keys(groupedSpots).length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-stellar-black/50 font-body">
-                  No hay SPOTs para mostrar
+                  {t('noSpots')}
                 </p>
               </div>
             ) : (
@@ -169,18 +173,17 @@ const Spots: React.FC = () => {
                 />
               </div>
               <h2 className="text-3xl font-headline text-stellar-black mb-4 uppercase">
-                Conecta tu Wallet
+                {t('connectTitle')}
               </h2>
               <p className="text-stellar-black/60 max-w-lg mx-auto mb-8 text-lg font-body">
-                Conecta tu wallet de Stellar para ver tu colección de SPOTs y
-                reclamar nuevos.
+                {t('connectSubtitle')}
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <button
                   onClick={() => void connectWallet()}
                   className="inline-flex items-center justify-center gap-2 bg-stellar-gold text-stellar-black hover:bg-yellow-400 font-semibold rounded-full px-10 py-4 shadow-lg hover:shadow-xl transition-all font-body"
                 >
-                  Conectar Wallet
+                  {t('connectWallet')}
                 </button>
                 <Button
                   onClick={() => navigate("/mint")}
@@ -188,7 +191,7 @@ const Spots: React.FC = () => {
                   size="lg"
                   className="rounded-full px-8 py-4"
                 >
-                  Ir a Reclamar
+                  {t('goToClaim')}
                 </Button>
               </div>
             </div>

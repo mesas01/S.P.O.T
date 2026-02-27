@@ -1,0 +1,75 @@
+{
+  "eyebrow": "Proof of Attendance on Stellar",
+  "heroDescription1": "We know who we're talking to: banks, policymakers, and builders.",
+  "heroDescription2": "SPOT is your collectible proof on Stellar: design the piece, set the claim window, and deliver verifiable mementos that prove attendance to sponsors, institutions, and communities.",
+  "claimSpot": "Claim SPOT",
+  "createEvent": "Create Event",
+  "heroImgAlt": "SPOT badges collection",
+  "totalSpots": "Total SPOTs",
+  "activeEvents": "Active events",
+  "network": "Network",
+  "features": {
+    "eyebrow": "Features",
+    "title": "Everything you need",
+    "subtitle": "Set up collectible certificates in minutes, connect APIs if needed, and manage registrations from your phone or the stage.",
+    "multipleMethods": "Multiple Methods",
+    "multipleMethodsDesc": "Claim SPOTs via QR, Link, Code, Geolocation, or NFC",
+    "blockchain": "On the Blockchain",
+    "blockchainDesc": "Your SPOTs are permanently stored on the Stellar network",
+    "customizable": "Customizable",
+    "customizableDesc": "Create unique events with custom images and metadata",
+    "selfService": "Self-Service",
+    "selfServiceDesc": "Tools to create, edit, and pause events without depending on developers",
+    "geolocation": "Geolocation",
+    "geolocationDesc": "Verify real attendance with location validation and event proximity",
+    "sorobanIntegrations": "Soroban Integrations",
+    "sorobanIntegrationsDesc": "Automate claims with production-ready smart contracts"
+  },
+  "audiences": {
+    "eyebrow": "SPOT for every team",
+    "title": "Two audiences, one product",
+    "organizers": "Organizers & builders",
+    "organizersDesc": "Set up collectible certificates in minutes, connect APIs if needed, and manage registrations from your phone or the stage.",
+    "organizersBullet1": "Self-service tools to create, edit, and pause events.",
+    "organizersBullet2": "Soroban integrations ready to automate claims.",
+    "organizersBullet3": "Debugger available for technical teams.",
+    "sponsors": "Sponsors & institutions",
+    "sponsorsDesc": "Get clear reports on verified attendance and share on-chain proofs with partners or regulators.",
+    "sponsorsBullet1": "Visible metrics for sponsors and sales teams.",
+    "sponsorsBullet2": "Immutable evidence hosted on the Stellar network.",
+    "sponsorsBullet3": "Concise copy for reports and quick approvals."
+  },
+  "howItWorks": {
+    "eyebrow": "Process",
+    "title": "How it works",
+    "subtitle": "SPOT turns your events into verified digital collectibles. Configure art, capacity, and metrics from a single dashboard.",
+    "step1Title": "Connect your Wallet",
+    "step1Desc": "Connect your Stellar wallet to access the platform. Compatible with the main ecosystem wallets.",
+    "step2Title": "Create your Event",
+    "step2Desc": "Upload your image, set capacity, and schedule claim dates for each event without depending on developers.",
+    "step3Title": "Distribute SPOTs",
+    "step3Desc": "QR, link, code, geofence, or NFC ready to use in the field, with visible buttons that drive conversion.",
+    "step4Title": "Demonstrate Value",
+    "step4Desc": "Each proof lives on Stellar: useful for reports, sponsorships, and transparency with your community."
+  },
+  "cta": {
+    "eyebrow": "Get started",
+    "title": "Create verifiable experiences",
+    "subtitle": "Upload your image, set capacity, and schedule claim dates for each event without depending on developers. Each proof lives on Stellar."
+  },
+  "collection": {
+    "eyebrow": "Collection",
+    "title": "View my SPOTs",
+    "subtitle": "Access your personal collection and review your claimed SPOTs.",
+    "goToSpots": "Go to My SPOTs"
+  },
+  "tldr": {
+    "summary": "SPOT turns your events into verified digital collectibles. Configure art, capacity, and metrics from a single dashboard.",
+    "bullet1Label": "Create experiences",
+    "bullet1Detail": "Upload your image, set capacity, and schedule claim dates for each event without depending on developers.",
+    "bullet2Label": "Claim without friction",
+    "bullet2Detail": "QR, link, code, geofence, or NFC ready to use in the field, with visible buttons that drive conversion.",
+    "bullet3Label": "Demonstrate value",
+    "bullet3Detail": "Each proof lives on Stellar: useful for reports, sponsorships, and transparency with your community."
+  }
+}

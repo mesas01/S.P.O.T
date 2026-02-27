@@ -1,0 +1,93 @@
+{
+  "nav": {
+    "mySpots": "Mis SPOTs",
+    "myEvents": "Mis Eventos",
+    "events": "Eventos",
+    "communities": "Comunidades",
+    "createEvent": "Crear Evento",
+    "pricing": "Planes",
+    "claim": "Reclamar"
+  },
+  "footer": {
+    "tagline": "Stellar Proof of Togetherness. Comprobantes coleccionables verificables en la red Stellar.",
+    "product": "Producto",
+    "claimSpot": "Reclamar SPOT",
+    "createEvent": "Crear Evento",
+    "myEvents": "Mis Eventos",
+    "events": "Eventos",
+    "communities": "Comunidades",
+    "pricing": "Planes",
+    "profile": "Perfil",
+    "ecosystem": "Ecosistema",
+    "resources": "Recursos",
+    "docs": "Documentación",
+    "api": "API",
+    "builtOn": "Built on Stellar Network · Testnet",
+    "copyright": "© {{year}} SPOT · Stellar Proof of Togetherness"
+  },
+  "wallet": {
+    "connect": "Conectar",
+    "disconnect": "Desconectar",
+    "loading": "Cargando...",
+    "connected": "Wallet conectada",
+    "address": "Dirección",
+    "cancel": "Cancelar",
+    "connectPrompt": "Conecta tu Wallet",
+    "connectWallet": "Conectar Wallet",
+    "walletSection": "Wallet"
+  },
+  "mobileMenu": {
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "mainMenu": "Menú principal",
+    "claimSpot": "Reclamar SPOT",
+    "myEvents": "Mis Eventos",
+    "events": "Eventos",
+    "communities": "Comunidades",
+    "createEvent": "Crear Evento",
+    "pricing": "Planes",
+    "myProfile": "Mi Perfil"
+  },
+  "userInfo": {
+    "username": "Usuario SPOT",
+    "notConnected": "No conectado"
+  },
+  "notification": {
+    "copied": "Copiado",
+    "copyDetail": "Copiar detalle"
+  },
+  "status": {
+    "open": "Reclamable",
+    "active": "Activo",
+    "upcoming": "Pendiente",
+    "closed": "Cerrado",
+    "soldout": "Agotado",
+    "private": "Privado",
+    "onchain": "On-chain",
+    "registered": "Registrado",
+    "approved": "Aprobado",
+    "revoked": "Revocado"
+  },
+  "actions": {
+    "back": "Volver",
+    "retry": "Reintentar",
+    "goHome": "Ir a Home",
+    "copy": "Copiar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "refresh": "Actualizar on-chain",
+    "refreshing": "Actualizando...",
+    "syncing": "Sincronizando...",
+    "loadingGeneric": "Cargando..."
+  },
+  "errors": {
+    "unexpected": "Ocurrió un error inesperado.",
+    "backendConnection": "No pudimos conectar con el backend. Verifica que esté encendido e inténtalo nuevamente.",
+    "backendTimeout": "El backend tardó demasiado en responder. Reintenta en unos segundos."
+  },
+  "claimed": "reclamados",
+  "completed": "completado",
+  "noLocation": "Sin ubicación",
+  "connectWalletNeeded": "Necesitas conectar tu wallet para ver tus eventos.",
+  "connectWalletForInfo": "Conecta tu wallet de Stellar para ver tu información y balance."
+}

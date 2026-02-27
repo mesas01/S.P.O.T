@@ -1,0 +1,73 @@
+{
+  "title": "Crear Evento",
+  "subtitle": "Completa el formulario para crear tu evento SPOT",
+  "connectTitle": "Conecta tu Wallet",
+  "connectSubtitle": "Necesitas conectar tu wallet para crear un evento.",
+  "form": {
+    "eventName": "Nombre del Evento *",
+    "eventNamePlaceholder": "Ej: Hackathon Stellar 2024",
+    "eventDate": "Fecha del Evento *",
+    "location": "Ubicación *",
+    "locationPlaceholder": "Ej: Bogotá, Colombia",
+    "description": "Descripción *",
+    "descriptionPlaceholder": "Describe tu evento...",
+    "maxSpots": "Máximo de SPOTs *",
+    "maxSpotsPlaceholder": "Ej: 100",
+    "claimStart": "Inicio de Reclamo *",
+    "claimEnd": "Fin de Reclamo *",
+    "eventImage": "Imagen del Evento",
+    "changeImage": "Cambiar Imagen",
+    "uploadImage": "Subir Imagen",
+    "orImageUrl": "O ingresa una URL de imagen:",
+    "imageUrlPlaceholder": "https://example.com/image.png o /images/events/mi-evento.jpg",
+    "imageStorageNote": "Las imágenes se almacenarán temporalmente. Para producción, se implementará almacenamiento permanente (IPFS, Firebase, etc.)",
+    "metadataUri": "URI de Metadata (Opcional)",
+    "communityLabel": "Comunidad (Opcional)",
+    "noCommunity": "Sin comunidad",
+    "communityNote": "Puedes crear nuevas comunidades en la seccion Comunidades.",
+    "yourPlan": "Tu Plan",
+    "spotsPerEvent": "SPOTs/Evento",
+    "activeEvents": "Eventos Activos",
+    "methods": "Metodos",
+    "visibility": "Visibilidad",
+    "public": "Público",
+    "private": "Privado",
+    "privateNote": "Los eventos privados solo serán accesibles mediante link directo o código QR.",
+    "distributionMethods": "Métodos de Distribución",
+    "qrCode": "QR Code",
+    "uniqueLink": "Link Único",
+    "code": "Código",
+    "geolocation": "Geolocalización",
+    "nfc": "NFC",
+    "submit": "Crear Evento",
+    "submitting": "Creando evento..."
+  },
+  "notifications": {
+    "walletNotConnected": "Wallet no conectada",
+    "walletNotConnectedMsg": "Por favor, conecta tu wallet primero",
+    "requiredFields": "Campos requeridos",
+    "requiredFieldsMsg": "Por favor, completa todos los campos requeridos",
+    "eventCreated": "Evento creado",
+    "eventCreatedMsg": "Tu evento SPOT está listo. Copia el detalle si necesitas reenviar la transacción.",
+    "createError": "Error al crear evento",
+    "createErrorMsg": "No pudimos crear el evento. Copia el detalle para soporte."
+  },
+  "validation": {
+    "invalidImage": "Por favor, selecciona un archivo de imagen válido",
+    "imageTooLarge": "La imagen no puede ser mayor a 5MB"
+  },
+  "tierLabels": {
+    "FREE": "Gratis",
+    "BASIC": "Basico",
+    "PREMIUM": "Premium"
+  },
+  "tldr": {
+    "summary": "Antes de completar el formulario, asegúrate de tener arte, fechas y métodos de entrega listos.",
+    "bullet1Label": "Visual",
+    "bullet1Detail": "Usa imágenes humanas y resalta highlights.",
+    "bullet2Label": "Tiempo",
+    "bullet2Detail": "Define claim window claro (inicio/fin).",
+    "bullet3Label": "Métodos",
+    "bullet3Detail": "Activa QR, link, código, geo o NFC según tu audiencia."
+  }
+}

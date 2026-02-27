@@ -1,0 +1,92 @@
+{
+  "eyebrow": "Métodos de reclamo",
+  "title": "Reclamar SPOT",
+  "subtitle": "Decide cómo reclamar tu comprobante: QR, link, código, geolocalización o NFC según el contexto del evento.",
+  "connectTitle": "Conecta tu Wallet",
+  "connectSubtitle": "Necesitas conectar tu wallet para reclamar un SPOT.",
+  "confirmEyebrow": "Confirmar reclamo",
+  "confirmTitle": "Reclamar SPOT",
+  "loadingEventInfo": "Cargando info del evento...",
+  "event": "Evento",
+  "processing": "Procesando tu reclamo...",
+  "connectRequired": "Para reclamar tu SPOT necesitas conectar tu wallet primero.",
+  "confirmClaim": "Confirmar Reclamo",
+  "methods": {
+    "qr": "Escanear QR",
+    "qrDesc": "Escanea el código QR del evento para reclamar tu SPOT al instante.",
+    "link": "Usar Link",
+    "linkDesc": "Ingresa el link único del evento para reclamar de forma remota.",
+    "code": "Código Compartido",
+    "codeDesc": "Ingresa el código compartido por el organizador del evento.",
+    "geolocation": "Geolocalización",
+    "geolocationDesc": "Verifica tu ubicación cerca del evento para validar asistencia.",
+    "nfc": "NFC",
+    "nfcDesc": "Acerca tu dispositivo al tag NFC para una experiencia táctil.",
+    "nfcUnavailable": "No disponible en este dispositivo"
+  },
+  "actions": {
+    "scanQR": "Escanear código QR",
+    "openCamera": "Abrir Cámara",
+    "enterLink": "Ingresa el link del evento",
+    "enterCode": "Ingresa el código del evento",
+    "claimSpot": "Reclamar SPOT",
+    "verifyLocation": "Verificar ubicación",
+    "verifyLocationDesc": "Asegúrate de estar en el lugar del evento. Usaremos tu ubicación para validar la asistencia.",
+    "verifyBtn": "Verificar Ubicación",
+    "nfcAction": "Acerca tu dispositivo al tag NFC",
+    "nfcActionDesc": "Asegúrate de que NFC esté activado en tu dispositivo y acércalo al punto de reclamo.",
+    "processing": "Procesando...",
+    "verifying": "Verificando..."
+  },
+  "placeholders": {
+    "linkInput": "https://spot.example.com/event/...",
+    "codeInput": "Ej: HACKATHON2024"
+  },
+  "notifications": {
+    "walletRequired": "Wallet requerida",
+    "walletRequiredMsg": "Conecta tu wallet antes de reclamar el coleccionable",
+    "eventNotFound": "Evento no encontrado en la red",
+    "eventNotFoundMsg": "Ese evento no existe en el contrato (ID puede ser de otro entorno o creado en modo prueba). Crea el evento de nuevo con el backend real y usa el link/código nuevo.",
+    "claimSent": "Reclamo enviado",
+    "claimSentMsg": "Tx enviada. Copia el detalle si necesitas compartirla.",
+    "claimError": "Error al reclamar",
+    "claimErrorMsg": "No se pudo completar el reclamo.",
+    "invalidLink": "Link no válido",
+    "invalidLinkMsg": "No pudimos encontrar un ID de evento en el link",
+    "invalidCode": "Código inválido",
+    "invalidCodeMsg": "Incluye el ID numérico del evento en el código compartido",
+    "linkProcessError": "No pudimos procesar el link.",
+    "codeProcessError": "No pudimos procesar el código.",
+    "comingSoon": "Próximamente",
+    "qrComingSoonMsg": "El escaneo QR enviará el reclamo automático al backend.",
+    "noGeolocation": "Sin geolocalización",
+    "noGeolocationMsg": "Tu navegador no soporta geolocalización",
+    "geoPending": "Validación pendiente",
+    "geoPendingMsg": "La validación por geolocalización aún no está implementada.",
+    "geoError": "Error de ubicación",
+    "geoErrorMsg": "No pudimos obtener tu posición.",
+    "geoClaimError": "No pudimos completar la validación por geolocalización.",
+    "invalidQR": "QR no válido",
+    "invalidQRMsg": "El código QR escaneado no contiene un enlace de evento válido."
+  },
+  "scanner": {
+    "title": "Escanear QR",
+    "instruction": "Apunta la cámara al código QR del evento",
+    "cameraError": "No se pudo acceder a la cámara",
+    "cameraErrorDesc": "Verifica los permisos de cámara en tu navegador.",
+    "cancel": "Cancelar"
+  },
+  "alerts": {
+    "enterValidLink": "Por favor, ingresa un link válido",
+    "enterValidCode": "Por favor, ingresa un código válido"
+  },
+  "tldr": {
+    "summary": "Decide cómo reclamar tu comprobante: QR, link, código, geolocalización o NFC según el contexto del evento.",
+    "bullet1Label": "QR primero",
+    "bullet1Detail": "Experiencia más rápida en eventos físicos.",
+    "bullet2Label": "Link único",
+    "bullet2Detail": "Ideal para claims remotos con copy pragmático.",
+    "bullet3Label": "Geo & NFC",
+    "bullet3Detail": "Visibilidad de métodos futuros con transparencia."
+  }
+}

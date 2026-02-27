@@ -25,8 +25,10 @@ import {
   Loader2,
   Users,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const CreateEvent: React.FC = () => {
+  const { t } = useTranslation("createEvent");
   const { address } = useWallet();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -64,6 +66,20 @@ const CreateEvent: React.FC = () => {
     .toISOString()
     .slice(0, 16);
 
+  const tierLabels: Record<EventTier, string> = {
+    FREE: t("tierLabels.FREE"),
+    BASIC: t("tierLabels.BASIC"),
+    PREMIUM: t("tierLabels.PREMIUM"),
+  };
+
+  const distributionMethodConfigs = [
+    { key: "qr" as const, Icon: QrCode, label: t("form.qrCode") },
+    { key: "link" as const, Icon: Link2, label: t("form.uniqueLink") },
+    { key: "code" as const, Icon: Hash, label: t("form.code") },
+    { key: "geolocation" as const, Icon: MapPin, label: t("form.geolocation") },
+    { key: "nfc" as const, Icon: Nfc, label: t("form.nfc") },
+  ];
+
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -78,12 +94,12 @@ const CreateEvent: React.FC = () => {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      alert("Por favor, selecciona un archivo de imagen válido");
+      alert(t("validation.invalidImage"));
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      alert("La imagen no puede ser mayor a 5MB");
+      alert(t("validation.imageTooLarge"));
       return;
     }
 
@@ -117,8 +133,8 @@ const CreateEvent: React.FC = () => {
     if (!isConnected) {
       showNotification({
         type: "error",
-        title: "Wallet no conectada",
-        message: "Por favor, conecta tu wallet primero",
+        title: t("notifications.walletNotConnected"),
+        message: t("notifications.walletNotConnectedMsg"),
       });
       return;
     }
@@ -134,8 +150,8 @@ const CreateEvent: React.FC = () => {
     ) {
       showNotification({
         type: "error",
-        title: "Campos requeridos",
-        message: "Por favor, completa todos los campos requeridos",
+        title: t("notifications.requiredFields"),
+        message: t("notifications.requiredFieldsMsg"),
       });
       return;
     }
@@ -190,9 +206,8 @@ const CreateEvent: React.FC = () => {
 
         showNotification({
           type: "success",
-          title: "Evento creado",
-          message:
-            "Tu evento SPOT está listo. Copia el detalle si necesitas reenviar la transacción.",
+          title: t("notifications.eventCreated"),
+          message: t("notifications.eventCreatedMsg"),
           copyText: buildTxDetail(backendResponse.txHash, {
             eventId: newEventId,
             creator: address,
@@ -230,8 +245,8 @@ const CreateEvent: React.FC = () => {
         console.error("Error al crear evento:", error);
         showNotification({
           type: "error",
-          title: "Error al crear evento",
-          message: "No pudimos crear el evento. Copia el detalle para soporte.",
+          title: t("notifications.createError"),
+          message: t("notifications.createErrorMsg"),
           copyText: buildErrorDetail(error),
         });
       } finally {
@@ -241,8 +256,8 @@ const CreateEvent: React.FC = () => {
       console.error("Error al crear evento:", error);
       showNotification({
         type: "error",
-        title: "Error al crear evento",
-        message: "No pudimos crear el evento. Copia el detalle para soporte.",
+        title: t("notifications.createError"),
+        message: t("notifications.createErrorMsg"),
         copyText: buildErrorDetail(error),
       });
     }
@@ -267,20 +282,6 @@ const CreateEvent: React.FC = () => {
     staleTime: 30000,
   });
 
-  const tierLabels: Record<EventTier, string> = {
-    FREE: "Gratis",
-    BASIC: "Basico",
-    PREMIUM: "Premium",
-  };
-
-  const distributionMethodConfigs = [
-    { key: "qr" as const, Icon: QrCode, label: "QR Code" },
-    { key: "link" as const, Icon: Link2, label: "Link Único" },
-    { key: "code" as const, Icon: Hash, label: "Código" },
-    { key: "geolocation" as const, Icon: MapPin, label: "Geolocalización" },
-    { key: "nfc" as const, Icon: Nfc, label: "NFC" },
-  ];
-
   if (!isConnected) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center px-6 py-20">
@@ -291,16 +292,16 @@ const CreateEvent: React.FC = () => {
             </div>
           </div>
           <h2 className="text-2xl font-headline text-stellar-black mb-3">
-            Conecta tu Wallet
+            {t("connectTitle")}
           </h2>
           <p className="text-stellar-black/60 font-body mb-8">
-            Necesitas conectar tu wallet para crear un evento.
+            {t("connectSubtitle")}
           </p>
           <button
             onClick={() => navigate("/")}
             className="inline-flex items-center gap-2 bg-stellar-gold text-stellar-black px-8 py-3 rounded-full font-semibold font-body hover:bg-stellar-gold/90 transition-all shadow-md"
           >
-            Ir a Home
+            {t("common:actions.goHome")}
           </button>
         </div>
       </div>
@@ -317,31 +318,30 @@ const CreateEvent: React.FC = () => {
             className="inline-flex items-center gap-2 text-sm text-stellar-black/50 hover:text-stellar-black font-body transition-colors mb-6"
           >
             <ArrowLeft size={14} />
-            Volver
+            {t("common:actions.back")}
           </button>
           <h1 className="text-3xl md:text-4xl font-headline text-stellar-black mb-3">
-            Crear Evento
+            {t("title")}
           </h1>
           <p className="text-stellar-black/60 font-body">
-            Completa el formulario para crear tu evento SPOT
+            {t("subtitle")}
           </p>
           <div className="mt-6">
             <TldrCard
               label=""
-              summary="Antes de completar el formulario, asegúrate de tener arte, fechas y métodos de entrega listos."
+              summary={t("tldr.summary")}
               bullets={[
                 {
-                  label: "Visual",
-                  detail: "Usa imágenes humanas y resalta highlights.",
+                  label: t("tldr.bullet1Label"),
+                  detail: t("tldr.bullet1Detail"),
                 },
                 {
-                  label: "Tiempo",
-                  detail: "Define claim window claro (inicio/fin).",
+                  label: t("tldr.bullet2Label"),
+                  detail: t("tldr.bullet2Detail"),
                 },
                 {
-                  label: "Métodos",
-                  detail:
-                    "Activa QR, link, código, geo o NFC según tu audiencia.",
+                  label: t("tldr.bullet3Label"),
+                  detail: t("tldr.bullet3Detail"),
                 },
               ]}
             />
@@ -353,7 +353,7 @@ const CreateEvent: React.FC = () => {
           {/* Event Name */}
           <div>
             <label htmlFor="eventName" className={labelClass}>
-              Nombre del Evento *
+              {t("form.eventName")}
             </label>
             <input
               id="eventName"
@@ -361,7 +361,7 @@ const CreateEvent: React.FC = () => {
               type="text"
               value={formData.eventName}
               onChange={handleInputChange}
-              placeholder="Ej: Hackathon Stellar 2024"
+              placeholder={t("form.eventNamePlaceholder")}
               required
               className={inputClass}
             />
@@ -370,7 +370,7 @@ const CreateEvent: React.FC = () => {
           {/* Event Date */}
           <div>
             <label htmlFor="eventDate" className={labelClass}>
-              Fecha del Evento *
+              {t("form.eventDate")}
             </label>
             <input
               id="eventDate"
@@ -387,7 +387,7 @@ const CreateEvent: React.FC = () => {
           {/* Location */}
           <div>
             <label htmlFor="location" className={labelClass}>
-              Ubicación *
+              {t("form.location")}
             </label>
             <input
               id="location"
@@ -395,7 +395,7 @@ const CreateEvent: React.FC = () => {
               type="text"
               value={formData.location}
               onChange={handleInputChange}
-              placeholder="Ej: Bogotá, Colombia"
+              placeholder={t("form.locationPlaceholder")}
               required
               className={inputClass}
             />
@@ -404,14 +404,14 @@ const CreateEvent: React.FC = () => {
           {/* Description */}
           <div>
             <label htmlFor="description" className={labelClass}>
-              Descripción *
+              {t("form.description")}
             </label>
             <textarea
               id="description"
               name="description"
               value={formData.description}
               onChange={handleInputChange}
-              placeholder="Describe tu evento..."
+              placeholder={t("form.descriptionPlaceholder")}
               required
               rows={4}
               className={`${inputClass} resize-none`}
@@ -421,7 +421,7 @@ const CreateEvent: React.FC = () => {
           {/* Max SPOTs */}
           <div>
             <label htmlFor="maxSpots" className={labelClass}>
-              Máximo de SPOTs *
+              {t("form.maxSpots")}
             </label>
             <input
               id="maxSpots"
@@ -429,7 +429,7 @@ const CreateEvent: React.FC = () => {
               type="number"
               value={formData.maxSpots}
               onChange={handleInputChange}
-              placeholder="Ej: 100"
+              placeholder={t("form.maxSpotsPlaceholder")}
               min="1"
               required
               className={inputClass}
@@ -440,7 +440,7 @@ const CreateEvent: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="claimStart" className={labelClass}>
-                Inicio de Reclamo *
+                {t("form.claimStart")}
               </label>
               <input
                 id="claimStart"
@@ -455,7 +455,7 @@ const CreateEvent: React.FC = () => {
             </div>
             <div>
               <label htmlFor="claimEnd" className={labelClass}>
-                Fin de Reclamo *
+                {t("form.claimEnd")}
               </label>
               <input
                 id="claimEnd"
@@ -472,7 +472,7 @@ const CreateEvent: React.FC = () => {
 
           {/* Image Upload */}
           <div>
-            <label className={labelClass}>Imagen del Evento</label>
+            <label className={labelClass}>{t("form.eventImage")}</label>
 
             {/* Preview */}
             {formData.imagePreview && (
@@ -507,7 +507,7 @@ const CreateEvent: React.FC = () => {
                 className="inline-flex items-center gap-2 bg-stellar-lilac/10 border border-stellar-lilac/30 text-stellar-black hover:bg-stellar-lilac/20 px-5 py-2.5 rounded-xl font-body text-sm font-semibold transition-all"
               >
                 <Upload size={14} />
-                {formData.imageFile ? "Cambiar Imagen" : "Subir Imagen"}
+                {formData.imageFile ? t("form.changeImage") : t("form.uploadImage")}
               </button>
               {formData.imageFile && (
                 <span className="text-sm text-stellar-black/60 font-body">
@@ -519,7 +519,7 @@ const CreateEvent: React.FC = () => {
 
             <div className="mt-4">
               <p className="text-xs text-stellar-black/50 font-body mb-2">
-                O ingresa una URL de imagen:
+                {t("form.orImageUrl")}
               </p>
               <input
                 id="imageUrl"
@@ -527,22 +527,21 @@ const CreateEvent: React.FC = () => {
                 type="url"
                 value={formData.imageUrl}
                 onChange={handleInputChange}
-                placeholder="https://example.com/image.png o /images/events/mi-evento.jpg"
+                placeholder={t("form.imageUrlPlaceholder")}
                 disabled={!!formData.imageFile}
                 className={`${inputClass} disabled:opacity-40 disabled:cursor-not-allowed`}
               />
             </div>
 
             <p className="text-xs text-stellar-black/40 mt-2 font-body italic">
-              Las imágenes se almacenarán temporalmente. Para producción, se
-              implementará almacenamiento permanente (IPFS, Firebase, etc.)
+              {t("form.imageStorageNote")}
             </p>
           </div>
 
           {/* Metadata URI */}
           <div>
             <label htmlFor="metadataUri" className={labelClass}>
-              URI de Metadata (Opcional)
+              {t("form.metadataUri")}
             </label>
             <input
               id="metadataUri"
@@ -558,7 +557,7 @@ const CreateEvent: React.FC = () => {
           {/* Community */}
           <div>
             <label htmlFor="communityId" className={labelClass}>
-              Comunidad (Opcional)
+              {t("form.communityLabel")}
             </label>
             <select
               id="communityId"
@@ -567,7 +566,7 @@ const CreateEvent: React.FC = () => {
               onChange={handleInputChange}
               className={`${inputClass} bg-white`}
             >
-              <option value="">Sin comunidad</option>
+              <option value="">{t("form.noCommunity")}</option>
               {communities.map((community) => (
                 <option key={community.id} value={community.id}>
                   {community.name} - {community.country}
@@ -575,7 +574,7 @@ const CreateEvent: React.FC = () => {
               ))}
             </select>
             <p className="text-xs text-stellar-black/40 mt-2 font-body italic">
-              Puedes crear nuevas comunidades en la seccion Comunidades.
+              {t("form.communityNote")}
             </p>
           </div>
 
@@ -584,7 +583,7 @@ const CreateEvent: React.FC = () => {
             <div className="bg-stellar-lilac/5 border border-stellar-lilac/20 rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-semibold font-body uppercase tracking-widest text-stellar-black/50">
-                  Tu Plan
+                  {t("form.yourPlan")}
                 </span>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold font-body bg-stellar-lilac/15 text-stellar-black">
                   {tierLabels[creatorProfile.tier]}
@@ -596,7 +595,7 @@ const CreateEvent: React.FC = () => {
                     {creatorProfile.limits.maxSpotsPerEvent.toLocaleString()}
                   </p>
                   <p className="text-[10px] font-body text-stellar-black/40 uppercase tracking-wide">
-                    SPOTs/Evento
+                    {t("form.spotsPerEvent")}
                   </p>
                 </div>
                 <div>
@@ -604,7 +603,7 @@ const CreateEvent: React.FC = () => {
                     {creatorProfile.limits.maxActiveEvents}
                   </p>
                   <p className="text-[10px] font-body text-stellar-black/40 uppercase tracking-wide">
-                    Eventos Activos
+                    {t("form.activeEvents")}
                   </p>
                 </div>
                 <div>
@@ -612,7 +611,7 @@ const CreateEvent: React.FC = () => {
                     {creatorProfile.limits.allowedMethods.join(", ")}
                   </p>
                   <p className="text-[10px] font-body text-stellar-black/40 uppercase tracking-wide">
-                    Metodos
+                    {t("form.methods")}
                   </p>
                 </div>
               </div>
@@ -621,15 +620,15 @@ const CreateEvent: React.FC = () => {
 
           {/* Visibility */}
           <div>
-            <label className={labelClass}>Visibilidad</label>
+            <label className={labelClass}>{t("form.visibility")}</label>
             <div className="flex gap-2">
               {(["PUBLIC", "PRIVATE"] as const).map((v) => {
                 const config: Record<
                   EventVisibility,
                   { label: string; Icon: typeof Users }
                 > = {
-                  PUBLIC: { label: "Público", Icon: Users },
-                  PRIVATE: { label: "Privado", Icon: Lock },
+                  PUBLIC: { label: t("form.public"), Icon: Users },
+                  PRIVATE: { label: t("form.private"), Icon: Lock },
                 };
                 const { label, Icon } = config[v];
                 const isActive = formData.visibility === v;
@@ -660,14 +659,13 @@ const CreateEvent: React.FC = () => {
               })}
             </div>
             <p className="text-xs text-stellar-black/40 mt-2 font-body italic">
-              Los eventos privados solo serán accesibles mediante link directo o
-              código QR.
+              {t("form.privateNote")}
             </p>
           </div>
 
           {/* Distribution Methods */}
           <div>
-            <label className={labelClass}>Métodos de Distribución</label>
+            <label className={labelClass}>{t("form.distributionMethods")}</label>
             <div className="flex flex-wrap gap-3">
               {distributionMethodConfigs.map(({ key, Icon, label }) => {
                 const isActive = distributionMethods[key];
@@ -707,10 +705,10 @@ const CreateEvent: React.FC = () => {
               {isSubmitting ? (
                 <>
                   <Loader2 size={16} className="animate-spin" />
-                  Creando evento...
+                  {t("form.submitting")}
                 </>
               ) : (
-                "Crear Evento"
+                t("form.submit")
               )}
             </button>
           </div>

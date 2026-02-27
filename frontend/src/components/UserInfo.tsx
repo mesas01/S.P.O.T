@@ -1,16 +1,18 @@
 import React from "react";
 import { Text } from "@stellar/design-system";
 import { useWallet } from "../hooks/useWallet";
+import { useTranslation } from "react-i18next";
 
 const UserInfo: React.FC = () => {
   const { address } = useWallet();
-  
+  const { t } = useTranslation('common');
+
   // Placeholder fijo para el nombre de usuario
-  const username = "Usuario SPOT";
+  const username = t('userInfo.username');
 
   // Función para formatear la dirección (mostrar primeros y últimos caracteres)
   const formatAddress = (addr: string | undefined) => {
-    if (!addr) return "No conectado";
+    if (!addr) return t('userInfo.notConnected');
     if (addr.length <= 12) return addr;
     return `${addr.slice(0, 6)}...${addr.slice(-6)}`;
   };
@@ -24,7 +26,7 @@ const UserInfo: React.FC = () => {
         <Text as="div" size="sm" className="font-semibold text-gray-800 truncate text-xs lg:text-sm">
           {username}
         </Text>
-        <Text as="div" size="xs" className="text-gray-600 font-mono truncate text-[10px] lg:text-xs" title={address || "No conectado"}>
+        <Text as="div" size="xs" className="text-gray-600 font-mono truncate text-[10px] lg:text-xs" title={address || t('userInfo.notConnected')}>
           {formatAddress(address)}
         </Text>
       </div>
@@ -33,4 +35,3 @@ const UserInfo: React.FC = () => {
 };
 
 export default UserInfo;
-

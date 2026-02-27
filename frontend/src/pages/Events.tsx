@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { getDateLocale } from "../utils/dateFormat";
 import TldrCard from "../components/layout/TldrCard";
 import {
   fetchCommunities,
@@ -56,58 +58,64 @@ const getAppOrigin = () =>
 const buildMintLink = (eventId: string | number) =>
   `${getAppOrigin()}/mint?event=${eventId}`;
 
-const getClaimStatus = (event: EventView) => {
-  if (event.maxSpots > 0 && event.mintedCount >= event.maxSpots) {
-    return { status: "soldout" as const, label: "Agotado" };
-  }
-
-  const now = Date.now();
-  const start = event.claimStart * 1000;
-  const end = event.claimEnd * 1000;
-
-  if (!Number.isFinite(start) || !Number.isFinite(end)) {
-    return { status: "open" as const, label: "Activo" };
-  }
-
-  if (now < start) return { status: "upcoming" as const, label: "Pendiente" };
-  if (now > end) return { status: "closed" as const, label: "Cerrado" };
-  return { status: "open" as const, label: "Reclamable" };
-};
-
-const formatDate = (timestamp: number) =>
-  new Date(timestamp * 1000).toLocaleDateString("es-ES", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-const mapEventToView = (event: OnchainEventSummary): EventView => ({
-  id: event.eventId.toString(),
-  eventId: event.eventId,
-  name: event.name,
-  date: event.date,
-  location: event.location || "Sin ubicación",
-  description: event.description || "",
-  maxSpots: event.maxSpots,
-  mintedCount: event.mintedCount,
-  claimStart: event.claimStart,
-  claimEnd: event.claimEnd,
-  metadataUri: event.metadataUri,
-  imageUrl: event.imageUrl,
-  creator: event.creator,
-  communityId: event.communityId,
-  tier: event.tier,
-  visibility: event.visibility,
-});
-
 const Events: React.FC = () => {
+  const { t } = useTranslation("events");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [communityFilter, setCommunityFilter] = useState<string>("all");
+
+  const getClaimStatus = (event: EventView) => {
+    if (event.maxSpots > 0 && event.mintedCount >= event.maxSpots) {
+      return { status: "soldout" as const, label: t("common:status.soldout") };
+    }
+
+    const now = Date.now();
+    const start = event.claimStart * 1000;
+    const end = event.claimEnd * 1000;
+
+    if (!Number.isFinite(start) || !Number.isFinite(end)) {
+      return { status: "open" as const, label: t("common:status.active") };
+    }
+
+    if (now < start)
+      return {
+        status: "upcoming" as const,
+        label: t("common:status.upcoming"),
+      };
+    if (now > end)
+      return { status: "closed" as const, label: t("common:status.closed") };
+    return { status: "open" as const, label: t("common:status.open") };
+  };
+
+  const formatDate = (timestamp: number) =>
+    new Date(timestamp * 1000).toLocaleDateString(getDateLocale(), {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+  const mapEventToView = (event: OnchainEventSummary): EventView => ({
+    id: event.eventId.toString(),
+    eventId: event.eventId,
+    name: event.name,
+    date: event.date,
+    location: event.location || t("common:noLocation"),
+    description: event.description || "",
+    maxSpots: event.maxSpots,
+    mintedCount: event.mintedCount,
+    claimStart: event.claimStart,
+    claimEnd: event.claimEnd,
+    metadataUri: event.metadataUri,
+    imageUrl: event.imageUrl,
+    creator: event.creator,
+    communityId: event.communityId,
+    tier: event.tier,
+    visibility: event.visibility,
+  });
 
   const {
     data: events = [],
@@ -152,7 +160,7 @@ const Events: React.FC = () => {
 
   const eventsError = error as Error | null;
   const eventsErrorMessage =
-    eventsError?.message || "Ocurrió un error inesperado.";
+    eventsError?.message || t("common:errors.unexpected");
 
   const toggleEventDetails = (eventId: string) => {
     setExpandedEvent((prev) => (prev === eventId ? null : eventId));
@@ -179,21 +187,19 @@ const Events: React.FC = () => {
             <div>
               <div className="inline-flex items-center gap-2 bg-stellar-teal/10 border border-stellar-teal/20 rounded-full px-4 py-1.5 mb-3">
                 <span className="text-xs font-semibold font-body uppercase tracking-widest text-stellar-teal">
-                  Comunidad
+                  {t("badge")}
                 </span>
               </div>
               <h1 className="text-3xl md:text-4xl font-headline text-stellar-black mb-2">
-                Eventos
+                {t("title")}
               </h1>
               <p className="text-stellar-black/60 font-body flex items-center gap-2">
                 {isLoading
-                  ? "Cargando..."
-                  : `${eventsToDisplay.length} ${
-                      eventsToDisplay.length === 1 ? "evento" : "eventos"
-                    } disponibles`}
+                  ? t("common:actions.loadingGeneric")
+                  : t("eventsCount", { count: eventsToDisplay.length })}
                 {isFetching && (
                   <span className="text-xs text-stellar-black/40 animate-pulse">
-                    Sincronizando...
+                    {t("common:actions.syncing")}
                   </span>
                 )}
               </p>
@@ -204,8 +210,8 @@ const Events: React.FC = () => {
                 onChange={(e) => setCommunityFilter(e.target.value)}
                 className="px-4 py-2.5 rounded-full border border-stellar-black/15 bg-white text-stellar-black/70 font-body text-sm"
               >
-                <option value="all">Todas las comunidades</option>
-                <option value="none">Sin comunidad</option>
+                <option value="all">{t("allCommunities")}</option>
+                <option value="none">{t("noCommunity")}</option>
                 {communities.map((community) => (
                   <option key={community.id} value={community.id.toString()}>
                     {community.name} - {community.country}
@@ -216,33 +222,35 @@ const Events: React.FC = () => {
                 onClick={() => navigate("/create-event")}
                 className="inline-flex items-center gap-2 bg-stellar-gold text-stellar-black px-5 py-2.5 rounded-full font-semibold font-body text-sm hover:bg-stellar-gold/90 transition-all shadow-md"
               >
-                Crear Evento
+                {t("createEvent")}
               </button>
               <button
                 onClick={refreshOnchain}
                 disabled={isRefreshing}
                 className="inline-flex items-center gap-2 border border-stellar-black/15 text-stellar-black/60 hover:text-stellar-black hover:border-stellar-black/25 px-5 py-2.5 rounded-full font-body text-sm font-semibold transition-all disabled:opacity-50"
               >
-                {isRefreshing ? "Actualizando..." : "Actualizar on-chain"}
+                {isRefreshing
+                  ? t("common:actions.refreshing")
+                  : t("common:actions.refresh")}
               </button>
             </div>
           </div>
 
           <TldrCard
             label=""
-            summary="Explora eventos creados por la comunidad y abre cada uno para ver fechas, cupos y links de reclamo."
+            summary={t("tldr.summary")}
             bullets={[
               {
-                label: "Global",
-                detail: "Lista con todos los eventos on-chain disponibles.",
+                label: t("tldr.bullet1Label"),
+                detail: t("tldr.bullet1Detail"),
               },
               {
-                label: "Detalles",
-                detail: "Haz click en un evento para ver su ficha completa.",
+                label: t("tldr.bullet2Label"),
+                detail: t("tldr.bullet2Detail"),
               },
               {
-                label: "Acción",
-                detail: "Toma el link de reclamo y comparte con asistentes.",
+                label: t("tldr.bullet3Label"),
+                detail: t("tldr.bullet3Detail"),
               },
             ]}
           />
@@ -254,10 +262,10 @@ const Events: React.FC = () => {
               <Loader2 size={36} className="animate-spin text-stellar-lilac" />
             </div>
             <h2 className="text-2xl font-headline text-stellar-black mb-3">
-              Cargando eventos...
+              {t("loading")}
             </h2>
             <p className="text-stellar-black/60 font-body max-w-md mx-auto">
-              Consultando los eventos registrados en la red.
+              {t("loadingSubtitle")}
             </p>
           </div>
         ) : eventsError ? (
@@ -268,7 +276,7 @@ const Events: React.FC = () => {
               </div>
             </div>
             <h2 className="text-2xl font-headline text-stellar-black mb-3">
-              No pudimos cargar los eventos
+              {t("errorTitle")}
             </h2>
             <p className="text-stellar-black/60 font-body max-w-xl mx-auto mb-8">
               {eventsErrorMessage}
@@ -277,7 +285,7 @@ const Events: React.FC = () => {
               onClick={() => refetch()}
               className="inline-flex items-center gap-2 bg-stellar-gold text-stellar-black px-8 py-3 rounded-full font-semibold font-body hover:bg-stellar-gold/90 transition-all shadow-md"
             >
-              Reintentar
+              {t("retryBtn")}
             </button>
           </div>
         ) : eventsToDisplay.length === 0 ? (
@@ -288,17 +296,16 @@ const Events: React.FC = () => {
               </div>
             </div>
             <h2 className="text-2xl font-headline text-stellar-black mb-3">
-              No hay eventos publicados
+              {t("emptyTitle")}
             </h2>
             <p className="text-stellar-black/60 font-body max-w-md mx-auto mb-8">
-              Todavía no existen eventos en la plataforma. Sé el primero en
-              crear uno.
+              {t("emptySubtitle")}
             </p>
             <button
               onClick={() => navigate("/create-event")}
               className="inline-flex items-center gap-2 bg-stellar-gold text-stellar-black px-8 py-3 rounded-full font-semibold font-body hover:bg-stellar-gold/90 transition-all shadow-md"
             >
-              Crear mi Primer Evento
+              {t("createFirstEvent")}
             </button>
           </div>
         ) : (
@@ -383,11 +390,11 @@ const Events: React.FC = () => {
                               {event.mintedCount}/{event.maxSpots}
                             </span>
                             <span className="text-xs text-stellar-black/50">
-                              reclamados
+                              {t("common:claimed")}
                             </span>
                           </div>
                           <span className="text-xs text-stellar-black/40 font-body">
-                            {mintedPercentage}% completado
+                            {mintedPercentage}% {t("common:completed")}
                           </span>
                           <div
                             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${CLAIM_STATUS_STYLES[claimStatus.status]}`}
@@ -404,7 +411,7 @@ const Events: React.FC = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="bg-stellar-white rounded-xl p-4 border border-stellar-lilac/15">
                           <p className="text-xs text-stellar-black/40 font-body mb-1 uppercase tracking-widest">
-                            Inicio reclamo
+                            {t("claimStart")}
                           </p>
                           <p className="text-stellar-black font-body text-sm">
                             {formatDate(event.claimStart)}
@@ -412,7 +419,7 @@ const Events: React.FC = () => {
                         </div>
                         <div className="bg-stellar-white rounded-xl p-4 border border-stellar-lilac/15">
                           <p className="text-xs text-stellar-black/40 font-body mb-1 uppercase tracking-widest">
-                            Fin reclamo
+                            {t("claimEnd")}
                           </p>
                           <p className="text-stellar-black font-body text-sm">
                             {formatDate(event.claimEnd)}
@@ -423,7 +430,7 @@ const Events: React.FC = () => {
                       {event.description && (
                         <div className="bg-stellar-white rounded-xl p-4 border border-stellar-lilac/15">
                           <p className="text-xs text-stellar-black/40 font-body mb-2 uppercase tracking-widest">
-                            Descripción
+                            {t("description")}
                           </p>
                           <p className="text-sm text-stellar-black/70 font-body">
                             {event.description}
@@ -435,7 +442,7 @@ const Events: React.FC = () => {
                         communityMap.has(event.communityId) && (
                           <div className="bg-stellar-white rounded-xl p-4 border border-stellar-gold/20">
                             <p className="text-xs text-stellar-black/40 font-body mb-1 uppercase tracking-widest">
-                              Comunidad
+                              {t("community")}
                             </p>
                             <p className="text-sm text-stellar-black/70 font-body">
                               {communityMap.get(event.communityId)?.name}
@@ -446,7 +453,7 @@ const Events: React.FC = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="bg-stellar-white rounded-xl p-4 border border-stellar-lilac/15">
                           <p className="text-xs text-stellar-black/40 font-body mb-1 uppercase tracking-widest">
-                            Creador
+                            {t("creator")}
                           </p>
                           <p className="text-sm text-stellar-black/70 font-body break-all">
                             {event.creator}
@@ -454,7 +461,7 @@ const Events: React.FC = () => {
                         </div>
                         <div className="bg-stellar-white rounded-xl p-4 border border-stellar-lilac/15">
                           <p className="text-xs text-stellar-black/40 font-body mb-1 uppercase tracking-widest">
-                            Event ID
+                            {t("eventId")}
                           </p>
                           <p className="text-sm text-stellar-black/70 font-body">
                             {event.eventId}
@@ -466,7 +473,7 @@ const Events: React.FC = () => {
                         <div className="flex items-center gap-2 mb-3">
                           <Link2 size={16} className="text-stellar-lilac" />
                           <h3 className="font-headline text-stellar-black text-base">
-                            Link de Reclamo
+                            {t("claimLink")}
                           </h3>
                         </div>
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -481,7 +488,7 @@ const Events: React.FC = () => {
                             }
                             className="flex-shrink-0 inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 font-semibold font-body text-sm transition-all bg-stellar-gold text-stellar-black hover:bg-stellar-gold/80"
                           >
-                            Ir a Reclamar
+                            {t("goToClaim")}
                           </button>
                         </div>
                       </div>
@@ -489,7 +496,7 @@ const Events: React.FC = () => {
                       {event.metadataUri && (
                         <div className="bg-stellar-white rounded-xl p-4 border border-stellar-lilac/15">
                           <p className="text-xs text-stellar-black/40 font-body mb-1 uppercase tracking-widest">
-                            Metadata URI
+                            {t("metadataUri")}
                           </p>
                           <p className="text-sm text-stellar-black/70 font-body break-all">
                             {event.metadataUri}

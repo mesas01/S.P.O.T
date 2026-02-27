@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useWallet } from "../hooks/useWallet";
 import { connectWallet } from "../util/wallet";
 import { LogOut, X, Loader2 } from "lucide-react";
@@ -6,6 +7,7 @@ import { LogOut, X, Loader2 } from "lucide-react";
 export const WalletButton = () => {
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
   const { address, isPending, disconnect } = useWallet();
+  const { t } = useTranslation('common');
 
   if (!address) {
     return (
@@ -17,10 +19,10 @@ export const WalletButton = () => {
         {isPending ? (
           <>
             <Loader2 size={14} className="animate-spin" />
-            Cargando...
+            {t('wallet.loading')}
           </>
         ) : (
-          "Conectar"
+          t('wallet.connect')
         )}
       </button>
     );
@@ -62,12 +64,12 @@ export const WalletButton = () => {
             </button>
 
             <h3 className="text-xl font-headline text-stellar-black uppercase mb-4">
-              Wallet conectada
+              {t('wallet.connected')}
             </h3>
 
             <div className="mb-6">
               <p className="text-xs font-body uppercase tracking-widest text-stellar-black/50 mb-2">
-                Dirección
+                {t('wallet.address')}
               </p>
               <code
                 className="block bg-stellar-warm-grey/20 px-4 py-3 rounded-xl text-stellar-black font-mono text-xs border border-stellar-lilac/10"
@@ -87,13 +89,13 @@ export const WalletButton = () => {
                 className="w-full inline-flex items-center justify-center gap-2 bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 font-semibold rounded-full py-3 px-6 transition-all font-body text-sm"
               >
                 <LogOut size={14} />
-                Desconectar
+                {t('wallet.disconnect')}
               </button>
               <button
                 onClick={() => setShowDisconnectModal(false)}
                 className="w-full inline-flex items-center justify-center gap-2 bg-stellar-lilac/10 border border-stellar-lilac/20 text-stellar-black hover:bg-stellar-lilac/20 rounded-full py-3 px-6 transition-all font-body text-sm"
               >
-                Cancelar
+                {t('wallet.cancel')}
               </button>
             </div>
           </div>

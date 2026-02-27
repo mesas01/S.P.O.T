@@ -1,0 +1,14 @@
+{
+  "collectionTitle": "Your",
+  "collectionHighlight": "Collection",
+  "spotsCount_one": "{{count}} SPOT in your collection",
+  "spotsCount_other": "{{count}} SPOTs in your collection",
+  "totalSpots": "Total SPOTs",
+  "activeMonths": "Active months",
+  "currentYear": "Current year",
+  "noSpots": "No SPOTs to show",
+  "connectTitle": "Connect your Wallet",
+  "connectSubtitle": "Connect your Stellar wallet to view your SPOT collection and claim new ones.",
+  "connectWallet": "Connect Wallet",
+  "goToClaim": "Go to Claim"
+}

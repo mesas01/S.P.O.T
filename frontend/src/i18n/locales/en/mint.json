@@ -1,0 +1,92 @@
+{
+  "eyebrow": "Claim methods",
+  "title": "Claim SPOT",
+  "subtitle": "Choose how to claim your proof: QR, link, code, geolocation, or NFC depending on the event context.",
+  "connectTitle": "Connect your Wallet",
+  "connectSubtitle": "You need to connect your wallet to claim a SPOT.",
+  "confirmEyebrow": "Confirm claim",
+  "confirmTitle": "Claim SPOT",
+  "loadingEventInfo": "Loading event info...",
+  "event": "Event",
+  "processing": "Processing your claim...",
+  "connectRequired": "You need to connect your wallet first to claim your SPOT.",
+  "confirmClaim": "Confirm Claim",
+  "methods": {
+    "qr": "Scan QR",
+    "qrDesc": "Scan the event QR code to claim your SPOT instantly.",
+    "link": "Use Link",
+    "linkDesc": "Enter the event's unique link to claim remotely.",
+    "code": "Shared Code",
+    "codeDesc": "Enter the code shared by the event organizer.",
+    "geolocation": "Geolocation",
+    "geolocationDesc": "Verify your location near the event to validate attendance.",
+    "nfc": "NFC",
+    "nfcDesc": "Bring your device close to the NFC tag for a tactile experience.",
+    "nfcUnavailable": "Not available on this device"
+  },
+  "actions": {
+    "scanQR": "Scan QR code",
+    "openCamera": "Open Camera",
+    "enterLink": "Enter the event link",
+    "enterCode": "Enter the event code",
+    "claimSpot": "Claim SPOT",
+    "verifyLocation": "Verify location",
+    "verifyLocationDesc": "Make sure you're at the event location. We'll use your location to validate attendance.",
+    "verifyBtn": "Verify Location",
+    "nfcAction": "Bring your device close to the NFC tag",
+    "nfcActionDesc": "Make sure NFC is enabled on your device and bring it close to the claim point.",
+    "processing": "Processing...",
+    "verifying": "Verifying..."
+  },
+  "placeholders": {
+    "linkInput": "https://spot.example.com/event/...",
+    "codeInput": "E.g.: HACKATHON2024"
+  },
+  "notifications": {
+    "walletRequired": "Wallet required",
+    "walletRequiredMsg": "Connect your wallet before claiming the collectible",
+    "eventNotFound": "Event not found on the network",
+    "eventNotFoundMsg": "That event does not exist in the contract (ID may be from another environment or created in test mode). Create the event again with the real backend and use the new link/code.",
+    "claimSent": "Claim submitted",
+    "claimSentMsg": "Tx sent. Copy the detail if you need to share it.",
+    "claimError": "Claim error",
+    "claimErrorMsg": "Could not complete the claim.",
+    "invalidLink": "Invalid link",
+    "invalidLinkMsg": "Could not find an event ID in the link",
+    "invalidCode": "Invalid code",
+    "invalidCodeMsg": "Include the numeric event ID in the shared code",
+    "linkProcessError": "Could not process the link.",
+    "codeProcessError": "Could not process the code.",
+    "comingSoon": "Coming soon",
+    "qrComingSoonMsg": "QR scanning will send the automatic claim to the backend.",
+    "noGeolocation": "No geolocation",
+    "noGeolocationMsg": "Your browser does not support geolocation",
+    "geoPending": "Validation pending",
+    "geoPendingMsg": "Geolocation validation is not yet implemented.",
+    "geoError": "Location error",
+    "geoErrorMsg": "Could not get your position.",
+    "geoClaimError": "Could not complete geolocation validation.",
+    "invalidQR": "Invalid QR",
+    "invalidQRMsg": "The scanned QR code does not contain a valid event link."
+  },
+  "scanner": {
+    "title": "Scan QR",
+    "instruction": "Point your camera at the event QR code",
+    "cameraError": "Could not access camera",
+    "cameraErrorDesc": "Check camera permissions in your browser.",
+    "cancel": "Cancel"
+  },
+  "alerts": {
+    "enterValidLink": "Please enter a valid link",
+    "enterValidCode": "Please enter a valid code"
+  },
+  "tldr": {
+    "summary": "Choose how to claim your proof: QR, link, code, geolocation, or NFC depending on the event context.",
+    "bullet1Label": "QR first",
+    "bullet1Detail": "Fastest experience at physical events.",
+    "bullet2Label": "Unique link",
+    "bullet2Detail": "Ideal for remote claims with pragmatic copy.",
+    "bullet3Label": "Geo & NFC",
+    "bullet3Detail": "Visibility of future methods with transparency."
+  }
+}
