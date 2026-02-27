@@ -880,7 +880,7 @@ SPOT es desarrollado por un equipo apasionado de desarrolladores:
 ### Santiago Mesa
 **Desarrollo y Smart Contracts / Backend**
 
-<img src="blockotitos/public/images/team/santiagoMesa.jpg" alt="Santiago Mesa" width="150" style="border-radius: 50%; margin: 10px;">
+<img src="FotosFounders/santiagoMesa.jpg" alt="Santiago Mesa" width="150" style="border-radius: 50%; margin: 10px;">
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/santiagomesan)
 [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=flat&logo=telegram&logoColor=white)](https://t.me/mesas01)
@@ -902,7 +902,7 @@ SPOT es desarrollado por un equipo apasionado de desarrolladores:
 ### André Landinez
 **Desarrollo y Smart Contracts**
 
-<img src="blockotitos/public/images/team/andreLandinez.jpg" alt="André Landinez" width="150" style="border-radius: 50%; margin: 10px;">
+<img src="FotosFounders/andreLandinez.jpg" alt="André Landinez" width="150" style="border-radius: 50%; margin: 10px;">
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/andr%C3%A9-landinez-535298380/)
 [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=flat&logo=telegram&logoColor=white)](https://t.me/andrethth)
@@ -913,20 +913,20 @@ SPOT es desarrollado por un equipo apasionado de desarrolladores:
 ### Laura Lizeth Rico
 **Diseño y Edición**
 
-<img src="blockotitos/public/images/team/lauraLizeth.jpg" alt="Laura Lizeth Rico" width="150" style="border-radius: 50%; margin: 10px;">
+<img src="FotosFounders/lauraLizeth.jpg" alt="Laura Lizeth Rico" width="150" style="border-radius: 50%; margin: 10px;">
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://co.linkedin.com/in/lizeth-rico)
 [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=flat&logo=telegram&logoColor=white)](https://t.me/lricoth)
 
 ---
 
-### Sebastian Verduguez
-**Redes y Diseño**
+### Rodión Romanovich
+**Desarrollo y Smart Contracts / Backend**
 
-<img src="blockotitos/public/images/team/SebatianVerduguez.jpeg" alt="Sebastian Verduguez" width="150" style="border-radius: 50%; margin: 10px;">
+<img src="FotosFounders/Rodion.jpeg" alt="Rodión Romanovich" width="150" style="border-radius: 50%; margin: 10px;">
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/sebastian-verduguez-luna-897024319)
-[![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=flat&logo=telegram&logoColor=white)](https://t.me/sebasverduguez)
+[![Página Web](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://www.rodion.com.co)
+[![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=flat&logo=telegram&logoColor=white)](https://t.me/rodiontabares)
 
 </div>
 
