@@ -891,7 +891,7 @@ SPOT es desarrollado por un equipo apasionado de desarrolladores:
 ### Juliana Lugo
 **Desarrollo y Diseño**
 
-<img src="blockotitos/public/images/team/JulianaLugo.jpg" alt="Juliana Lugo" width="150" style="border-radius: 50%; margin: 10px;">
+<img src="FotosFounders/JulianaLugo.jpg" alt="Juliana Lugo" width="150" style="border-radius: 50%; margin: 10px;">
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/julianalugo)
 [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=flat&logo=telegram&logoColor=white)](https://t.me/Julilugo09)
