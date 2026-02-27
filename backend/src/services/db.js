@@ -119,10 +119,10 @@ export async function revokeCreator({ address, txHash }) {
 /**
  * Log a transaction (audit trail).
  */
-export async function logTransaction({ action, status, txHash, payload, error }) {
+export async function logTransaction({ action, status, txHash, payload, error, contractErrorCode }) {
   if (!prisma) return null;
   return prisma.transaction.create({
-    data: { action, status, txHash, payload, error },
+    data: { action, status, txHash, payload, error, contractErrorCode },
   });
 }
 

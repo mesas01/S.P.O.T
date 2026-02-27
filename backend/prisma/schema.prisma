@@ -110,16 +110,18 @@ enum EventVisibility {
 }
 
 model Transaction {
-  id        Int      @id @default(autoincrement())
-  action    String
-  status    String
-  txHash    String?
-  payload   Json?
-  error     String?
-  createdAt DateTime @default(now())
+  id                Int      @id @default(autoincrement())
+  action            String
+  status            String
+  txHash            String?
+  payload           Json?
+  error             String?
+  contractErrorCode Int?
+  createdAt         DateTime @default(now())
 
   @@index([action])
   @@index([txHash])
+  @@index([contractErrorCode])
   @@map("transactions")
 }
 

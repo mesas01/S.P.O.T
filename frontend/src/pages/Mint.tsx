@@ -6,6 +6,7 @@ import { useNotification } from "../hooks/useNotification";
 import {
   claimEventRequest,
   fetchEventById,
+  BackendError,
   type OnchainEventSummary,
 } from "../util/backend";
 import { connectWallet } from "../util/wallet";
@@ -182,14 +183,22 @@ const Mint: React.FC = () => {
         copyText: buildTxDetail(response.txHash, { eventId, claimer: address }),
       });
       navigate("/");
-    } catch (error: any) {
-      const msg = error?.message ?? "";
-      const isEventNotFound =
-        /Error\(Contract,\s*#7\)|EventNotFound|NO_EVENT|event not found/i.test(msg);
-      const title = isEventNotFound ? t('notifications.eventNotFound') : t('notifications.claimError');
-      const message = isEventNotFound
-        ? t('notifications.eventNotFoundMsg')
-        : t('notifications.claimErrorMsg');
+    } catch (error: unknown) {
+      const contractError = error instanceof BackendError ? error.contractError : null;
+      const errorMessages: Record<number, { title: string; message: string }> = {
+        1: { title: t('notifications.unauthorized'), message: t('notifications.unauthorizedMsg') },
+        2: { title: t('notifications.alreadyClaimed'), message: t('notifications.alreadyClaimedMsg') },
+        3: { title: t('notifications.limitExceeded'), message: t('notifications.limitExceededMsg') },
+        4: { title: t('notifications.claimPeriodEnded'), message: t('notifications.claimPeriodEndedMsg') },
+        5: { title: t('notifications.claimPeriodNotStarted'), message: t('notifications.claimPeriodNotStartedMsg') },
+        6: { title: t('notifications.invalidParameters'), message: t('notifications.invalidParametersMsg') },
+        7: { title: t('notifications.eventNotFound'), message: t('notifications.eventNotFoundMsg') },
+        8: { title: t('notifications.eventAlreadyExists'), message: t('notifications.eventAlreadyExistsMsg') },
+        9: { title: t('notifications.creatorNotApproved'), message: t('notifications.creatorNotApprovedMsg') },
+      };
+      const mapped = contractError?.code != null ? errorMessages[contractError.code] : null;
+      const title = mapped?.title ?? t('notifications.claimError');
+      const message = mapped?.message ?? t('notifications.claimErrorMsg');
       showNotification({ type: "error", title, message, copyText: buildErrorDetail(error) });
     } finally {
       setIsProcessing(false);

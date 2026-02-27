@@ -43,6 +43,7 @@ import {
 } from "./services/db.js";
 import { uploadImage } from "./services/storage.js";
 import { getTierLimits, getLimitsForTier } from "./services/tier.js";
+import { parseContractError } from "./contractErrors.js";
 
 // Cargar variables de entorno
 dotenv.config();
@@ -618,9 +619,14 @@ app.post("/events/create", upload.single("image"), async (req, res) => {
 
     res.json({ txHash: result.txHash, rpcResponse: result.rpcResponse, signedEnvelope: result.envelopeXdr, eventId, imageUrl: finalImageUrl, tier, visibility });
   } catch (error) {
-    await logTx({ action: "create_event", status: "error", error: error.message || String(error), payload });
-    try { await logTransaction({ action: "create_event", status: "error", error: error.message || String(error), payload }); } catch (_) {}
-    res.status(500).json({ error: error.message || String(error) });
+    const errMsg = error.message || String(error);
+    const contractError = parseContractError(errMsg);
+    await logTx({ action: "create_event", status: "error", error: errMsg, payload });
+    try { await logTransaction({ action: "create_event", status: "error", error: errMsg, payload, contractErrorCode: contractError?.code }); } catch (_) {}
+    const httpStatus = contractError?.httpStatus ?? 500;
+    const body = { error: errMsg };
+    if (contractError) body.contractError = { code: contractError.code, name: contractError.name };
+    res.status(httpStatus).json(body);
   }
 });
 
@@ -701,9 +707,14 @@ app.post("/events/claim", async (req, res) => {
 
     res.json({ txHash: result.txHash, rpcResponse: result.rpcResponse, signedEnvelope: result.envelopeXdr });
   } catch (error) {
-    await logTx({ action: "claim_poap", status: "error", error: error.message || String(error), payload });
-    try { await logTransaction({ action: "claim_poap", status: "error", error: error.message || String(error), payload }); } catch (_) {}
-    res.status(500).json({ error: error.message || String(error) });
+    const errMsg = error.message || String(error);
+    const contractError = parseContractError(errMsg);
+    await logTx({ action: "claim_poap", status: "error", error: errMsg, payload });
+    try { await logTransaction({ action: "claim_poap", status: "error", error: errMsg, payload, contractErrorCode: contractError?.code }); } catch (_) {}
+    const httpStatus = contractError?.httpStatus ?? 500;
+    const body = { error: errMsg };
+    if (contractError) body.contractError = { code: contractError.code, name: contractError.name };
+    res.status(httpStatus).json(body);
   }
 });
 

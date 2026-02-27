@@ -1,3 +1,24 @@
+export interface ContractErrorInfo {
+  code: number;
+  name: string;
+}
+
+export class BackendError extends Error {
+  status: number;
+  contractError: ContractErrorInfo | null;
+
+  constructor(
+    message: string,
+    status: number,
+    contractError?: ContractErrorInfo | null,
+  ) {
+    super(message);
+    this.name = "BackendError";
+    this.status = status;
+    this.contractError = contractError ?? null;
+  }
+}
+
 const envBaseUrl = import.meta.env.VITE_BACKEND_URL;
 const backendBaseUrl = (
   (envBaseUrl && envBaseUrl.trim()) ||
@@ -91,7 +112,11 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
           continue;
         }
 
-        throw new Error(message);
+        throw new BackendError(
+          message,
+          response.status,
+          errorPayload?.contractError ?? null,
+        );
       }
 
       return (await response.json()) as T;
