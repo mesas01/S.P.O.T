@@ -917,6 +917,7 @@ SPOT es desarrollado por un equipo apasionado de desarrolladores:
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://co.linkedin.com/in/lizeth-rico)
 [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=flat&logo=telegram&logoColor=white)](https://t.me/lricoth)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white)](https://github.com/ricoththth)
 
 ---
 
@@ -927,6 +928,7 @@ SPOT es desarrollado por un equipo apasionado de desarrolladores:
 
 [![Página Web](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://www.rodion.com.co)
 [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=flat&logo=telegram&logoColor=white)](https://t.me/rodiontabares)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white)](https://github.com/CoKeFish)
 
 </div>
 
