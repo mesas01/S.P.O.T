@@ -3,7 +3,7 @@
 # <img src="FotoLogo/gifLogo.gif" alt="SPOT Logo" width="300">
 
 # 🌟 SPOT
-## Stellar Proof of Togetherness
+## Stellar Proof of Togetherness -> Visit US https://spot-develop.up.railway.app/
 
 **La plataforma descentralizada de NFTs de asistencia construida sobre Stellar Blockchain**
 
